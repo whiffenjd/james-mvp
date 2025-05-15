@@ -7,20 +7,9 @@ import { transporter } from "../configs/Nodemailer";
 import { otpTemplate } from "../Utils/OtpEmailVerifyTemplate";
 import { signToken } from "./jwtService";
 import { Role } from "../Types/User";
-
-const deleteOldOtps = async (email: string) => {
-  const now = new Date();
-
-  await db
-    .delete(OtpTable)
-    .where(
-      or(
-        eq(OtpTable.email, email),
-        lt(OtpTable.expiresAt, now),
-        eq(OtpTable.isUsed, true)
-      )
-    );
-};
+import { deleteOldOtps } from "../Utils/DeleteOldOtps";
+import cache from "../Utils/Caching";
+import { UserTokens } from "../db/schema/UserTokens";
 
 export const registerInvestor = async (
   name: string,
@@ -48,7 +37,9 @@ export const registerInvestor = async (
     isEmailVerified: false,
     isActive: true,
   });
-
+  // Invalidate caches related to users
+  cache.del("allUsers"); // Remove cached all users list
+  cache.del(`userProfile`); // Optional: if caching by email, else by id
   try {
     await transporter.sendMail({
       from:
@@ -63,42 +54,6 @@ export const registerInvestor = async (
   }
 
   return { message: "OTP sent to email" };
-};
-
-export const verifyInvestorOtp = async (email: string, otp: string) => {
-  const [storedOtp] = await db
-    .select()
-    .from(OtpTable)
-    .where(eq(OtpTable.email, email))
-    .orderBy(desc(OtpTable.createdAt))
-    .limit(1);
-  console.log("Stored OTP:", storedOtp, otp);
-  if (
-    !storedOtp ||
-    storedOtp.isUsed ||
-    new Date() > new Date(storedOtp.expiresAt) ||
-    storedOtp.otp.trim() !== otp.trim()
-  ) {
-    throw new Error("Invalid or expired OTP");
-  }
-
-  // Mark OTP as used
-  await db
-    .update(OtpTable)
-    .set({ isUsed: true, verifiedAt: new Date() })
-    .where(eq(OtpTable.id, storedOtp.id));
-  console.log("User after 4:");
-  await db
-    .update(UsersTable)
-    .set({ isEmailVerified: true })
-    .where(eq(UsersTable.email, email));
-  console.log("User after 5:");
-  const user = await db.query.UsersTable.findFirst({
-    where: eq(UsersTable.email, email),
-  });
-  console.log("User after verification:", user);
-
-  return { user };
 };
 
 export const loginUser = async (
@@ -118,7 +73,17 @@ export const loginUser = async (
     throw new Error("Email not verified");
   }
 
+  // Delete old token
+  await db.delete(UserTokens).where(eq(UserTokens.userId, user.id));
+
+  // Sign and store new token
   const token = signToken({ id: user.id, role: user.role });
+  await db.insert(UserTokens).values({
+    userId: user.id,
+    email: user.email,
+    token,
+  });
+
   return { token, user };
 };
 
@@ -129,33 +94,16 @@ export const getUserProfileByRole = async (id: string, role: Role) => {
     .where(eq(UsersTable.id, id));
   return user || null;
 };
+export const getAllUsers = async () => {
+  // Check if users are cached
+  const cachedUsers = cache.get("allUsers");
 
-export const resendInvestorOtp = async (email: string) => {
-  const user = await db.query.UsersTable.findFirst({
-    where: eq(UsersTable.email, email),
-  });
+  if (cachedUsers) {
+    return cachedUsers as (typeof UsersTable)[];
+  }
 
-  if (!user) throw new Error("User not found");
-  if (user.isEmailVerified) throw new Error("Email already verified");
-
-  await deleteOldOtps(email);
-
-  const otp = generateOTP();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-  await db.insert(OtpTable).values({
-    email,
-    otp,
-    expiresAt,
-    isUsed: false,
-  });
-
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM,
-    to: email,
-    subject: "Resend OTP - Verify your email",
-    html: otpTemplate(otp, user.name),
-  });
-
-  return { message: "OTP resent to email" };
+  // Fetch from DB and cache result
+  const users = await db.select().from(UsersTable);
+  cache.set("allUsers", users);
+  return users;
 };

@@ -25,7 +25,7 @@ export const otpTemplate = (otp: string, name: string): string => `
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
     .header {
-      background-color: #124d25;
+      background-color:rgb(0, 179, 57);
       color: white;
       padding: 30px 20px;
       text-align: center;

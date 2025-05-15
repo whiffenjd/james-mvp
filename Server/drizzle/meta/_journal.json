@@ -15,6 +15,20 @@
       "when": 1747222879315,
       "tag": "0001_dark_natasha_romanoff",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1747293857307,
+      "tag": "0002_calm_diamondback",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1747318251606,
+      "tag": "0003_cloudy_meteorite",
+      "breakpoints": true
     }
   ]
 }

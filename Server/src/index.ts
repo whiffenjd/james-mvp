@@ -2,9 +2,11 @@ import express, { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import cors from "cors";
-import investorRouter from "./Routes/InvestorRoutes";
-import authRouter from "./Routes/AuthRoutes";
+import authRouter from "./Routes/AuthUserRoutes";
 import { xssSanitizer } from "./Services/XssSanitizer";
+import OtpRouter from "./Routes/OtpVerificationRoutes";
+import UserRouter from "./Routes/UserProfileRoutes";
+import investorAuthRouter from "./Routes/InvestorAuthRoutes";
 
 dotenv.config();
 export const app = express();
@@ -25,8 +27,10 @@ app.use(helmet()); // Sets secure HTTP headers
 app.use(xssSanitizer);
 
 // Routes
-app.use("/auth/investor", investorRouter);
+app.use("/auth/investor", investorAuthRouter);
 app.use("/auth/user", authRouter);
+app.use("/auth/otp", OtpRouter);
+app.use("/profile/user", UserRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");

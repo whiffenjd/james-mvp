@@ -10,3 +10,19 @@ export const signToken = (payload: object) => {
 export const verifyToken = (token: string) => {
   return jwt.verify(token, process.env.JWT_SECRET!);
 };
+
+export const generateResetToken = (email: string): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET is not defined");
+  }
+  return jwt.sign({ email }, secret, { expiresIn: "15m" });
+};
+
+export const verifyResetToken = (token: string): { email: string } => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET is not defined");
+  }
+  return jwt.verify(token, secret) as unknown as { email: string };
+};

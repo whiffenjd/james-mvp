@@ -1,0 +1,6 @@
+root: ./docs
+nav:
+  - Home: index.md
+structure:
+  readme: ./index.md
+  summary: ./SUMMARY.md

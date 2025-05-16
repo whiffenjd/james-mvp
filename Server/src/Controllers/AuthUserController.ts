@@ -7,6 +7,8 @@ import {
 import { db } from "../db/DbConnection";
 import { UserTokens } from "../db/schema";
 import { eq } from "drizzle-orm";
+import { deleteUserTokenByType } from "../Utils/DeleteTokenByType";
+import { deleteCache } from "../Utils/Caching";
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -30,7 +32,7 @@ export const requestPasswordResetMail = async (req: Request, res: Response) => {
     const result = await requestPasswordReset(email);
     res.status(200).json({
       success: true,
-      message: result,
+      message: "Reset link sent successfully",
       data: result,
     });
   } catch (err) {
@@ -47,7 +49,7 @@ export const updatePassword = async (req: Request, res: Response) => {
     const result = await resetPassword(email, token, newPassword);
     res.status(200).json({
       success: true,
-      message: result,
+      message: "Password updated successfully",
       data: result,
     });
   } catch (err) {
@@ -65,10 +67,22 @@ export const logout = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid user." });
     }
 
-    await db.delete(UserTokens).where(eq(UserTokens.userId, userId));
+    // 🔍 Get user email for token filtering (optional, depends on your logic)
+    const user = await db.query.UsersTable.findFirst({
+      where: (u, { eq }) => eq(u.id, userId),
+    });
 
-    res.status(200).json({ message: "Logged out successfully." });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    deleteCache(`userProfile:${userId}`);
+    deleteCache(`allUsers`);
+    // 🔐 Delete all tokens for the user
+    await deleteUserTokenByType(user.id, user.email, "userAuth");
+
+    return res.status(200).json({ message: "Logged out successfully." });
   } catch (err) {
-    res.status(500).json({ message: "Logout failed." });
+    console.error("Logout error:", err);
+    return res.status(500).json({ message: "Logout failed." });
   }
 };

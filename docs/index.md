@@ -1,3 +1,3 @@
 # Index page
 
-This section provides information about overview of the website.yoo
+This section provides information about overview of the website.

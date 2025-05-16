@@ -6,10 +6,11 @@ import { db } from "../db/DbConnection";
 import { transporter } from "../configs/Nodemailer";
 import { otpTemplate } from "../Utils/OtpEmailVerifyTemplate";
 import { signToken } from "./jwtService";
-import { Role } from "../Types/User";
 import { deleteOldOtps } from "../Utils/DeleteOldOtps";
-import cache from "../Utils/Caching";
+import cache, { deleteCache, getCache, setCache, User } from "../Utils/Caching";
+import type { Role } from "../Utils/Caching";
 import { UserTokens } from "../db/schema/UserTokens";
+import { deleteUserTokenByType } from "../Utils/DeleteTokenByType";
 
 export const registerInvestor = async (
   name: string,
@@ -38,8 +39,8 @@ export const registerInvestor = async (
     isActive: true,
   });
   // Invalidate caches related to users
-  cache.del("allUsers"); // Remove cached all users list
-  cache.del(`userProfile`); // Optional: if caching by email, else by id
+  deleteCache("allUsers");
+
   try {
     await transporter.sendMail({
       from:
@@ -73,37 +74,48 @@ export const loginUser = async (
     throw new Error("Email not verified");
   }
 
-  // Delete old token
-  await db.delete(UserTokens).where(eq(UserTokens.userId, user.id));
+  await deleteUserTokenByType(user.id, email, "userAuth");
 
   // Sign and store new token
-  const token = signToken({ id: user.id, role: user.role });
+  const { token, expiresAt } = signToken({ id: user.id, role: user.role });
   await db.insert(UserTokens).values({
     userId: user.id,
     email: user.email,
     token,
+    expiresAt,
+    type: "userAuth",
+    userRole: user.role,
   });
-
+  deleteCache(`userProfile:${user.id}`);
   return { token, user };
 };
 
-export const getUserProfileByRole = async (id: string, role: Role) => {
+export const getUserProfileByRole = async (
+  id: string,
+  role: Role
+): Promise<User | null> => {
   const [user] = await db
     .select()
     .from(UsersTable)
     .where(eq(UsersTable.id, id));
-  return user || null;
+
+  return user ? { ...user, role: user.role as Role } : null;
 };
-export const getAllUsers = async () => {
-  // Check if users are cached
-  const cachedUsers = cache.get("allUsers");
+
+export const getAllUsers = async (): Promise<User[]> => {
+  const cacheKey = "allUsers";
+  const cachedUsers = getCache<User[]>(cacheKey);
 
   if (cachedUsers) {
-    return cachedUsers as (typeof UsersTable)[];
+    return cachedUsers;
   }
 
-  // Fetch from DB and cache result
   const users = await db.select().from(UsersTable);
-  cache.set("allUsers", users);
-  return users;
+
+  const typedUsers = users.map((user) => ({
+    ...user,
+    role: user.role as Role,
+  }));
+  setCache(cacheKey, typedUsers);
+  return typedUsers;
 };

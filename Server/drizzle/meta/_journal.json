@@ -29,6 +29,20 @@
       "when": 1747318251606,
       "tag": "0003_cloudy_meteorite",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1747376903219,
+      "tag": "0004_panoramic_deathbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1747393833939,
+      "tag": "0005_true_winter_soldier",
+      "breakpoints": true
     }
   ]
 }

@@ -4,7 +4,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 export const signToken = (payload: object) => {
-  return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "7d" });
+  const expiresInSeconds = 7 * 24 * 60 * 60; // 7 days
+  const token = jwt.sign(payload, process.env.JWT_SECRET!, {
+    expiresIn: expiresInSeconds,
+  });
+  const expiresAt = new Date(Date.now() + expiresInSeconds * 1000); // convert to ms
+  return { token, expiresAt };
 };
 
 export const verifyToken = (token: string) => {

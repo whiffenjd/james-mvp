@@ -5,7 +5,7 @@ import { db } from "../db/DbConnection";
 import { transporter } from "../configs/Nodemailer";
 import { otpTemplate } from "../Utils/OtpEmailVerifyTemplate";
 import { deleteOldOtps } from "../Utils/DeleteOldOtps";
-import cache from "../Utils/Caching";
+import cache, { deleteCache } from "../Utils/Caching";
 export const verifyInvestorOtp = async (email: string, otp: string) => {
   const [storedOtp] = await db
     .select()
@@ -32,14 +32,11 @@ export const verifyInvestorOtp = async (email: string, otp: string) => {
     .update(UsersTable)
     .set({ isEmailVerified: true })
     .where(eq(UsersTable.email, email));
-  cache.del(`userProfile`); // Optional: if caching by email, else by id
-  const user = await db.query.UsersTable.findFirst({
-    where: eq(UsersTable.email, email),
-  });
 
+  deleteCache(`allUsers`);
   await deleteOldOtps(email);
 
-  return { user };
+  return { message: "Email verified successfully" };
 };
 export const resendInvestorOtp = async (email: string) => {
   const user = await db.query.UsersTable.findFirst({

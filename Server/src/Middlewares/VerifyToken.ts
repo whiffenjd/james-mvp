@@ -35,13 +35,19 @@ export const verifyToken = async (
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
 
-    // Check token matches the DB
+    // Check token exists in DB
     const storedToken = await db.query.UserTokens.findFirst({
       where: eq(UserTokens.userId, decoded.id),
     });
 
     if (!storedToken || storedToken.token !== token) {
       res.status(401).json({ message: "Session expired or logged out." });
+      return;
+    }
+
+    // ⏳ Check if token has expired based on DB's expiresAt
+    if (new Date() > new Date(storedToken.expiresAt)) {
+      res.status(401).json({ message: "Token expired." });
       return;
     }
 

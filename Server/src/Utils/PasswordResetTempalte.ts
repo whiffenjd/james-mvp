@@ -67,6 +67,19 @@ export const resetTemplate = (
       transition: background-color 0.3s ease;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
+       .reset-link2 {
+      display: inline-block;
+      padding: 14px 30px;
+      background-color:rgb(255, 255, 255);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+    
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
     .reset-link:hover {
       background-color: #3cb371; /* Medium Sea Green - slightly lighter for hover */
     }
@@ -144,6 +157,9 @@ export const resetTemplate = (
       <div class="button-container">
         <a class="reset-link" href="${resetLink}">Reset My Password</a>
       </div>
+  
+        <a class="reset-link2" href="${resetLink}">${resetLink}</a>
+
       
       <div class="otp-container">
         <span class="otp-label">Your Email:</span>

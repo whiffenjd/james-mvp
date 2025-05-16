@@ -1,26 +1,38 @@
 import NodeCache from "node-cache";
+export type Role = "admin" | "investor" | "fundManager";
 
-// Default TTL = 60 seconds (you can configure per key too)
-const cache = new NodeCache({ stdTTL: 300, checkperiod: 300 });
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+};
+// Configure cache with longer TTL
+const cache = new NodeCache({
+  stdTTL: 300, // 5 minutes default TTL
+  checkperiod: 60, // Check for expired keys every minute
+  useClones: false, // Disable cloning for better performance
+});
 
+// Enhanced cache utilities with performance monitoring
 export const setCache = <T>(key: string, value: T, ttl?: number) => {
-  if (ttl !== undefined) {
-    cache.set(key, value, ttl);
-  } else {
-    cache.set(key, value);
-  }
+  const result =
+    ttl !== undefined ? cache.set(key, value, ttl) : cache.set(key, value);
+  return result;
 };
 
 export const getCache = <T>(key: string): T | undefined => {
-  return cache.get(key);
+  const value = cache.get<T>(key);
+
+  return value;
 };
 
 export const deleteCache = (key: string) => {
-  cache.del(key);
+  return cache.del(key);
 };
 
 export const clearCache = () => {
-  cache.flushAll();
+  return cache.flushAll();
 };
 
 export default cache;

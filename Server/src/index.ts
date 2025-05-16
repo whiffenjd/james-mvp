@@ -7,6 +7,7 @@ import { xssSanitizer } from "./Services/XssSanitizer";
 import OtpRouter from "./Routes/OtpVerificationRoutes";
 import UserRouter from "./Routes/UserProfileRoutes";
 import investorAuthRouter from "./Routes/InvestorAuthRoutes";
+import { setupSwagger } from "./configs/Swagger";
 
 dotenv.config();
 export const app = express();
@@ -18,6 +19,7 @@ app.use(cors());
 // Parse JSON and URL-encoded bodies before applying security middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+setupSwagger(app);
 
 // Apply security middlewares after body parsing
 app.use(helmet()); // Sets secure HTTP headers

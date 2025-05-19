@@ -58,12 +58,16 @@ const EmailVerification = () => {
           >
             Verify
           </button>
-          <button
-            type="button"
-            className="w-full bg-bgPrimary rounded-[100px] h-[46px] font-medium transition-colors mt-1"
-          >
-            Resend Code
-          </button>
+          <div className='flex gap-1'>
+            <p>
+              Didn't receive the code?
+            </p>
+            <button type='button' className='underline'>
+              Send again
+            </button>
+          </div>
+
+         
         </form>
       </div>
     </div>

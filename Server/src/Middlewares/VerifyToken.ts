@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import { eq } from "drizzle-orm";
-import { db } from "../db/DbConnection";
-import { UserTokens } from "../db/schema";
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import { eq } from 'drizzle-orm';
+import { db } from '../db/DbConnection';
+import { UserTokens } from '../db/schema';
 
 dotenv.config();
 interface JwtPayload {
@@ -23,12 +23,17 @@ declare global {
 export const verifyToken = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ success: false, message: 'No token provided' });
+    return;
+  }
 
+  const token = authHeader.split(' ')[1];
   if (!token) {
-    res.status(401).json({ message: "Access denied. No token provided." });
+    res.status(401).json({ message: 'Access denied. No token provided.' });
     return;
   }
 
@@ -41,20 +46,20 @@ export const verifyToken = async (
     });
 
     if (!storedToken || storedToken.token !== token) {
-      res.status(401).json({ message: "Session expired or logged out." });
+      res.status(401).json({ message: 'Session expired or logged out.' });
       return;
     }
 
     // ⏳ Check if token has expired based on DB's expiresAt
     if (new Date() > new Date(storedToken.expiresAt)) {
-      res.status(401).json({ message: "Token expired." });
+      res.status(401).json({ message: 'Token expired.' });
       return;
     }
 
     req.user = decoded;
     next();
   } catch (err) {
-    res.status(401).json({ message: "Invalid or expired token." });
+    res.status(401).json({ message: 'Invalid or expired token.' });
     return;
   }
 };

@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
-import { getAllUsers, getUserProfileByRole } from "../Services/AuthServices";
-import { getCache, setCache } from "../Utils/Caching";
-import { Role, User } from "../Types/User";
+import { Request, Response } from 'express';
+import { getAllUsers, getUserProfileByRole } from '../Services/AuthServices';
+import { getCache, setCache } from '../Utils/Caching';
+import { Role, User } from '../Types/User';
 
 export const getUserProfile = async (req: Request, res: Response) => {
   const requestStart = performance.now();
@@ -13,7 +13,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
     if (!userId || !role) {
       return res.status(400).json({
         success: false,
-        message: "Invalid User Data",
+        message: 'Invalid User Data',
       });
     }
 
@@ -32,7 +32,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
 
       return res.status(200).json({
         success: true,
-        message: "Profile fetched from cache",
+        message: 'Profile fetched from cache',
         data: cachedProfile,
       });
     }
@@ -43,7 +43,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
     if (!profile) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: 'User not found',
       });
     }
 
@@ -58,38 +58,37 @@ export const getUserProfile = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      message: "Profile fetched from database",
+      message: 'Profile fetched from database',
       data: formattedProfile,
     });
   } catch (error) {
-    console.error("Get profile error:", error);
+    console.error('Get profile error:', error);
     return res.status(500).json({
       success: false,
-      message: "Server error",
+      message: 'Server error',
     });
   }
 };
 
 export const getAllUsersController = async (req: Request, res: Response) => {
   try {
-    if (req.user?.role !== "admin") {
+    if (req.user?.role !== 'admin') {
       return res.status(403).json({
         success: false,
-        message: "Your Account is not authorized to perform this action",
+        message: 'Your Account is not authorized to perform this action',
       });
     }
     const users = await getAllUsers();
 
     return res.status(200).json({
       success: true,
-      message: "Users fetched successfully",
+      message: 'Users fetched successfully',
       data: users,
     });
   } catch (error) {
-    console.error("Get all users error:", error);
     return res.status(500).json({
       success: false,
-      message: "Server error",
+      message: 'Server error',
     });
   }
 };

@@ -1,13 +1,14 @@
-import { Request, Response } from "express";
-import { registerInvestor } from "../Services/AuthServices";
+import { Request, Response } from 'express';
+import { registerInvestor } from '../Services/AuthServices';
 
 export const signupInvestor = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
     const result = await registerInvestor(name, email, password);
+
     res.status(200).json({
       success: true,
-      message: "OTP sent to email",
+      message: 'OTP sent to email',
       data: result,
     });
   } catch (err) {

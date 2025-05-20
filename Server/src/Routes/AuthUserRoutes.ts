@@ -1,12 +1,12 @@
-import { Router } from "express";
-import express from "express";
+import { Router } from 'express';
+import express from 'express';
 import {
   login,
   logout,
   requestPasswordResetMail,
   updatePassword,
-} from "../Controllers/AuthUserController";
-import { verifyToken } from "../Middlewares/VerifyToken";
+} from '../Controllers/AuthUserController';
+import { verifyToken } from '../Middlewares/VerifyToken';
 
 const authRouter = Router();
 
@@ -65,42 +65,80 @@ const authRouter = Router();
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Login successful
+ *                   example: "Login successful"
  *                 data:
  *                   type: object
  *                   properties:
  *                     token:
  *                       type: string
- *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *                     user:
  *                       type: object
  *                       properties:
  *                         id:
  *                           type: string
- *                           example: "60d21b4667d0d8992e610c85"
+ *                           format: uuid
  *                         name:
  *                           type: string
- *                           example: "John Doe"
  *                         email:
  *                           type: string
- *                           example: "user@example.com"
+ *                           format: email
  *                         role:
  *                           type: string
- *                           example: "user"
- *                         isEmailVerified:
- *                           type: boolean
- *                           example: true
- *                         isActive:
- *                           type: boolean
- *                           example: true
  *       400:
- *         description: Invalid credentials or missing required fields
- *       404:
- *         description: User not found
+ *         description: Bad request - missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Email, password, and role are required"
+ *       401:
+ *         description: Authentication failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid credentials"
+ *       403:
+ *         description: Email not verified
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Email not verified"
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
  */
-authRouter.post("/login", login);
+authRouter.post('/login', login);
 
 /**
  * @swagger
@@ -119,33 +157,51 @@ authRouter.post("/login", login);
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
  *                 message:
  *                   type: string
- *                   example: Logged out successfully.
- *       401:
- *         description: Unauthorized - Token missing, invalid, expired, or not found
+ *                   example: "Logged out successfully."
+ *       400:
+ *         description: Invalid user
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
  *                 message:
  *                   type: string
- *                   example: Access denied. No token provided.
+ *                   example: "Invalid user."
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Unauthorized access"
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User not found."
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Logout failed."
  */
-authRouter.post(
-  "/logout",
-  verifyToken,
-  logout as unknown as express.RequestHandler
-);
+authRouter.post('/logout', verifyToken, logout as unknown as express.RequestHandler);
 
 /**
  * @swagger
@@ -169,7 +225,7 @@ authRouter.post(
  *                 example: user@example.com
  *     responses:
  *       200:
- *         description: Reset link sent
+ *         description: Reset link sent successfully
  *         content:
  *           application/json:
  *             schema:
@@ -180,26 +236,59 @@ authRouter.post(
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Reset link sent
+ *                   example: "Reset link sent successfully"
  *                 data:
  *                   type: object
  *                   properties:
  *                     token:
  *                       type: string
- *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *                     message:
  *                       type: string
- *                       example: Password reset email sent successfully
+ *                       example: "Reset link sent"
  *       400:
- *         description: Email required or invalid format
- *       404:
+ *         description: Bad request - missing email
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Email is required"
+ *       401:
  *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User not found"
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
  */
 authRouter.post(
-  "/resetPasswordRequest",
-  requestPasswordResetMail as unknown as express.RequestHandler
+  '/resetPasswordRequest',
+  requestPasswordResetMail as unknown as express.RequestHandler,
 );
 
 /**
@@ -233,7 +322,7 @@ authRouter.post(
  *                 example: newSecurePassword123
  *     responses:
  *       200:
- *         description: Password updated
+ *         description: Password updated successfully
  *         content:
  *           application/json:
  *             schema:
@@ -244,25 +333,66 @@ authRouter.post(
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Password updated
+ *                   example: "Password updated successfully"
  *                 data:
  *                   type: object
  *                   properties:
  *                     message:
  *                       type: string
- *                       example: Password updated successfully
+ *                       example: "Password updated"
  *       400:
- *         description: Missing required fields or invalid password format
+ *         description: Bad request - missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Email, token, and newPassword are required"
  *       401:
  *         description: Invalid or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Token expired or invalid"
  *       404:
  *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User not found"
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
  */
-authRouter.post(
-  "/resetPassword",
-  updatePassword as unknown as express.RequestHandler
-);
+authRouter.post('/resetPassword', updatePassword as unknown as express.RequestHandler);
 
 export default authRouter;

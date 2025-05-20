@@ -1,9 +1,6 @@
-import { Router } from "express";
-import express from "express";
-import {
-  resendOtp,
-  verifyInvestor,
-} from "../Controllers/OtpVerificationControllers";
+import { Router } from 'express';
+import express from 'express';
+import { resendOtp, verifyInvestor } from '../Controllers/OtpVerificationControllers';
 
 const OtpRouter = Router();
 
@@ -60,7 +57,7 @@ const OtpRouter = Router();
  *                       type: string
  *                       example: Email verified successfully
  *       400:
- *         description: Invalid or missing OTP/email
+ *         description: Invalid OTP or validation error
  *         content:
  *           application/json:
  *             schema:
@@ -71,9 +68,30 @@ const OtpRouter = Router();
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Invalid OTP code
+ *                   example: Invalid or expired OTP
+ *             examples:
+ *               invalidOtp:
+ *                 summary: Invalid OTP
+ *                 value:
+ *                   success: false
+ *                   message: Invalid or expired OTP
+ *               missingFields:
+ *                 summary: Missing required fields
+ *                 value:
+ *                   success: false
+ *                   message: Email and OTP are required
+ *               expiredOtp:
+ *                 summary: Expired OTP
+ *                 value:
+ *                   success: false
+ *                   message: Invalid or expired OTP
+ *               usedOtp:
+ *                 summary: Already used OTP
+ *                 value:
+ *                   success: false
+ *                   message: Invalid or expired OTP
  *       404:
- *         description: User not found
+ *         description: No OTP found for the email
  *         content:
  *           application/json:
  *             schema:
@@ -84,7 +102,7 @@ const OtpRouter = Router();
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: User not found
+ *                   example: No OTP found for this email
  *       500:
  *         description: Server error
  *         content:
@@ -99,8 +117,7 @@ const OtpRouter = Router();
  *                   type: string
  *                   example: Internal server error
  */
-OtpRouter.post("/verifyOtp", verifyInvestor);
-
+OtpRouter.post('/verifyOtp', verifyInvestor as express.RequestHandler);
 /**
  * @swagger
  * /auth/otp/resendOtp:
@@ -142,7 +159,7 @@ OtpRouter.post("/verifyOtp", verifyInvestor);
  *                       type: string
  *                       example: OTP resent to email
  *       400:
- *         description: Invalid or missing email
+ *         description: Invalid request or user state
  *         content:
  *           application/json:
  *             schema:
@@ -154,6 +171,22 @@ OtpRouter.post("/verifyOtp", verifyInvestor);
  *                 message:
  *                   type: string
  *                   example: Email is required
+ *             examples:
+ *               missingEmail:
+ *                 summary: Missing email field
+ *                 value:
+ *                   success: false
+ *                   message: Email is required
+ *               alreadyVerified:
+ *                 summary: Email already verified
+ *                 value:
+ *                   success: false
+ *                   message: Email already verified
+ *               invalidEmail:
+ *                 summary: Invalid email format
+ *                 value:
+ *                   success: false
+ *                   message: Invalid email format
  *       404:
  *         description: User not found
  *         content:
@@ -179,8 +212,19 @@ OtpRouter.post("/verifyOtp", verifyInvestor);
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Internal server error
+ *                   example: Failed to send email
+ *             examples:
+ *               emailFailure:
+ *                 summary: Email sending failure
+ *                 value:
+ *                   success: false
+ *                   message: Failed to send email
+ *               dbError:
+ *                 summary: Database error
+ *                 value:
+ *                   success: false
+ *                   message: Internal server error
  */
-OtpRouter.post("/resendOtp", resendOtp as express.RequestHandler);
+OtpRouter.post('/resendOtp', resendOtp as express.RequestHandler);
 
 export default OtpRouter;

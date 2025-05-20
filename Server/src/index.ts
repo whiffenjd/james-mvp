@@ -1,13 +1,13 @@
-import express, { NextFunction, Request, Response } from "express";
-import helmet from "helmet";
-import dotenv from "dotenv";
-import cors from "cors";
-import authRouter from "./Routes/AuthUserRoutes";
-import { xssSanitizer } from "./Services/XssSanitizer";
-import OtpRouter from "./Routes/OtpVerificationRoutes";
-import UserRouter from "./Routes/UserProfileRoutes";
-import investorAuthRouter from "./Routes/InvestorAuthRoutes";
-import { setupSwagger } from "./configs/Swagger";
+import express, { NextFunction, Request, Response } from 'express';
+import helmet from 'helmet';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import authRouter from './Routes/AuthUserRoutes';
+import { xssSanitizer } from './Services/XssSanitizer';
+import OtpRouter from './Routes/OtpVerificationRoutes';
+import UserRouter from './Routes/UserProfileRoutes';
+import investorAuthRouter from './Routes/InvestorAuthRoutes';
+import { setupSwagger } from './configs/Swagger';
 
 dotenv.config();
 export const app = express();
@@ -29,19 +29,19 @@ app.use(helmet()); // Sets secure HTTP headers
 app.use(xssSanitizer);
 
 // Routes
-app.use("/auth/investor", investorAuthRouter);
-app.use("/auth/user", authRouter);
-app.use("/auth/otp", OtpRouter);
-app.use("/profile/user", UserRouter);
+app.use('/auth/investor', investorAuthRouter);
+app.use('/auth/user', authRouter);
+app.use('/auth/otp', OtpRouter);
+app.use('/profile/user', UserRouter);
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World!");
+app.get('/', (req: Request, res: Response) => {
+  res.send('Hello World!');
 });
 
 // Error handling middleware - should be last
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
-  res.status(500).json({ error: "Something went wrong!" });
+  res.status(500).json({ error: 'Something went wrong!' });
 });
 
 app.listen(PORT, () => {

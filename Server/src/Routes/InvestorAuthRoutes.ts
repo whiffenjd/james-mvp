@@ -1,8 +1,8 @@
 // src/routes/investor.routes.ts
-import { Router } from "express";
-import { signupInvestor } from "../Controllers/InvestorAuthControllers";
+import { Router } from 'express';
+import { signupInvestor } from '../Controllers/InvestorAuthControllers';
 const investorAuthRouter = Router();
-
+import express from 'express';
 /**
  * @swagger
  * tags:
@@ -100,6 +100,6 @@ const investorAuthRouter = Router();
  *                   type: string
  *                   example: "Internal server error"
  */
-investorAuthRouter.post("/investorSignup", signupInvestor);
+investorAuthRouter.post('/investorSignup', signupInvestor as unknown as express.RequestHandler);
 
 export default investorAuthRouter;

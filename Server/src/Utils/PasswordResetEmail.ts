@@ -1,9 +1,11 @@
 import { transporter } from '../configs/Nodemailer';
 import { otpTemplate } from './OtpEmailVerifyTemplate';
 import { resetTemplate } from './PasswordResetTempalte';
+import dotenv from 'dotenv';
 
+dotenv.config();
 export const sendResetPasswordEmail = async (email: string, token: string, name: string) => {
-  const resetLink = `http://localhost:5173/reset-password?token=${token}&email=${email}`;
+  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}&email=${email}`;
   try {
     await transporter.sendMail({
       from: process.env.SMTP_FROM || `"Investment Portal" <${process.env.SMTP_USER}>`,

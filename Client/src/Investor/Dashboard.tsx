@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import { useState } from "react";
 import Sidebar from "../PublicComponents/Components/Sidebar";

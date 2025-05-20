@@ -41,7 +41,7 @@ export const AdminRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     // Redirect based on role
     if (user?.role === "investor") {
       return <Navigate to="/investor/dashboard" replace />;
-    } else if (user?.role === "fundmanager") {
+    } else if (user?.role === "fundManager") {
       return <Navigate to="/fundmanager/dashboard" replace />;
     } else {
       // Fallback for unknown roles
@@ -69,7 +69,7 @@ export const FundManagerRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Redirect to appropriate dashboard if not fund manager
-  if (user?.role !== "fundmanager") {
+  if (user?.role !== "fundManager") {
     // Redirect based on role
     if (user?.role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
@@ -103,7 +103,7 @@ export const InvestorRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     // Redirect based on role
     if (user?.role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
-    } else if (user?.role === "fundmanager") {
+    } else if (user?.role === "fundManager") {
       return <Navigate to="/fundmanager/dashboard" replace />;
     } else {
       // Fallback for unknown roles
@@ -128,7 +128,7 @@ export const PublicRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     // Redirect based on role
     if (user?.role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
-    } else if (user?.role === "fundmanager") {
+    } else if (user?.role === "fundManager") {
       return <Navigate to="/fundmanager/dashboard" replace />;
     } else if (user?.role === "investor") {
       return <Navigate to="/investor/dashboard" replace />;

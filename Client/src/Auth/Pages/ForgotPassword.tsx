@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useRequestPasswordReset } from "../../API/Endpoints/Auth/AuthApis";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
-  const navigate = useNavigate();
   const resetRequestMutation = useRequestPasswordReset();
 
   const handleSubmit = (e: React.FormEvent) => {

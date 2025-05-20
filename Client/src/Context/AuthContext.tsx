@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
         navigate("/login");
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("Logout failed. Please try again.");
 
         setIsLoggingOut(false); // hide loader after failure

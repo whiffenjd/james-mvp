@@ -208,9 +208,9 @@ const EmailVerification = () => {
             {otp.map((data, index) => (
               <input
                 key={index}
-                ref={(el) =>
-                  (inputRefs.current[index] = el as HTMLInputElement)
-                }
+                ref={(el) => {
+                  inputRefs.current[index] = el as HTMLInputElement;
+                }}
                 type="text"
                 maxLength={1}
                 value={data}

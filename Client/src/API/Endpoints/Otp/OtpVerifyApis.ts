@@ -1,6 +1,5 @@
 // hooks/useVerifyInvestorOtp.ts
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
 import axiosPublic from "../../AxiosInstances/PublicAxiosInstance";
 
 interface VerifyOtpInput {

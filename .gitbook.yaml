@@ -1,11 +1,11 @@
 root: ./docs
 
 nav:
-  - Home: index.md
+  - Overview: index.md
   - Backend Structure Overview:
       - Backend Overview: ProjectOverviewDocs/BackendStructureOverview.md
       - Backend Techstack: ProjectOverviewDocs/BackendTechstack.md
-  - Postgres Tables: SchemaDocs/PostgresTables.md
+  - Postgres Tables: SchemaDocs/PostgressTables.md
   - UserAuth APIs: ApiDocs/UserAuthApis.md
   - Frontend Auth Docs:
       - Forgot Password Flow: FrontendAuthDocs/ForgotPassword.md

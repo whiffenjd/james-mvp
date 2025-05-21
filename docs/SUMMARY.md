@@ -4,7 +4,7 @@
 - Backend Structure Overview
   - [Backend Overview](ProjectOverviewDocs/BackendStructureOverview.md)
   - [Backend Techstack](ProjectOverviewDocs/BackendTechstack.md)
-- [Postgres Tables](SchemaDocs/PostgressTables.md)
+- [Postgres Tables](SchemaDocs/PostgresTables.md)
 - [UserAuth Apis](ApiDocs/UserAuthApis.md)
 - Frontend Auth Docs
   - [Forgot Password Flow](FrontendAuthDocs/ForgotPassword.md)

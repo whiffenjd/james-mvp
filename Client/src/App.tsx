@@ -18,6 +18,7 @@ import FundManagerDashboard from "./FundManager/Dashboard";
 import InvestorDashboard from "./Investor/Dashboard";
 import Unauthorized from "./PublicComponents/Components/Unauthorized";
 import { useAuth } from "./Context/AuthContext";
+import InvestorLayout from "./Investor/Layout";
 
 function RedirectBasedOnRole() {
   const { user } = useAuth();
@@ -67,9 +68,14 @@ function App() {
 
           {/* Investor routes */}
           <Route element={<InvestorRoute />}>
-            <Route path="/investor/dashboard" element={<InvestorDashboard />} />
+            <Route path="/investor" element={<InvestorLayout />} >
+            <Route path="dashboard" element={<InvestorDashboard />} />
+            
+            </Route>
             {/* Add more investor routes here */}
           </Route>
+       
+
 
           {/* Error and fallback routes */}
           <Route path="/unauthorized" element={<Unauthorized />} />

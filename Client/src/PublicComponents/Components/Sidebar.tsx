@@ -14,29 +14,26 @@ const Sidebar = () => {
   const [activeItem, setActiveItem] = useState("Tax Report");
 
   const menuItems = [
-    { id: "dashboard", icon: <LayoutGrid size={20} />, label: "Dashboard" },
-    { id: "investors", icon: <Users size={20} />, label: "Investors" },
-    {
-      id: "funds",
-      icon: <PieChart size={20} />,
-      label: "Reporting",
-    },
-    { id: "tax", icon: <FileText size={20} />, label: "Tax Report" },
-    { id: "kyc", icon: <File size={20} />, label: "Documents" },
-    { id: "settings", icon: <Settings size={20} />, label: "Settings" },
-    { id: "notifications", icon: <Bell size={20} />, label: "Notifications" },
-    { id: "support", icon: <HelpCircle size={20} />, label: "Support" },
+    { id: "dashboard", icon: <LayoutGrid size={22} />, label: "Dashboard" },
+    // { id: "investors", icon: <Users size={22} />, label: "Investors" },
+    // {
+    //   id: "funds",
+    //   icon: <PieChart size={22} />,
+    //   label: "Agreement document",
+    // },
+    // { id: "tax", icon: <FileText size={20} />, label: "Tax Report" },
+    // { id: "kyc", icon: <File size={20} />, label: "Documents" },
+    // { id: "settings", icon: <Settings size={20} />, label: "Settings" },
+    // { id: "notifications", icon: <Bell size={20} />, label: "Notifications" },
+    // { id: "support", icon: <HelpCircle size={20} />, label: "Support" },
   ];
 
   return (
-    <div className="h-screen w-60 bg-teal-500  overflow-hidden">
-      <div className="bg-white p-6 flex flex-col h-full">
+    <div className=" w-full max-w-[302px] min-h-[calc(100vh-96px)]  overflow-hidden">
+      <div className="bg-secondary p-6 flex flex-col h-full rounded-[40px]" >
         {/* Logo */}
-        <div className="flex items-center mb-8">
-          <div className="h-6 w-6 bg-teal-200 flex items-center justify-center rounded-sm">
-            <div className="h-0 w-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[12px] border-b-teal-500"></div>
-          </div>
-          <span className="ml-2 text-teal-600 font-bold text-xl">LOGO</span>
+        <div className="flex mt-6  mb-10 ">
+          <img src="/assets/logo.png" alt="" className="h-full max-h-12  object-contain" />
         </div>
 
         {/* Menu Items */}
@@ -44,14 +41,14 @@ const Sidebar = () => {
           {menuItems.map((item) => (
             <button
               key={item.id}
-              className={`flex items-center w-full px-4 py-3 rounded-lg transition-colors ${
+              className={`flex items-center w-full px-4 py-4 rounded-[10px] transition-colors  text-sm font-poppins font-normal ${
                 activeItem === item.label
-                  ? "bg-teal-600 text-white"
-                  : "text-teal-600 hover:bg-teal-50"
+                  ? "bg-primary text-white"
+                  : "text-primary hover:bg-teal-100"
               }`}
               onClick={() => setActiveItem(item.label)}
             >
-              <span className="mr-3 text-current">{item.icon}</span>
+              <span className="mr-3 text-current ">{item.icon}</span>
               <span className="font-medium">{item.label}</span>
             </button>
           ))}

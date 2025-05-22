@@ -39,7 +39,7 @@ export const verifyToken = async (
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-
+console.log('decoded',decoded)
     // Check token exists in DB
     const storedToken = await db.query.UserTokens.findFirst({
       where: eq(UserTokens.userId, decoded.id),

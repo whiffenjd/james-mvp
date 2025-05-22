@@ -93,7 +93,7 @@ export const loginUser = async (
     expiresAt,
     type: 'userAuth',
     userRole: user.role,
-  });
+  }) 
   deleteCache(`userProfile:${user.id}`);
   return { token, user };
 };

@@ -20,7 +20,6 @@ export const startOnboarding = async (userId: string, payload: CreateOnboardingR
     .insert(InvestorOnboardingTable)
     .values({
       userId,
-
       formData: payload?.formData,
       status: 'pending',
     })

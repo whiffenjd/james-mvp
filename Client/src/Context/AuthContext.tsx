@@ -74,23 +74,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setIsLoggingOut: React.Dispatch<React.SetStateAction<boolean>>
   ) => {
     setIsLoggingOut(true);
-
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
         setUser(null);
         setToken(null);
-
         Cookies.remove("authToken");
         Cookies.remove("authUser");
-
         toast.success("Logged out successfully");
         setIsLoggingOut(false); // hide loader after success
-
         navigate("/login");
       },
       onError: () => {
         toast.error("Logout failed. Please try again.");
-
         setIsLoggingOut(false); // hide loader after failure
       },
     });

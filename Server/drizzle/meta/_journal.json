@@ -43,6 +43,48 @@
       "when": 1747393833939,
       "tag": "0005_true_winter_soldier",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1747902612710,
+      "tag": "0006_lush_marvel_zombies",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1748331616948,
+      "tag": "0007_early_arachne",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1748517167827,
+      "tag": "0008_third_vulcan",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1748517237354,
+      "tag": "0009_perpetual_blob",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1748587757358,
+      "tag": "0010_parched_microchip",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1748591008685,
+      "tag": "0011_goofy_morlocks",
+      "breakpoints": true
     }
   ]
 }

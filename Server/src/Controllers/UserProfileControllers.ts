@@ -9,7 +9,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     const role = req.user?.role as Role;
-
+    console.log('userId:', userId);
     if (!userId || !role) {
       return res.status(400).json({
         success: false,

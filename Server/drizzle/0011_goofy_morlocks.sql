@@ -1,0 +1,1 @@
+ALTER TABLE "investor_onboarding" DROP COLUMN "current_step";

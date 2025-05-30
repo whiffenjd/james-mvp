@@ -6,7 +6,7 @@ import { db } from '../db/DbConnection';
 import { UserTokens } from '../db/schema';
 
 dotenv.config();
-interface JwtPayload {
+export interface JwtPayload {
   id: string;
   role: string;
 }

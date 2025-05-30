@@ -8,6 +8,7 @@ import OtpRouter from './Routes/OtpVerificationRoutes';
 import UserRouter from './Routes/UserProfileRoutes';
 import investorAuthRouter from './Routes/InvestorAuthRoutes';
 import { setupSwagger } from './configs/Swagger';
+import investorOnboardingRouter from './Routes/investorOnboardingRouter';
 
 dotenv.config();
 export const app = express();
@@ -33,6 +34,7 @@ app.use('/auth/investor', investorAuthRouter);
 app.use('/auth/user', authRouter);
 app.use('/auth/otp', OtpRouter);
 app.use('/profile/user', UserRouter);
+app.use('/onboarding/investor', investorOnboardingRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');

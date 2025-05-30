@@ -3,7 +3,9 @@ import { pgTable, uuid, varchar, timestamp, index } from 'drizzle-orm/pg-core';
 export const UserTokens = pgTable(
   'user_tokens',
   {
-    userId: uuid('user_id').primaryKey().notNull(),
+      id: uuid("id").primaryKey().defaultRandom(),
+    
+    userId: uuid('user_id').notNull(),
     email: varchar('email', { length: 512 }).notNull(),
 
     token: varchar('token', { length: 512 }).notNull(),

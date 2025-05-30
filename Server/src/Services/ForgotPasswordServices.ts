@@ -4,8 +4,8 @@ import { and, eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { db } from '../db/DbConnection';
 import { generateResetToken, verifyResetToken } from './jwtService';
-import { sendResetPasswordEmail } from '../Utils/PasswordResetEmail';
 import { deleteUserTokenByType } from '../Utils/DeleteTokenByType';
+import { sendResetPasswordEmail } from '../Utils/PasswordResetEmail';
 
 export const requestPasswordReset = async (email: string) => {
   const user = await db.select().from(UsersTable).where(eq(UsersTable.email, email));

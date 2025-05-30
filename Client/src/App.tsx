@@ -14,15 +14,20 @@ import {
   PublicRoute,
 } from "./Context/Routing/ProtectedRoutes";
 import AdminDashboard from "./Admin/Dashboard";
-import FundManagerDashboard from "./FundManager/Dashboard";
 import InvestorDashboard from "./Investor/Dashboard";
 import Unauthorized from "./PublicComponents/Components/Unauthorized";
 import { useAuth } from "./Context/AuthContext";
 import InvestorLayout from "./Investor/Layout";
+import DashboardSettings from "./FundManager/Themes/Pages/DashboardMain";
+import FundManagerLayout from "./FundManager/Layout/FundManagerLayout";
+import { ThemeProvider } from "./Context/ThemeContext";
+import "./App.css";
+import ThemeContainer from "./FundManager/Themes/Components/ThemeContainer";
+import Accounts from "./FundManager/Themes/Pages/Accounts";
+import FundManagerDashboard from "./FundManager/Dashboard";
 
 function RedirectBasedOnRole() {
   const { user } = useAuth();
-
   switch (user?.role) {
     case "admin":
       return <Navigate to="/admin/dashboard" replace />;
@@ -40,7 +45,6 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Toaster position="top-right" />
-
         <Routes>
           {/* Public routes - accessible when not logged in */}
           <Route element={<PublicRoute />}>
@@ -51,31 +55,51 @@ function App() {
             <Route path="/verify-email" element={<EmailVerification />} />
           </Route>
 
-          {/* Admin routes */}
+          {/* Admin routes - NO THEMING */}
           <Route element={<AdminRoute />}>
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <div className="admin-dashboard min-h-screen bg-gray-50">
+                  <AdminDashboard />
+                </div>
+              }
+            />
             {/* Add more admin routes here */}
           </Route>
 
-          {/* Fund Manager routes */}
+          {/* Fund Manager routes - WITH THEMING */}
           <Route element={<FundManagerRoute />}>
             <Route
               path="/fundmanager/dashboard"
-              element={<FundManagerDashboard />}
-            />
-            {/* Add more fund manager routes here */}
-          </Route>
-
-          {/* Investor routes */}
-          <Route element={<InvestorRoute />}>
-            <Route path="/investor" element={<InvestorLayout />} >
-            <Route path="dashboard" element={<InvestorDashboard />} />
-            
+              element={
+                <ThemeProvider dashboardType="fundManager">
+                  <ThemeContainer className="min-h-screen">
+                    <FundManagerLayout />
+                  </ThemeContainer>
+                </ThemeProvider>
+              }
+            >
+              <Route index element={<FundManagerDashboard />} />
+              <Route path="settings" element={<DashboardSettings />} />
+              {/* Add more fund manager routes here */}
             </Route>
-            {/* Add more investor routes here */}
           </Route>
-       
 
+          {/* Investor routes - NO THEMING */}
+          <Route element={<InvestorRoute />}>
+            <Route
+              path="/investor/dashboard"
+              element={
+                <div className="investor-dashboard min-h-screen bg-slate-50">
+                  <InvestorLayout />
+                </div>
+              }
+            >
+              <Route index element={<InvestorDashboard />} />
+              {/* Add more investor routes here */}
+            </Route>
+          </Route>
 
           {/* Error and fallback routes */}
           <Route path="/unauthorized" element={<Unauthorized />} />

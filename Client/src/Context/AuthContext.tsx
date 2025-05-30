@@ -1,10 +1,17 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import type { ReactNode } from "react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
 import toast from "react-hot-toast";
 import { useLogout } from "../API/Endpoints/Auth/AuthApis";
+import { QueryClient } from "@tanstack/react-query";
 
 // Types for our auth data
 export interface User {
@@ -15,6 +22,7 @@ export interface User {
   isEmailVerified: boolean;
   isActive: boolean;
   metadata: Record<string, any>;
+  selectedThemeId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -27,6 +35,7 @@ interface AuthContextType {
   logout: (
     setIsLoggingOut: React.Dispatch<React.SetStateAction<boolean>>
   ) => void;
+  logoutAuto: () => void;
   getToken: () => string | null;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -60,7 +69,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       }
     }
   }, []);
+  // Create a queryClient instance
+  const queryClient = new QueryClient();
 
+  useEffect(() => {
+    // Clear cache when user changes
+    queryClient.removeQueries({ queryKey: ["dashboardAssets"] });
+    queryClient.removeQueries({ queryKey: ["themes"] });
+  }, [user?.id]);
   const login = (userData: { user: User; token: string }) => {
     setUser(userData.user);
     setToken(userData.token);
@@ -69,11 +85,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     Cookies.set("authToken", userData.token);
     Cookies.set("authUser", JSON.stringify(userData.user));
   };
-
+  const logoutAuto = () => {
+    setUser(null);
+    setToken(null);
+    Cookies.remove("authToken");
+    Cookies.remove("authUser");
+    navigate("/login");
+  };
   const logout = (
-    setIsLoggingOut: React.Dispatch<React.SetStateAction<boolean>>
+    setIsLoggingOut?: React.Dispatch<React.SetStateAction<boolean>>
   ) => {
-    setIsLoggingOut(true);
+    if (setIsLoggingOut) {
+      setIsLoggingOut(true);
+    }
 
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
@@ -84,14 +108,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         Cookies.remove("authUser");
 
         toast.success("Logged out successfully");
-        setIsLoggingOut(false); // hide loader after success
-
+        if (setIsLoggingOut) {
+          setIsLoggingOut(false);
+        }
         navigate("/login");
       },
-      onError: () => {
-        toast.error("Logout failed. Please try again.");
+      onError: (error: any) => {
+        //                                                                                          if server says user is already logged out or session expired
+        const loggedOut =
+          error?.response?.data?.loggedOut || error?.data?.loggedOut || false;
 
-        setIsLoggingOut(false); // hide loader after failure
+        if (loggedOut) {
+          setUser(null);
+          setToken(null);
+
+          Cookies.remove("authToken");
+          Cookies.remove("authUser");
+
+          toast.error("Session expired. Please log in again.");
+          navigate("/login");
+        } else {
+          toast.error("Logout failed. Please try again.");
+        }
+        if (setIsLoggingOut) {
+          setIsLoggingOut(false);
+        }
       },
     });
   };
@@ -118,6 +159,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         isAuthenticated: !!user && !!token,
         login,
         logout,
+        logoutAuto,
         getToken,
         updateUser,
       }}

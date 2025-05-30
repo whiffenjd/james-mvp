@@ -1,16 +1,16 @@
 import { desc, eq, lt, or } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
-import { generateOTP } from '../Utils/Otp';
 import { OtpTable, UsersTable } from '../db/schema';
 import { db } from '../db/DbConnection';
 import { transporter } from '../configs/Nodemailer';
-import { otpTemplate } from '../Utils/OtpEmailVerifyTemplate';
 import { signToken } from './jwtService';
-import { deleteOldOtps } from '../Utils/DeleteOldOtps';
-import cache, { deleteCache, getCache, setCache, User } from '../Utils/Caching';
-import type { Role } from '../Utils/Caching';
 import { UserTokens } from '../db/schema/UserTokens';
+import { generateOTP } from '../Utils/Otp';
+import { deleteOldOtps } from '../Utils/DeleteOldOtps';
+import { deleteCache, getCache, setCache } from '../Utils/Caching';
+import { otpTemplate } from '../Utils/OtpEmailVerifyTemplate';
 import { deleteUserTokenByType } from '../Utils/DeleteTokenByType';
+import { Role, User } from '../Types/User';
 
 export const registerInvestor = async (name: string, email: string, password: string) => {
   // Step 1: Check if user already exists
@@ -93,7 +93,7 @@ export const loginUser = async (
     expiresAt,
     type: 'userAuth',
     userRole: user.role,
-  }) 
+  });
   deleteCache(`userProfile:${user.id}`);
   return { token, user };
 };

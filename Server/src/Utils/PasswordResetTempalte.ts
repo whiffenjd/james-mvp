@@ -1,8 +1,4 @@
-export const resetTemplate = (
-  otp: string,
-  resetLink: string,
-  name: string
-): string => `
+export const resetTemplate = (otp: string, resetLink: string, name: string): string => `
 <!DOCTYPE html>
 <html>
 <head>

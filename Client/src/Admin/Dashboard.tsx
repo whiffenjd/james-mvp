@@ -15,7 +15,7 @@ const AdminDashboard = () => {
   };
   return (
     <div className="min-h-screen bg-gray-100 flex ">
-      <Sidebar />
+      <Sidebar menuItems={menuItems} userRole="fundManager" />
       <div className="flex flex-col w-full ">
         <header className="bg-white shadow">
           <div className=" py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">

@@ -4,8 +4,8 @@ import { requestPasswordReset, resetPassword } from '../Services/ForgotPasswordS
 import { db } from '../db/DbConnection';
 import { UserTokens } from '../db/schema';
 import { eq } from 'drizzle-orm';
-import { deleteUserTokenByType } from '../Utils/DeleteTokenByType';
 import { deleteCache } from '../Utils/Caching';
+import { deleteUserTokenByType } from '../Utils/DeleteTokenByType';
 
 export const login = async (req: Request, res: Response) => {
   try {

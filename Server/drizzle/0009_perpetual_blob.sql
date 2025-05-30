@@ -1,0 +1,1 @@
+ALTER TABLE "users" ALTER COLUMN "selected_theme_id" DROP DEFAULT;

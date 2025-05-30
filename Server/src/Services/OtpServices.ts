@@ -1,11 +1,13 @@
-import { desc, eq } from "drizzle-orm";
-import { generateOTP } from "../Utils/Otp";
-import { OtpTable, UsersTable } from "../db/schema";
-import { db } from "../db/DbConnection";
-import { transporter } from "../configs/Nodemailer";
-import { otpTemplate } from "../Utils/OtpEmailVerifyTemplate";
-import { deleteOldOtps } from "../Utils/DeleteOldOtps";
-import cache, { deleteCache } from "../Utils/Caching";
+import { desc, eq } from 'drizzle-orm';
+
+import { OtpTable, UsersTable } from '../db/schema';
+import { db } from '../db/DbConnection';
+import { transporter } from '../configs/Nodemailer';
+import { deleteOldOtps } from '../Utils/DeleteOldOtps';
+import { deleteCache } from '../Utils/Caching';
+import { otpTemplate } from '../Utils/OtpEmailVerifyTemplate';
+import { generateOTP } from '../Utils/Otp';
+
 export const verifyInvestorOtp = async (email: string, otp: string) => {
   const [storedOtp] = await db
     .select()
@@ -19,7 +21,7 @@ export const verifyInvestorOtp = async (email: string, otp: string) => {
     new Date() > new Date(storedOtp.expiresAt) ||
     storedOtp.otp.trim() !== otp.trim()
   ) {
-    throw new Error("Invalid or expired OTP");
+    throw new Error('Invalid or expired OTP');
   }
 
   // Mark OTP as used
@@ -28,23 +30,20 @@ export const verifyInvestorOtp = async (email: string, otp: string) => {
     .set({ isUsed: true, verifiedAt: new Date() })
     .where(eq(OtpTable.id, storedOtp.id));
 
-  await db
-    .update(UsersTable)
-    .set({ isEmailVerified: true })
-    .where(eq(UsersTable.email, email));
+  await db.update(UsersTable).set({ isEmailVerified: true }).where(eq(UsersTable.email, email));
 
   deleteCache(`allUsers`);
   await deleteOldOtps(email);
 
-  return { message: "Email verified successfully" };
+  return { message: 'Email verified successfully' };
 };
 export const resendInvestorOtp = async (email: string) => {
   const user = await db.query.UsersTable.findFirst({
     where: eq(UsersTable.email, email),
   });
 
-  if (!user) throw new Error("User not found");
-  if (user.isEmailVerified) throw new Error("Email already verified");
+  if (!user) throw new Error('User not found');
+  if (user.isEmailVerified) throw new Error('Email already verified');
 
   await deleteOldOtps(email);
 
@@ -61,9 +60,9 @@ export const resendInvestorOtp = async (email: string) => {
   await transporter.sendMail({
     from: process.env.SMTP_FROM,
     to: email,
-    subject: "Resend OTP - Verify your email",
+    subject: 'Resend OTP - Verify your email',
     html: otpTemplate(otp, user.name),
   });
 
-  return { message: "OTP resent to email" };
+  return { message: 'OTP resent to email' };
 };

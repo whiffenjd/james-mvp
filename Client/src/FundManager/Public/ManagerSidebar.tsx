@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Building2 } from "lucide-react";
 import { useDashboardAssets } from "../../FundManager/hooks/Theme&AssetsHooks";
@@ -19,9 +19,6 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeItem, setActiveItem] = useState("");
-
-  // Fetch dashboard assets only for fund managers
-  const shouldFetchAssets = userRole === "fundManager";
   const {
     data: dashboardAssets,
     isLoading: assetsLoading,
@@ -29,7 +26,6 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
     refetch: refetchAssets,
   } = useDashboardAssets();
 
-  // Set active item based on current location
   useEffect(() => {
     const currentPath = location.pathname;
     const currentItem = menuItems.find(
@@ -44,26 +40,23 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
     }
   }, [location.pathname, menuItems]);
 
-  // Refetch assets when userRole changes or when component mounts for fund managers
   useEffect(() => {
-    if (shouldFetchAssets) {
+    if (userRole === "fundManager") {
       refetchAssets?.();
     }
-  }, [userRole, shouldFetchAssets, refetchAssets]);
+  }, [userRole, refetchAssets]);
 
   const handleItemClick = (item: MenuItem) => {
     setActiveItem(item.id);
     navigate(item.path);
   };
 
-  // Get logo and project info with proper loading and error handling
   const getLogoAndInfo = () => {
-    if (shouldFetchAssets) {
+    if (userRole === "fundManager") {
       if (assetsLoading) {
         return {
           logo: null,
           projectName: null,
-          projectDescription: null,
           isLoading: true,
         };
       }
@@ -72,7 +65,6 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
         return {
           logo: null,
           projectName: null,
-          projectDescription: null,
           isLoading: false,
         };
       }
@@ -80,7 +72,6 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
       return {
         logo: dashboardAssets.data.logoUrl,
         projectName: dashboardAssets.data.projectName,
-        // projectDescription: dashboardAssets.data.projectDescription,
         isLoading: false,
       };
     }
@@ -88,14 +79,12 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
     return {
       logo: null,
       projectName: null,
-      projectDescription: null,
       isLoading: false,
     };
   };
 
-  const { logo, projectName, projectDescription, isLoading } = getLogoAndInfo();
+  const { logo, projectName, isLoading } = getLogoAndInfo();
 
-  // Loading skeleton component
   const LoadingSkeleton = () => (
     <div className="space-y-2 animate-pulse">
       <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -103,33 +92,22 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
     </div>
   );
 
-  // Logo loading spinner
   const LogoLoader = () => (
     <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
       <div className="w-6 h-6 border-2 border-theme-sidebar-accent border-t-transparent rounded-full animate-spin"></div>
     </div>
   );
 
-  // Default logo fallback
-  const DefaultLogo = ({ showBuilding = true }: { showBuilding?: boolean }) => (
-    <>
-      {showBuilding && (
-        <div className="flex ">
-          <img src="/assets/logo.png" alt="" className="object-contain h-8" />
-        </div>
-      )}
-    </>
+  const DefaultLogo = () => (
+    <img src="/assets/logo.png" alt="" className="object-contain h-8" />
   );
 
   return (
-    <div className="w-full max-w-[302px] min-h-[calc(100vh-96px)] overflow-hidden ">
-      <div className="bg-theme-card p-6 flex flex-col h-full rounded-[40px] ">
-        {/* Logo and Project Info Section */}
+    <div className="w-full max-w-[302px] min-h-[calc(100vh-96px)] overflow-hidden">
+      <div className="bg-theme-card p-6 flex flex-col h-full rounded-[40px]">
         <div className="flex items-center mt-6 mb-10 gap-3">
-          {/* Logo */}
           <div className="flex-shrink-0">
-            {shouldFetchAssets ? (
-              // Fund Manager: Show custom logo with proper loading states
+            {userRole === "fundManager" ? (
               <>
                 {isLoading ? (
                   <LogoLoader />
@@ -139,8 +117,8 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                       src={logo}
                       alt="Project Logo"
                       className="w-full h-full object-contain"
+                      loading="lazy" // Enable lazy loading
                       onError={(e) => {
-                        // Fallback if image fails to load
                         const target = e.target as HTMLImageElement;
                         const parent = target.parentElement;
                         if (parent) {
@@ -160,13 +138,12 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                 )}
               </>
             ) : (
-              // Other roles: Show default logo
               <img
                 src="/assets/logo.png"
                 alt="Logo"
                 className="h-12 max-h-12 object-contain"
+                loading="lazy" // Enable lazy loading
                 onError={(e) => {
-                  // Fallback if default logo fails
                   const target = e.target as HTMLImageElement;
                   const parent = target.parentElement;
                   if (parent) {
@@ -182,24 +159,20 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
             )}
           </div>
 
-          {/* Project Info (only for fund managers) */}
-          {shouldFetchAssets && (
+          {userRole === "fundManager" && (
             <div className="flex-1 min-w-0">
               {isLoading ? (
                 <LoadingSkeleton />
               ) : (
-                <>
-                  <h3 className="text-theme-primary font-semibold text-sm leading-tight truncate">
-                    {projectName}
-                  </h3>
-                </>
+                <h3 className="text-theme-primary font-semibold text-sm leading-tight truncate">
+                  {projectName || "No Project Name"}
+                </h3>
               )}
             </div>
           )}
         </div>
 
-        {/* Error state for assets */}
-        {shouldFetchAssets && assetsError && !isLoading && (
+        {userRole === "fundManager" && assetsError && !isLoading && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-600 text-xs mb-2">
               Failed to load project assets
@@ -213,7 +186,6 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
           </div>
         )}
 
-        {/* Menu Items */}
         <div className="flex-1 space-y-4">
           {menuItems.map((item) => (
             <button
@@ -231,7 +203,6 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
           ))}
         </div>
 
-        {/* Bottom space */}
         <div className="h-32"></div>
       </div>
     </div>

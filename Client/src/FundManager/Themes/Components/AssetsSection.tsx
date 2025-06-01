@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Edit2, Upload, X } from "lucide-react";
 import type { UseMutationResult } from "@tanstack/react-query";
+import imageCompression from "browser-image-compression"; // Added for image compression
 import type {
   AssetFormData,
   DashboardAsset,
@@ -25,14 +26,51 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
     logo: null,
   });
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [isImageLoading, setIsImageLoading] = useState(false); // Added for image loading state
 
-  // Update form when dashboardAssets changes (for instant UI updates after delete)
+  // Update form when dashboardAssets changes
   useEffect(() => {
     if (!editingAsset && dashboardAssets?.data) {
-      // Update the preview when not editing
-      setLogoPreview(null);
+      setAssetForm({
+        projectName: dashboardAssets.data.projectName || "",
+        projectDescription: dashboardAssets.data.projectDescription || "",
+        logo: null,
+      });
+      setLogoPreview(dashboardAssets.data.logoUrl || null); // Set initial logo preview
     }
   }, [dashboardAssets, editingAsset]);
+
+  // Compress image before upload
+  const compressImage = async (file: File): Promise<File> => {
+    try {
+      const options = {
+        maxSizeMB: 1, // Limit to 1MB
+        maxWidthOrHeight: 800, // Resize to max 800px
+        useWebWorker: true,
+      };
+      return await imageCompression(file, options);
+    } catch (error) {
+      console.error("Image compression failed:", error);
+      return file; // Fallback to original file
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsImageLoading(true); // Start image loading
+      const compressedFile = await compressImage(file); // Compress image
+      setAssetForm((prev) => ({ ...prev, logo: compressedFile }));
+
+      // Create preview URL for the selected file
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setLogoPreview(event.target?.result as string);
+        setIsImageLoading(false); // End image loading
+      };
+      reader.readAsDataURL(compressedFile);
+    }
+  };
 
   const handleAssetSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,20 +89,6 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setAssetForm((prev) => ({ ...prev, logo: file }));
-
-      // Create preview URL for the selected file
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setLogoPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const startEditingAsset = () => {
     if (dashboardAssets?.data) {
       setAssetForm({
@@ -72,8 +96,7 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
         projectDescription: dashboardAssets.data.projectDescription || "",
         logo: null,
       });
-      // Keep the existing logo preview when starting to edit
-      setLogoPreview(null);
+      setLogoPreview(dashboardAssets.data.logoUrl || null); // Keep existing logo preview
     }
     setEditingAsset(true);
   };
@@ -91,7 +114,6 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
   const handleDelete = () => {
     deleteAssetMutation.mutate(undefined, {
       onSuccess: () => {
-        // Reset edit mode and form after successful delete
         setEditingAsset(false);
         setAssetForm({
           projectName: "",
@@ -111,13 +133,10 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
     }
   };
 
-  // Get the current logo to display
   const getCurrentLogo = () => {
     if (editingAsset) {
-      // In edit mode: show new preview if exists, otherwise show existing logo
       return logoPreview || dashboardAssets?.data?.logoUrl;
     }
-    // In view mode: show existing logo
     return dashboardAssets?.data?.logoUrl;
   };
 
@@ -142,13 +161,17 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
 
       {!editingAsset ? (
         <div className="flex gap-6">
-          {/* Logo Display - View Mode */}
-          <div className="w-52 h-[140px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-theme-card">
-            {currentLogo ? (
+          <div className="w-52 h-[140px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-theme-card relative">
+            {isImageLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : currentLogo ? (
               <img
                 src={currentLogo}
                 alt="Logo"
                 className="w-full h-full object-contain rounded-lg"
+                loading="lazy" // Enable lazy loading
               />
             ) : (
               <div className="text-center">
@@ -161,7 +184,6 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
             )}
           </div>
 
-          {/* Project Info Display - View Mode */}
           <div className="flex-1 flex flex-col">
             <input
               type="text"
@@ -181,7 +203,6 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
         </div>
       ) : (
         <form onSubmit={handleAssetSubmit} className="flex gap-6">
-          {/* Logo Upload - Edit Mode */}
           <div className="w-32 h-[140px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center relative bg-theme-card overflow-hidden">
             <input
               ref={fileInputRef}
@@ -191,14 +212,18 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
               className="hidden"
             />
 
-            {currentLogo ? (
+            {isImageLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : currentLogo ? (
               <div className="relative w-full h-full group">
                 <img
                   src={currentLogo}
                   alt="Logo"
                   className="w-full h-full object-contain rounded-lg"
+                  loading="lazy" // Enable lazy loading
                 />
-                {/* Overlay on hover */}
                 <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <button
                     type="button"
@@ -217,8 +242,6 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
                     </button>
                   )}
                 </div>
-
-                {/* New file indicator */}
                 {logoPreview && (
                   <div className="absolute top-1 right-1 text-xs bg-green-100 text-green-800 px-2 py-1 rounded shadow">
                     New
@@ -239,7 +262,6 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
             )}
           </div>
 
-          {/* Project Info Form - Edit Mode */}
           <div className="flex-1 flex flex-col">
             <input
               type="text"
@@ -267,15 +289,21 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
               required
             />
 
-            {/* Action Buttons */}
             <div className="flex gap-2 flex-wrap justify-between">
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  disabled={upsertAssetMutation.isPending}
-                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  disabled={upsertAssetMutation.isPending || isImageLoading}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                 >
-                  {upsertAssetMutation.isPending ? "Saving..." : "Save"}
+                  {upsertAssetMutation.isPending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save"
+                  )}
                 </button>
                 <button
                   type="button"
@@ -291,9 +319,16 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({
                   type="button"
                   onClick={handleDelete}
                   disabled={deleteAssetMutation.isPending}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                 >
-                  {deleteAssetMutation.isPending ? "Deleting..." : "Delete"}
+                  {deleteAssetMutation.isPending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
                 </button>
               )}
             </div>

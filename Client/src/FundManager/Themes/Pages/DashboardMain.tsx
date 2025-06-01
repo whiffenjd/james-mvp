@@ -5,6 +5,7 @@ import {
   dashboardAssetsApi,
   themesApi,
 } from "../../../API/Endpoints/FundManager/Themes&Asset";
+import type { CreateThemeData } from "../../Types/DashboardSettings";
 import { useAuth } from "../../../Context/AuthContext";
 import type { Theme } from "../../Types/DashboardSettings";
 import AssetsSection from "../Components/AssetsSection";
@@ -33,10 +34,11 @@ const DashboardSettings: React.FC = () => {
 
   // Clear cache when user changes
   useEffect(() => {
-    // This effect runs when the component mounts or user changes
-  }, [currentUser.userId]);
+    queryClient.removeQueries({ queryKey: dashboardAssetsQueryKey });
+    queryClient.removeQueries({ queryKey: themesQueryKey });
+  }, [currentUser.userId, queryClient]);
 
-  // Queries with user-specific keys and no stale data
+  // Queries with optimistic updates and refetching
   const { data: dashboardAssets, isLoading: assetsLoading } = useQuery({
     queryKey: dashboardAssetsQueryKey,
     queryFn: dashboardAssetsApi.get,
@@ -53,26 +55,72 @@ const DashboardSettings: React.FC = () => {
     refetchOnMount: "always",
   });
 
-  // Mutations with user-specific invalidation
+  // Mutations with optimistic updates
   const upsertAssetMutation = useMutation({
     mutationFn: dashboardAssetsApi.upsert,
+    onMutate: async (formData: FormData) => {
+      // Optimistic update
+      await queryClient.cancelQueries({ queryKey: dashboardAssetsQueryKey });
+      const previousAssets = queryClient.getQueryData(dashboardAssetsQueryKey);
+
+      const optimisticData = {
+        data: {
+          projectName: formData.get("projectName") as string,
+          projectDescription: formData.get("projectDescription") as string,
+          logoUrl: formData.get("logo")
+            ? URL.createObjectURL(formData.get("logo") as Blob)
+            : dashboardAssets?.data?.logoUrl,
+        },
+      };
+
+      queryClient.setQueryData(dashboardAssetsQueryKey, optimisticData);
+
+      return { previousAssets };
+    },
+    onError: (err, variables, context) => {
+      // Revert to previous state on error
+      queryClient.setQueryData(
+        dashboardAssetsQueryKey,
+        context?.previousAssets
+      );
+    },
     onSuccess: () => {
+      // Invalidate to refetch actual data
       queryClient.invalidateQueries({ queryKey: dashboardAssetsQueryKey });
     },
   });
 
   const deleteAssetMutation = useMutation({
     mutationFn: dashboardAssetsApi.delete,
+    onMutate: async () => {
+      // Optimistic update
+      await queryClient.cancelQueries({ queryKey: dashboardAssetsQueryKey });
+      const previousAssets = queryClient.getQueryData(dashboardAssetsQueryKey);
+
+      queryClient.setQueryData(dashboardAssetsQueryKey, { data: null });
+
+      return { previousAssets };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(
+        dashboardAssetsQueryKey,
+        context?.previousAssets
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: dashboardAssetsQueryKey });
     },
   });
 
-  const createThemeMutation = useMutation({
+  const createThemeMutation = useMutation<
+    { success: boolean; data: Theme },
+    Error,
+    CreateThemeData,
+    unknown
+  >({
     mutationFn: themesApi.create,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: themesQueryKey });
-      // Apply the newly created theme - this ensures it stays selected
       applyTheme(data.data[0]);
     },
   });
@@ -96,7 +144,6 @@ const DashboardSettings: React.FC = () => {
     setIsCreateThemeModalOpen(false);
   };
 
-  // Show loading immediately for new user data
   if (assetsLoading || themesLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -106,7 +153,7 @@ const DashboardSettings: React.FC = () => {
   }
 
   return (
-    <div className="  py-6 px-14">
+    <div className="py-6 px-14">
       <AssetsSection
         dashboardAssets={dashboardAssets}
         upsertAssetMutation={upsertAssetMutation}

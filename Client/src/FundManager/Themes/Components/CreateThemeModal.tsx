@@ -16,6 +16,7 @@ const CreateThemeModal: React.FC<CreateThemeModalProps> = ({
   createThemeMutation,
 }) => {
   const [themeForm, setThemeForm] = useState<CreateThemeData>({
+    name: "New Theme",
     dashboardBackground: "#14B8A6",
     cardBackground: "#FFFFFF",
     primaryText: "#000000",
@@ -29,6 +30,7 @@ const CreateThemeModal: React.FC<CreateThemeModalProps> = ({
       onSuccess: () => {
         onClose();
         setThemeForm({
+          name: "New Theme",
           dashboardBackground: "#14B8A6",
           cardBackground: "#FFFFFF",
           primaryText: "#000000",
@@ -42,6 +44,7 @@ const CreateThemeModal: React.FC<CreateThemeModalProps> = ({
   const handleClose = () => {
     onClose();
     setThemeForm({
+      name: "New Theme",
       dashboardBackground: "#14B8A6",
       cardBackground: "#FFFFFF",
       primaryText: "#000000",
@@ -70,6 +73,16 @@ const CreateThemeModal: React.FC<CreateThemeModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Theme Name</label>
+            <input
+              type="text"
+              value={themeForm.name}
+              onChange={(e) => updateThemeForm("name", e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium mb-2">
               Dashboard Background

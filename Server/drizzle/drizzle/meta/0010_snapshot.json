@@ -1,6 +1,6 @@
 {
-  "id": "ca31c79c-bf97-4c51-8b10-36d975aef56c",
-  "prevId": "d9f77c44-ae11-4e70-831e-06bc83924c66",
+  "id": "ab38cd2d-6d29-4a5d-8a82-b7aa8f257cde",
+  "prevId": "54a221b3-315a-4d86-94e5-14cd3411d5f6",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -394,12 +394,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "name": {
-          "name": "name",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
         "dashboard_background": {
           "name": "dashboard_background",
           "type": "varchar",
@@ -473,6 +467,12 @@
         "rejection_note": {
           "name": "rejection_note",
           "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_step": {
+          "name": "current_step",
+          "type": "varchar(50)",
           "primaryKey": false,
           "notNull": false
         },

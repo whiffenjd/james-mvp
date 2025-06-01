@@ -133,7 +133,7 @@ const ThemesSection: React.FC<ThemesSectionProps> = ({
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-theme-primary">
-                    {theme.id ? "Custom Theme" : "Default Theme"}
+                    {theme.name}
                   </p>
                   {isSelected && (
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>

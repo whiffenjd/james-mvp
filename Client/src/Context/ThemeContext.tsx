@@ -1,4 +1,4 @@
-// Context/ThemeContext.tsx - Fixed with backend priority and auto-sync
+// Context/ThemeContext.tsx - Fixed with corrected selectedTheme.selectedThemeId logic
 import React, {
   createContext,
   useContext,
@@ -19,6 +19,7 @@ import { useAuth } from "./AuthContext";
 export interface Theme {
   id?: string;
   userId?: string;
+  name?: string;
   dashboardBackground: string;
   cardBackground: string;
   primaryText: string;
@@ -38,10 +39,16 @@ interface ThemeContextType {
     availableThemes?: Theme[]
   ) => void;
   isLoading: boolean;
+  isInitializing: boolean;
+  isApplyingTheme: boolean;
+  isThemeReady: boolean;
   error: string | null;
 }
 
 const defaultTheme: Theme = {
+  id: "default",
+  userId: "null",
+  name: "Default",
   dashboardBackground: "#14B8A6", // teal-500
   cardBackground: "#FFFFFF",
   primaryText: "#000000",
@@ -60,15 +67,24 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
   dashboardType = "fundManager",
 }) => {
-  const [currentTheme, setCurrentTheme] = useState<Theme>(defaultTheme);
-  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
   const { user } = useAuth();
   const userId = user?.id;
-  const userSelectedThemeId = user?.selectedThemeId; // Get from user object
+
+  // FIXED: Extract selectedThemeId from user.selectedTheme object
+  const userSelectedThemeId = user?.selectedTheme;
+  console.log("User selectedTheme object:", user?.selectedTheme);
+  console.log("Extracted selectedThemeId:", userSelectedThemeId);
+
+  // Enhanced loading states
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isApplyingTheme, setIsApplyingTheme] = useState(false);
+  const [isThemeReady, setIsThemeReady] = useState(false);
 
   // Track initialization
   const isInitialized = useRef(false);
   const hasSetInitialTheme = useRef(false);
+  const themeApplicationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastProcessedUserThemeId = useRef<string | null>(null);
 
   // TanStack Query hooks
   const {
@@ -78,15 +94,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     refetch: refetchSelectedTheme,
   } = useSelectedTheme();
 
-  const { data: allThemesData } = useThemes(); // Get all themes
+  const { data: allThemesData, isLoading: isAllThemesLoading } = useThemes();
   const applyThemeMutation = useApplyTheme();
-
-  // Get specific theme by ID when we have a selected theme ID
-  const { data: specificThemeData, isLoading: isSpecificThemeLoading } =
-    useThemeById(
-      selectedThemeId || userSelectedThemeId || "",
-      !!(selectedThemeId || userSelectedThemeId)
-    );
 
   // Generate user-specific localStorage key
   const getUserThemeKey = useCallback(
@@ -112,6 +121,37 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     },
     [getUserThemeKey]
   );
+
+  const [currentTheme, setCurrentTheme] = useState<Theme>(() => {
+    const cachedTheme =
+      typeof window !== "undefined" && user?.id
+        ? loadThemeFromStorage(user.id)
+        : null;
+    return cachedTheme || defaultTheme;
+  });
+
+  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(() => {
+    // Priority: user's selectedTheme > localStorage cache > null
+    if (userSelectedThemeId) {
+      return userSelectedThemeId;
+    }
+
+    const cachedTheme =
+      typeof window !== "undefined" && user?.id
+        ? loadThemeFromStorage(user.id)
+        : null;
+    return cachedTheme?.selectedThemeId || null;
+  });
+
+  // Only fetch specific theme if we have an ID and it's different from current theme
+  const shouldFetchSpecificTheme = !!(
+    selectedThemeId &&
+    selectedThemeId !== currentTheme?.id &&
+    selectedThemeId !== "default"
+  );
+
+  const { data: specificThemeData, isLoading: isSpecificThemeLoading } =
+    useThemeById(selectedThemeId || "", shouldFetchSpecificTheme);
 
   // Save theme to localStorage (as cache only)
   const saveThemeToStorage = useCallback(
@@ -139,30 +179,51 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     []
   );
 
-  // Apply theme function
+  // Enhanced apply theme function with loading states
   const applyTheme = useCallback(
     async (theme: Theme) => {
       console.log("Applying theme:", theme);
 
-      // Always update local state immediately
-      setCurrentTheme(theme);
-      setSelectedThemeId(theme.id || null);
+      // Start theme application loading
+      setIsApplyingTheme(true);
+      setIsThemeReady(false);
 
-      // Cache to localStorage
-      if (dashboardType === "fundManager" && userId) {
-        saveThemeToStorage(userId, theme, theme.id);
+      // Clear any existing timeout
+      if (themeApplicationTimeoutRef.current) {
+        clearTimeout(themeApplicationTimeoutRef.current);
+      }
 
-        // Save to backend
-        try {
-          if (theme.id) {
-            await applyThemeMutation.mutateAsync({ themeId: theme.id });
-          } else {
-            // Clear selection for default theme
-            await applyThemeMutation.mutateAsync({ themeId: null });
+      try {
+        // Always update local state immediately
+        setCurrentTheme(theme);
+        setSelectedThemeId(theme.id || null);
+
+        // Cache to localStorage
+        if (dashboardType === "fundManager" && userId) {
+          saveThemeToStorage(userId, theme, theme.id);
+
+          // Save to backend
+          try {
+            if (theme.id && theme.id !== "default") {
+              await applyThemeMutation.mutateAsync({ themeId: theme.id });
+            } else {
+              // Clear selection for default theme
+              await applyThemeMutation.mutateAsync({ themeId: null });
+            }
+          } catch (error) {
+            console.error("Failed to save theme to database:", error);
           }
-        } catch (error) {
-          console.error("Failed to save theme to database:", error);
         }
+
+        // Add a small delay to ensure theme is fully applied
+        themeApplicationTimeoutRef.current = setTimeout(() => {
+          setIsThemeReady(true);
+          setIsApplyingTheme(false);
+        }, 300);
+      } catch (error) {
+        console.error("Error applying theme:", error);
+        setIsApplyingTheme(false);
+        setIsThemeReady(true);
       }
     },
     [dashboardType, userId, saveThemeToStorage, applyThemeMutation]
@@ -175,14 +236,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         console.log("Deleted theme was selected, switching to fallback");
 
         let fallbackTheme: Theme;
-        let fallbackThemeId: string | null = null;
 
         if (availableThemes && availableThemes.length > 0) {
           fallbackTheme = availableThemes[0];
-          fallbackThemeId = fallbackTheme.id || null;
         } else {
           fallbackTheme = defaultTheme;
-          fallbackThemeId = null;
         }
 
         await applyTheme(fallbackTheme);
@@ -191,17 +249,61 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     [selectedThemeId, applyTheme]
   );
 
-  // Main effect to handle theme initialization and sync
+  // Main effect: Handle user's selectedTheme changes (highest priority)
   useEffect(() => {
-    if (dashboardType !== "fundManager" || !userId) return;
+    if (dashboardType !== "fundManager" || !userId) {
+      setIsInitializing(false);
+      setIsThemeReady(true);
+      return;
+    }
 
-    // Skip if we've already set the initial theme
-    if (hasSetInitialTheme.current) return;
+    // If we have user's selectedThemeId and it's different from current, apply it immediately
+    if (
+      userSelectedThemeId &&
+      userSelectedThemeId !== lastProcessedUserThemeId.current &&
+      allThemesData?.success &&
+      allThemesData.data
+    ) {
+      console.log("Processing user's selectedThemeId1:", userSelectedThemeId);
 
+      setIsApplyingTheme(true);
+      setIsThemeReady(false);
+
+      const selectedTheme = findThemeById(
+        userSelectedThemeId,
+        allThemesData.data
+      );
+
+      if (selectedTheme) {
+        console.log("Found theme from user selection2:", selectedTheme);
+        setCurrentTheme(selectedTheme);
+        setSelectedThemeId(userSelectedThemeId);
+        saveThemeToStorage(userId, selectedTheme, userSelectedThemeId);
+        lastProcessedUserThemeId.current = userSelectedThemeId;
+        hasSetInitialTheme.current = true;
+
+        setTimeout(() => {
+          setIsApplyingTheme(false);
+          setIsThemeReady(true);
+          setIsInitializing(false);
+        }, 200);
+        return;
+      }
+    }
+
+    // Skip if we've already set the initial theme and user has no selectedTheme
+    if (hasSetInitialTheme.current && isThemeReady && !userSelectedThemeId) {
+      setIsInitializing(false);
+      return;
+    }
+
+    // Initialize theme when we don't have user's selectedTheme
     const initializeTheme = async () => {
-      console.log("Initializing theme for user:", userId);
-      console.log("User selected theme ID:", userSelectedThemeId);
-      console.log("All themes data available:", !!allThemesData?.data);
+      console.log("Initializing theme for user3:", userId);
+      console.log("All themes data availabl4:", !!allThemesData?.data);
+
+      setIsInitializing(true);
+      setIsThemeReady(false);
 
       // Wait for themes data to be available before proceeding
       if (!allThemesData?.success || !allThemesData.data) {
@@ -210,56 +312,41 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       }
 
       try {
-        // Priority 1: Use user's selectedThemeId if available
-        if (userSelectedThemeId) {
-          console.log("Using user's selected theme ID from user object");
-
-          const selectedTheme = findThemeById(
-            userSelectedThemeId,
-            allThemesData.data
-          );
-          if (selectedTheme) {
-            console.log("Found theme from user's selection:", selectedTheme);
-            setCurrentTheme(selectedTheme);
-            setSelectedThemeId(userSelectedThemeId);
-            saveThemeToStorage(userId, selectedTheme, userSelectedThemeId);
-            hasSetInitialTheme.current = true;
-            return;
-          } else {
-            console.log("User's selected theme not found in available themes");
-          }
-        }
-
-        // Priority 2: Fetch from backend if user doesn't have selectedThemeId
-        console.log("Fetching theme from backend...");
-        const { data: backendThemeData } = await refetchSelectedTheme();
-        if (
-          backendThemeData?.success &&
-          backendThemeData.data?.selectedThemeId
-        ) {
-          console.log(
-            "Using theme from backend:",
-            backendThemeData.data.selectedThemeId
-          );
-
-          const selectedTheme = findThemeById(
-            backendThemeData.data.selectedThemeId,
-            allThemesData.data
-          );
-          if (selectedTheme) {
-            setCurrentTheme(selectedTheme);
-            setSelectedThemeId(backendThemeData.data.selectedThemeId);
-            saveThemeToStorage(
-              userId,
-              selectedTheme,
+        // Priority 1: Fetch from backend if user doesn't have selectedTheme in profile
+        if (!userSelectedThemeId) {
+          console.log("Fetching theme from backend...");
+          const { data: backendThemeData } = await refetchSelectedTheme();
+          console.log("Backend theme data:", backendThemeData);
+          if (
+            backendThemeData?.success &&
+            backendThemeData.data?.selectedThemeId
+          ) {
+            console.log(
+              "Using theme from backend:",
               backendThemeData.data.selectedThemeId
             );
-            hasSetInitialTheme.current = true;
-            return;
+
+            const selectedTheme = findThemeById(
+              backendThemeData.data.selectedThemeId,
+              allThemesData.data
+            );
+            if (selectedTheme) {
+              setCurrentTheme(selectedTheme);
+              setSelectedThemeId(backendThemeData.data.selectedThemeId);
+              saveThemeToStorage(
+                userId,
+                selectedTheme,
+                backendThemeData.data.selectedThemeId
+              );
+              hasSetInitialTheme.current = true;
+              setIsInitializing(false);
+              setIsThemeReady(true);
+              return;
+            }
           }
         }
 
-        // Priority 3: Check localStorage cache
+        // Priority 2: Check localStorage cache
         const localTheme = loadThemeFromStorage(userId);
         if (localTheme && localTheme.selectedThemeId) {
           console.log("Using theme from localStorage cache");
@@ -271,37 +358,46 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
             setCurrentTheme(cachedTheme);
             setSelectedThemeId(localTheme.selectedThemeId);
             hasSetInitialTheme.current = true;
+            setIsInitializing(false);
+            setIsThemeReady(true);
             return;
           }
         }
 
-        // Priority 4: Use default theme
-        console.log("Using default theme");
+        // Priority 3: Use default theme
+        console.log("Using default theme55");
         setCurrentTheme(defaultTheme);
         setSelectedThemeId(null);
         hasSetInitialTheme.current = true;
+        setIsInitializing(false);
+        setIsThemeReady(true);
       } catch (error) {
         console.error("Error initializing theme:", error);
         // Fallback to default theme on error
         setCurrentTheme(defaultTheme);
         setSelectedThemeId(null);
         hasSetInitialTheme.current = true;
+        setIsInitializing(false);
+        setIsThemeReady(true);
       } finally {
         isInitialized.current = true;
       }
     };
 
-    // Initialize theme
-    initializeTheme();
+    // Only initialize if we haven't processed user's theme and don't have user's selectedTheme
+    if (!userSelectedThemeId && !hasSetInitialTheme.current) {
+      initializeTheme();
+    }
   }, [
     userId,
     dashboardType,
     userSelectedThemeId,
-    allThemesData, // This will trigger when themes are loaded
+    allThemesData,
     findThemeById,
     loadThemeFromStorage,
     saveThemeToStorage,
     refetchSelectedTheme,
+    isThemeReady,
   ]);
 
   // Effect to handle specific theme loading when we have an ID but not the theme data
@@ -311,14 +407,24 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       specificThemeData.data &&
       !isSpecificThemeLoading &&
       selectedThemeId &&
-      selectedThemeId === specificThemeData.data.id
+      selectedThemeId === specificThemeData.data.id &&
+      currentTheme.id !== specificThemeData.data.id
     ) {
       console.log("Loading specific theme data:", specificThemeData.data);
+      setIsApplyingTheme(true);
+      setIsThemeReady(false);
+
       setCurrentTheme(specificThemeData.data);
 
       if (userId) {
         saveThemeToStorage(userId, specificThemeData.data, selectedThemeId);
       }
+
+      // Mark theme as ready after a brief delay
+      setTimeout(() => {
+        setIsApplyingTheme(false);
+        setIsThemeReady(true);
+      }, 200);
     }
   }, [
     specificThemeData,
@@ -326,57 +432,51 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     selectedThemeId,
     userId,
     saveThemeToStorage,
+    currentTheme.id,
   ]);
 
   // Handle user login/logout and theme updates
   useEffect(() => {
-    if (!userId) {
-      console.log("User logged out, resetting theme");
-      setCurrentTheme(defaultTheme);
-      setSelectedThemeId(null);
-      isInitialized.current = false;
-      hasSetInitialTheme.current = false;
-    } else if (userId && !hasSetInitialTheme.current) {
+    // if (!userId) {
+    //   console.log("User logged out, resetting theme");
+    //   setCurrentTheme(defaultTheme);
+    //   setSelectedThemeId(null);
+    //   setIsInitializing(false);
+    //   setIsThemeReady(true);
+    //   isInitialized.current = false;
+    //   hasSetInitialTheme.current = false;
+    //   lastProcessedUserThemeId.current = null;
+    // } else
+
+    if (userId && !hasSetInitialTheme.current) {
       // User just logged in, reset flags to trigger theme initialization
       console.log("User logged in, preparing for theme initialization");
+      setIsInitializing(true);
+      setIsThemeReady(false);
       isInitialized.current = false;
       hasSetInitialTheme.current = false;
+      lastProcessedUserThemeId.current = null;
     }
   }, [userId]);
 
-  // Watch for changes in user's selectedThemeId (important for first login)
+  // Cleanup timeout on unmount
   useEffect(() => {
-    if (
-      dashboardType === "fundManager" &&
-      userId &&
-      userSelectedThemeId &&
-      allThemesData?.success &&
-      allThemesData.data &&
-      (selectedThemeId !== userSelectedThemeId || !hasSetInitialTheme.current)
-    ) {
-      console.log("User selectedThemeId changed or first load, updating theme");
-
-      const selectedTheme = findThemeById(
-        userSelectedThemeId,
-        allThemesData.data
-      );
-      if (selectedTheme) {
-        console.log("Applying theme from user object:", selectedTheme);
-        setCurrentTheme(selectedTheme);
-        setSelectedThemeId(userSelectedThemeId);
-        saveThemeToStorage(userId, selectedTheme, userSelectedThemeId);
-        hasSetInitialTheme.current = true;
+    return () => {
+      if (themeApplicationTimeoutRef.current) {
+        clearTimeout(themeApplicationTimeoutRef.current);
       }
-    }
-  }, [
-    userId,
-    userSelectedThemeId,
-    allThemesData,
-    selectedThemeId,
-    dashboardType,
-    findThemeById,
-    saveThemeToStorage,
-  ]);
+    };
+  }, []);
+
+  // Calculate comprehensive loading state
+  const isLoading =
+    isThemeLoading ||
+    applyThemeMutation.isPending ||
+    isSpecificThemeLoading ||
+    isAllThemesLoading ||
+    isInitializing ||
+    isApplyingTheme ||
+    !isThemeReady;
 
   const contextValue: ThemeContextType = {
     currentTheme,
@@ -384,8 +484,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     setCurrentTheme,
     applyTheme,
     handleThemeDeleted,
-    isLoading:
-      isThemeLoading || applyThemeMutation.isPending || isSpecificThemeLoading,
+    isLoading,
+    isInitializing,
+    isApplyingTheme,
+    isThemeReady,
     error: themeError?.message || applyThemeMutation.error?.message || null,
   };
 
@@ -402,4 +504,24 @@ export const useTheme = (): ThemeContextType => {
     throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;
+};
+
+// Utility component for theme-aware loading
+export const ThemeLoader: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const { isLoading, isThemeReady } = useTheme();
+
+  if (isLoading || !isThemeReady) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-90 backdrop-blur-sm">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+          <p className="text-gray-600 text-sm">Loading theme...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
 };

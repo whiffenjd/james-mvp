@@ -6,6 +6,8 @@ export interface DashboardAsset {
 
 export interface Theme {
   id?: string;
+  userId?: string;
+  name?: string;
   dashboardBackground: string;
   cardBackground: string;
   primaryText: string;
@@ -14,6 +16,7 @@ export interface Theme {
 }
 
 export interface CreateThemeData {
+  name: string;
   dashboardBackground: string;
   cardBackground: string;
   primaryText: string;

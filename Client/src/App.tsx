@@ -20,7 +20,7 @@ import { useAuth } from "./Context/AuthContext";
 import InvestorLayout from "./Investor/Layout";
 import DashboardSettings from "./FundManager/Themes/Pages/DashboardMain";
 import FundManagerLayout from "./FundManager/Layout/FundManagerLayout";
-import { ThemeProvider } from "./Context/ThemeContext";
+import { ThemeLoader, ThemeProvider } from "./Context/ThemeContext";
 import "./App.css";
 import ThemeContainer from "./FundManager/Themes/Components/ThemeContainer";
 import Accounts from "./FundManager/Themes/Pages/Accounts";
@@ -74,9 +74,11 @@ function App() {
               path="/fundmanager/dashboard"
               element={
                 <ThemeProvider dashboardType="fundManager">
-                  <ThemeContainer className="min-h-screen">
-                    <FundManagerLayout />
-                  </ThemeContainer>
+                  <ThemeLoader>
+                    <ThemeContainer className="min-h-screen">
+                      <FundManagerLayout />
+                    </ThemeContainer>
+                  </ThemeLoader>
                 </ThemeProvider>
               }
             >

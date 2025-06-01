@@ -3,3 +3,4 @@ export * from './Otp';
 export * from './UserTokens';
 export * from './Themes';
 export * from './DashboardAssets';
+export * from './onboarding';

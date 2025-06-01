@@ -22,7 +22,7 @@ export interface User {
   isEmailVerified: boolean;
   isActive: boolean;
   metadata: Record<string, any>;
-  selectedThemeId?: string | null;
+  selectedTheme?: string | null;
   createdAt: string;
   updatedAt: string;
 }

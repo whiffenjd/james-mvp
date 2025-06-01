@@ -16,6 +16,8 @@ const FundManagerLayout = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { isLoading, isInitializing, isApplyingTheme, isThemeReady } =
+    useTheme();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -46,7 +48,24 @@ const FundManagerLayout = () => {
       path: "/fundmanager/dashboard/settings", // This matches your nested route
     },
   ];
-
+  // if (isLoading || isInitializing || isApplyingTheme) {
+  //   return (
+  //     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-95 backdrop-blur-sm">
+  //       <div className="flex flex-col items-center space-y-4">
+  //         <div className="relative">
+  //           <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200"></div>
+  //           <div className="animate-spin rounded-full h-16 w-16 border-4 border-teal-500 border-t-transparent absolute inset-0"></div>
+  //         </div>
+  //         <div className="text-center">
+  //           <p className="text-gray-700 font-medium">
+  //             {isInitializing ? "Initializing theme..." : "Applying theme..."}
+  //           </p>
+  //           <p className="text-gray-500 text-sm mt-1">Please wait</p>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
   return (
     <div
       className="h-full px-7 py-12 flex gap-9"

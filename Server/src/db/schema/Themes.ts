@@ -3,6 +3,7 @@ import { pgTable, uuid, varchar, timestamp } from 'drizzle-orm/pg-core';
 export const themes = pgTable('themes', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').notNull(),
+  name: varchar('name').notNull(),
   dashboardBackground: varchar('dashboard_background').notNull(),
   cardBackground: varchar('card_background').notNull(),
   primaryText: varchar('primary_text').notNull(),

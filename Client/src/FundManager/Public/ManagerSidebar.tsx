@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useDashboardAssets } from "../../FundManager/hooks/Theme&AssetsHooks";
+import {
+  useDashboardAssets,
+  useClearUserCache,
+} from "../../FundManager/hooks/Theme&AssetsHooks";
+import { useAuth } from "../../Context/AuthContext";
 
 interface MenuItem {
   id: string;
@@ -17,7 +21,9 @@ interface SidebarProps {
 const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [activeItem, setActiveItem] = useState("");
+  const clearUserCache = useClearUserCache();
 
   const {
     data: dashboardAssets,
@@ -25,6 +31,16 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
     error: assetsError,
     refetch: refetchAssets,
   } = useDashboardAssets();
+
+  // Clear cache when user changes (login/logout)
+  useEffect(() => {
+    const currentUserId = user?.id;
+
+    // Clear cache when user changes or logs out
+    if (!currentUserId) {
+      clearUserCache();
+    }
+  }, [user?.id, clearUserCache]);
 
   useEffect(() => {
     const currentPath = location.pathname;
@@ -40,13 +56,12 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
     }
   }, [location.pathname, menuItems]);
 
+  // Force refetch assets when user role changes and user is fund manager
   useEffect(() => {
-    if (userRole === "fundManager") {
+    if (userRole === "fundManager" && user?.id) {
       refetchAssets?.();
     }
-  }, [userRole, refetchAssets]);
-
-  // Remove the problematic subscription effect
+  }, [userRole, user?.id, refetchAssets]);
 
   const handleItemClick = (item: MenuItem) => {
     setActiveItem(item.id);
@@ -116,7 +131,7 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                 ) : logo ? (
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                     <img
-                      key={logo} // Add key to force re-render when logo changes
+                      key={`${logo}-${user?.id}`} // Force re-render when logo or user changes
                       src={logo}
                       alt="Project Logo"
                       className="w-full h-full object-contain"
@@ -168,10 +183,10 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                 <LoadingSkeleton />
               ) : (
                 <h3
-                  key={projectName} // Add key to force re-render when project name changes
+                  key={`${projectName}-${user?.id}`} // Force re-render when project name or user changes
                   className="text-theme-primary font-semibold text-sm leading-tight truncate"
                 >
-                  {projectName}
+                  {projectName || "Project Name"}
                 </h3>
               )}
             </div>

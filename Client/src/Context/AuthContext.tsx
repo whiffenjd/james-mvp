@@ -107,7 +107,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     Cookies.set("authUser", JSON.stringify(userData.user), {
       expires: COOKIE_EXPIRATION_DAYS,
     });
-
+    queryClient.invalidateQueries({
+      queryKey: ["dashboardAssets", user?.id],
+    });
     // Trigger theme reset and refresh for new user
     // Use setTimeout to ensure auth state is fully updated before theme initialization
     setTimeout(() => {
@@ -149,6 +151,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           performLogoutCleanup();
 
           queryClient.removeQueries({ queryKey: dashboardAssetsQueryKey });
+          queryClient.invalidateQueries({
+            queryKey: ["dashboardAssets", user?.id],
+          });
           // localStorage.removeItem(getUserThemeKey(user?.id || ""));
           toast.success("Logged out successfully");
           if (setIsLoggingOut) {

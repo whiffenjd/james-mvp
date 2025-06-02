@@ -14,7 +14,7 @@ export const useDashboardAssets = () => {
     queryKey: dashboardAssetsQueryKey,
     queryFn: dashboardAssetsApi.get,
     staleTime: 0,
-    gcTime: 5 * 60 * 1000,
+    gcTime: 0,
   });
 };
 
@@ -164,4 +164,17 @@ export const useClearTheme = () => {
       console.error("Error clearing theme:", error);
     },
   });
+};
+export const useClearUserCache = () => {
+  const queryClient = useQueryClient();
+
+  return (userId?: string) => {
+    if (userId) {
+      // Clear specific user's cache
+      queryClient.removeQueries({ queryKey: ["dashboardAssets", userId] });
+    } else {
+      // Clear all cache if no specific user
+      queryClient.clear();
+    }
+  };
 };

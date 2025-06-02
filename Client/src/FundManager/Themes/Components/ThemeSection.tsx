@@ -65,8 +65,8 @@ const ThemesSection: React.FC<ThemesSectionProps> = ({
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
+    <div className="h-full ">
+      <div className="flex items-center justify-between mb-4 h-full">
         <div className="flex flex-col gap-y-2">
           <h2 className="text-xl font-semibold text-theme-primary">
             Color Themes
@@ -81,17 +81,17 @@ const ThemesSection: React.FC<ThemesSectionProps> = ({
           Create Theme
         </button>
       </div>
-      <div className="flex flex-col gap-y-2">
+      <div className="flex flex-col gap-y-2  ]">
         <h2 className="text-sm font-semibold text-theme-secondary mb-2">
           Preferences
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex gap-2 flex-wrap h-[40vh] overflow-y-auto">
           {themes?.data?.map((theme) => {
             const isSelected = isThemeSelected(theme);
             return (
               <div
                 key={theme.id}
-                className={`border-2 rounded-lg p-4 cursor-pointer transition-all relative group ${
+                className={`w-[30%] border-2 rounded-lg p-4 cursor-pointer transition-all relative group ${
                   isSelected
                     ? "border-green-500 ring-2 ring-green-200"
                     : "border-gray-200 hover:border-gray-300"

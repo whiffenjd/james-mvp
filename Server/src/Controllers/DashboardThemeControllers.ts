@@ -54,7 +54,7 @@ export class ThemeController {
     });
   };
 
-  getById = async (req: Request, res: Response) => {
+  getThemeById = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     const { id } = req.params;
     if (!userId) {
@@ -71,7 +71,7 @@ export class ThemeController {
     });
   };
 
-  list = async (req: Request, res: Response) => {
+  listSpecificUserThemes = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) {
       return res.status(400).json({
@@ -124,7 +124,7 @@ export class ThemeController {
         success: true,
         message: result.message,
         data: {
-          selectedThemeId: result.selectedThemeId,
+          selectedThemeId: result.selectedTheme,
         },
       });
     } catch (error) {
@@ -141,17 +141,17 @@ export class ThemeController {
    */
   getSelectedTheme = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const { themeId } = req.body;
 
-      if (!userId) {
+      if (!themeId) {
         res.status(401).json({
           success: false,
-          error: 'Authentication required',
+          error: 'Theme ID is required',
         });
         return;
       }
 
-      const result = await this.themeService.getSelectedTheme(userId);
+      const result = await this.themeService.getSelectedTheme(themeId);
 
       if (!result.success) {
         res.status(400).json(result);
@@ -160,9 +160,7 @@ export class ThemeController {
 
       res.status(200).json({
         success: true,
-        data: {
-          selectedThemeId: result.selectedThemeId,
-        },
+        selectedTheme: result.selectedTheme,
       });
     } catch (error) {
       console.error('ThemeController - getSelectedTheme error:', error);

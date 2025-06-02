@@ -29,3 +29,21 @@ export interface AssetFormData {
   projectDescription: string;
   logo: File | null;
 }
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: "admin" | "fundmanager" | "investor";
+  isEmailVerified: boolean;
+  isActive: boolean;
+  metadata: {
+    assignedFundManagerId?: string;
+    assignmentDate?: string;
+    lastUnassignmentDate?: string;
+    assignmentCount?: number;
+    [key: string]: any;
+  };
+  assignedFundManagerId?: string | null; // For backward compatibility
+  createdAt: string;
+  updatedAt: string;
+}

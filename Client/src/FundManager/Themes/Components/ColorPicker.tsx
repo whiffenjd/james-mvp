@@ -1,4 +1,16 @@
-const ColorPicker = ({ color, onChange, label, disabled = false }) => {
+type ColorPickerProps = {
+  color: string;
+  onChange: (color: string) => void;
+  label: string;
+  disabled?: boolean;
+};
+
+const ColorPicker = ({
+  color,
+  onChange,
+  label,
+  disabled = false,
+}: ColorPickerProps) => {
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-medium text-gray-700">{label}</label>

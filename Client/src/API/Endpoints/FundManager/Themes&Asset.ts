@@ -1,7 +1,7 @@
-// services/api.ts
+// Updated services/api.ts
 import axiosPrivate from "../../AxiosInstances/PrivateAxiosInstance";
 
-// Types
+// Types (make sure these match your updated types)
 export interface DashboardAsset {
   id?: string;
   userId?: string;
@@ -14,6 +14,7 @@ export interface DashboardAsset {
 export interface Theme {
   id?: string;
   userId?: string;
+  name?: string;
   dashboardBackground: string;
   cardBackground: string;
   primaryText: string;
@@ -23,32 +24,35 @@ export interface Theme {
 }
 
 export interface CreateThemeData {
+  name?: string;
   dashboardBackground: string;
   cardBackground: string;
   primaryText: string;
   secondaryText: string;
   sidebarAccentText: string;
 }
-interface ApplyThemeRequest {
+
+export interface ApplyThemeRequest {
+  themeId: string;
+}
+
+interface FetchSelectedThemeRequest {
   themeId: string;
 }
 
 interface ThemeApiResponse {
   success: boolean;
   message?: string;
-  data?: {
-    selectedThemeId?: string;
-  };
+  data?: Theme;
   error?: string;
 }
 
 interface SelectedThemeResponse {
   success: boolean;
-  data?: {
-    selectedThemeId?: string;
-  };
+  data?: Theme;
   error?: string;
 }
+
 // Dashboard Assets API
 export const dashboardAssetsApi = {
   upsert: async (data: FormData) => {
@@ -120,6 +124,7 @@ export const themesApi = {
     const response = await axiosPrivate.get("/dashboard/theme/listThemes");
     return response.data;
   },
+
   applySelectedTheme: async (
     request: ApplyThemeRequest
   ): Promise<ThemeApiResponse> => {
@@ -130,10 +135,17 @@ export const themesApi = {
     return response.data;
   },
 
-  // Get selected theme
-  getSelectedTheme: async (): Promise<SelectedThemeResponse> => {
-    const response = await axiosPrivate.get("/dashboard/theme/selectedTheme");
-    return response.data;
+  // Get selected theme by ID
+  getSelectedTheme: async (
+    request: FetchSelectedThemeRequest
+  ): Promise<Theme> => {
+    const response = await axiosPrivate.post(
+      "/dashboard/theme/selectedTheme",
+      request
+    );
+
+    // Access the actual theme object inside the nested structure
+    return response.data.selectedTheme;
   },
 
   // Clear selected theme

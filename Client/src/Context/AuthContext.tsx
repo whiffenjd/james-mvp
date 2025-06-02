@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useLogout } from "../API/Endpoints/Auth/AuthApis";
 import { QueryClient } from "@tanstack/react-query";
+import { themeResetService } from "../FundManager/Themes/Components/ThemeResetService";
 
 // Types for our auth data
 export interface User {
@@ -31,6 +32,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isAuthInitialized: boolean; // New flag to track auth initialization
   login: (userData: { user: User; token: string }) => void;
   logout: (
     setIsLoggingOut: React.Dispatch<React.SetStateAction<boolean>>
@@ -50,92 +52,130 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isAuthInitialized, setIsAuthInitialized] = useState(false);
   const navigate = useNavigate();
   const logoutMutation = useLogout();
+  const getUserThemeKey = useCallback(
+    (userId: string) => `theme_${userId}`,
+    []
+  );
 
-  // Check for existing auth data on load
+  // Check for existing auth data on load - SYNCHRONOUSLY
   useEffect(() => {
     const storedToken = Cookies.get("authToken");
     const storedUser = Cookies.get("authUser");
 
     if (storedToken && storedUser) {
       try {
+        const parsedUser = JSON.parse(storedUser);
+
         setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+        setUser(parsedUser);
+        setIsAuthInitialized(true);
       } catch (error) {
         // If parsing fails, clear the cookies
         Cookies.remove("authToken");
         Cookies.remove("authUser");
+        setIsAuthInitialized(true);
       }
+    } else {
+      setIsAuthInitialized(true);
     }
   }, []);
+
   // Create a queryClient instance
   const queryClient = new QueryClient();
 
   useEffect(() => {
-    // Clear cache when user changes
-    queryClient.removeQueries({ queryKey: ["dashboardAssets"] });
-    queryClient.removeQueries({ queryKey: ["themes"] });
-  }, [user?.id]);
+    // Clear cache when user changes - only if auth is initialized
+    if (isAuthInitialized) {
+      queryClient.removeQueries({ queryKey: ["dashboardAssets"] });
+      queryClient.removeQueries({ queryKey: ["themes"] });
+    }
+  }, [user?.id, isAuthInitialized]);
+
   const login = (userData: { user: User; token: string }) => {
+    // Set auth data immediately
     setUser(userData.user);
     setToken(userData.token);
+    setIsAuthInitialized(true);
 
-    // Store in cookies
-    Cookies.set("authToken", userData.token);
-    Cookies.set("authUser", JSON.stringify(userData.user));
+    // Store in cookies with expiration
+    Cookies.set("authToken", userData.token, {
+      expires: COOKIE_EXPIRATION_DAYS,
+    });
+    Cookies.set("authUser", JSON.stringify(userData.user), {
+      expires: COOKIE_EXPIRATION_DAYS,
+    });
+
+    // Trigger theme reset and refresh for new user
+    // Use setTimeout to ensure auth state is fully updated before theme initialization
+    setTimeout(() => {
+      themeResetService.performCompleteReset();
+    }, 0);
   };
-  const logoutAuto = () => {
+
+  const performLogoutCleanup = useCallback(() => {
+    // Reset theme states BEFORE clearing auth
+    themeResetService.performCompleteReset();
+
+    // Reset auth state
     setUser(null);
     setToken(null);
+    // Keep isAuthInitialized as true to prevent re-initialization
+
+    // Clear cookies
     Cookies.remove("authToken");
     Cookies.remove("authUser");
+    // localStorage.removeItem(getUserThemeKey(user?.id || ""));
+    // Clear query cache
+    queryClient.clear();
+  }, [queryClient]);
+  const dashboardAssetsQueryKey = ["dashboardAssets"];
+  const logoutAuto = useCallback(() => {
+    performLogoutCleanup();
+    // localStorage.removeItem(getUserThemeKey(user?.id || ""));
     navigate("/login");
-  };
-  const logout = (
-    setIsLoggingOut?: React.Dispatch<React.SetStateAction<boolean>>
-  ) => {
-    if (setIsLoggingOut) {
-      setIsLoggingOut(true);
-    }
+  }, [performLogoutCleanup, navigate]);
 
-    logoutMutation.mutate(undefined, {
-      onSuccess: () => {
-        setUser(null);
-        setToken(null);
+  const logout = useCallback(
+    (setIsLoggingOut?: React.Dispatch<React.SetStateAction<boolean>>) => {
+      if (setIsLoggingOut) {
+        setIsLoggingOut(true);
+      }
 
-        Cookies.remove("authToken");
-        Cookies.remove("authUser");
+      logoutMutation.mutate(undefined, {
+        onSuccess: () => {
+          performLogoutCleanup();
 
-        toast.success("Logged out successfully");
-        if (setIsLoggingOut) {
-          setIsLoggingOut(false);
-        }
-        navigate("/login");
-      },
-      onError: (error: any) => {
-        //                                                                                          if server says user is already logged out or session expired
-        const loggedOut =
-          error?.response?.data?.loggedOut || error?.data?.loggedOut || false;
-
-        if (loggedOut) {
-          setUser(null);
-          setToken(null);
-
-          Cookies.remove("authToken");
-          Cookies.remove("authUser");
-
-          toast.error("Session expired. Please log in again.");
+          queryClient.removeQueries({ queryKey: dashboardAssetsQueryKey });
+          // localStorage.removeItem(getUserThemeKey(user?.id || ""));
+          toast.success("Logged out successfully");
+          if (setIsLoggingOut) {
+            setIsLoggingOut(false);
+          }
           navigate("/login");
-        } else {
-          toast.error("Logout failed. Please try again.");
-        }
-        if (setIsLoggingOut) {
-          setIsLoggingOut(false);
-        }
-      },
-    });
-  };
+        },
+        onError: (error: any) => {
+          // If server says user is already logged out or session expired
+          const loggedOut =
+            error?.response?.data?.loggedOut || error?.data?.loggedOut || false;
+
+          if (loggedOut) {
+            performLogoutCleanup();
+            toast.error("Session expired. Please log in again.");
+            navigate("/login");
+          } else {
+            toast.error("Logout failed. Please try again.");
+          }
+          if (setIsLoggingOut) {
+            setIsLoggingOut(false);
+          }
+        },
+      });
+    },
+    [logoutMutation, performLogoutCleanup, navigate]
+  );
 
   const getToken = () => {
     return token;
@@ -148,24 +188,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       Cookies.set("authUser", JSON.stringify(updatedUser), {
         expires: COOKIE_EXPIRATION_DAYS,
       });
+      console.log("AuthProvider: User data updated:", updatedUser.id);
     }
   };
 
+  const contextValue: AuthContextType = {
+    user,
+    token,
+    isAuthenticated: !!user && !!token,
+    isAuthInitialized,
+    login,
+    logout,
+    logoutAuto,
+    getToken,
+    updateUser,
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated: !!user && !!token,
-        login,
-        logout,
-        logoutAuto,
-        getToken,
-        updateUser,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
 

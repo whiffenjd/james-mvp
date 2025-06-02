@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { useTheme } from "../../../Context/ThemeContext";
+
+import { useThemeContext } from "../../../Context/InvestorThemeContext";
 
 interface ThemeContainerProps {
   children: React.ReactNode;
@@ -7,12 +8,12 @@ interface ThemeContainerProps {
   applyGlobally?: boolean; // Option to apply theme globally
 }
 
-const ThemeContainer: React.FC<ThemeContainerProps> = ({
+const InvestorThemeContainer: React.FC<ThemeContainerProps> = ({
   children,
   className = "",
   applyGlobally = false,
 }) => {
-  const { currentTheme } = useTheme();
+  const { currentTheme, isLoadingCurrentTheme } = useThemeContext();
 
   // Apply CSS variables to document root if applyGlobally is true
   useEffect(() => {
@@ -32,6 +33,17 @@ const ThemeContainer: React.FC<ThemeContainerProps> = ({
     }
   }, [currentTheme, applyGlobally]);
 
+  if (isLoadingCurrentTheme) {
+    return (
+      <div
+        className={`theme-container-loading ${className} flex items-center justify-center p-8`}
+      >
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3">Loading theme...</span>
+      </div>
+    );
+  }
+
   const themeStyles = currentTheme
     ? ({
         "--dashboard-bg": currentTheme.dashboardBackground,
@@ -41,6 +53,9 @@ const ThemeContainer: React.FC<ThemeContainerProps> = ({
         "--sidebar-accent": currentTheme.sidebarAccentText,
       } as React.CSSProperties)
     : {};
+
+  console.log("ThemeContainer - Current Theme:", currentTheme);
+  console.log("ThemeContainer - Theme Styles:", themeStyles);
 
   return (
     <div
@@ -53,4 +68,4 @@ const ThemeContainer: React.FC<ThemeContainerProps> = ({
   );
 };
 
-export default ThemeContainer;
+export default InvestorThemeContainer;

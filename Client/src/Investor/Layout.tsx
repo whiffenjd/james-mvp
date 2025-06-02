@@ -1,22 +1,31 @@
-import React, { useState, useRef, useEffect } from "react";
-import Sidebar from "../PublicComponents/Components/Sidebar";
+// 1. FIXED InvestorLayout.tsx - Apply theme styles properly
+import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import { useAuth } from "../Context/AuthContext";
 import { LayoutGrid } from "lucide-react";
+import { useAuth } from "../Context/AuthContext";
+import ManagerSidebar from "../FundManager/Public/ManagerSidebar";
+import { useThemeContext } from "../Context/InvestorThemeContext";
 
 const InvestorLayout = () => {
   const { user, logout } = useAuth();
-  const avatar = user?.avatar || "/assets/avatar.png";
+  const { currentTheme, isLoadingCurrentTheme } = useThemeContext();
+
+  console.log("Current Theme:", currentTheme);
+  console.log("Is Loading Theme:", isLoadingCurrentTheme);
+
   const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Close on click outside
   useEffect(() => {
-    function handleClickOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        e.target &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setShowDropdown(false);
       }
     }
@@ -25,8 +34,9 @@ const InvestorLayout = () => {
   }, []);
 
   const handleLogout = () => {
-    logout(setIsLoggingOut); // pass setter directly if logout expects it
+    logout(setIsLoggingOut);
   };
+
   const menuItems = [
     {
       id: "dashboard",
@@ -34,51 +44,88 @@ const InvestorLayout = () => {
       label: "Dashboard",
       path: "/investor/dashboard",
     },
-    // { id: "investors", icon: <Users size={22} />, label: "Investors", path: "/investor/investors" },
-    // {
-    //   id: "funds",
-    //   icon: <PieChart size={22} />,
-    //   label: "Agreement document",
-    //   path: "/investor/funds"
-    // },
-    // { id: "tax", icon: <FileText size={20} />, label: "Tax Report", path: "/investor/tax" },
-    // { id: "kyc", icon: <File size={20} />, label: "Documents", path: "/investor/kyc" },
-    // { id: "settings", icon: <Settings size={20} />, label: "Settings", path: "/investor/settings" },
-    // { id: "notifications", icon: <Bell size={20} />, label: "Notifications", path: "/investor/notifications" },
-    // { id: "support", icon: <HelpCircle size={20} />, label: "Support", path: "/investor/support" },
   ];
+
+  // Show loading state while theme is loading
+  if (isLoadingCurrentTheme) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span className="ml-3">Loading theme...</span>
+      </div>
+    );
+  }
+  console.log("Theme Styles53sa4:", currentTheme);
+  // Default fallback colors if no theme is applied
+  const themeStyles = {
+    dashboardBg: currentTheme?.dashboardBackground,
+    cardBg: currentTheme?.cardBackground || "#ffffff",
+    primaryText: currentTheme?.primaryText || "#111827",
+    secondaryText: currentTheme?.secondaryText || "#6b7280",
+    sidebarAccent: currentTheme?.sidebarAccentText || "#3b82f6",
+  };
+  console.log("Theme Styles:", themeStyles);
   return (
-    <div className="bg-bgPrimary h-full px-7 py-12 flex gap-9">
-      <Sidebar menuItems={menuItems} userRole="investor" />
-      <div className="w-full h-[calc(100vh-96px)] bg-secondary rounded-[40px]">
+    <div
+      className="h-full px-7 py-12 flex gap-9 transition-colors duration-300"
+      style={{
+        backgroundColor: currentTheme?.dashboardBackground,
+      }}
+    >
+      <ManagerSidebar menuItems={menuItems} userRole="investor" />
+
+      <div
+        className="w-full h-[calc(100vh-96px)] rounded-[40px] transition-colors duration-300"
+        style={{ backgroundColor: themeStyles.cardBg }}
+      >
         <header className="w-full flex justify-between items-center py-7 px-9 relative">
-          <h3 className="text-xl font-semibold text-[#000000b3]">Investors</h3>
+          <h3
+            className="text-xl font-semibold transition-colors duration-300"
+            style={{ color: themeStyles.primaryText }}
+          >
+            Investor Dashboard
+          </h3>
+
           <div className="flex items-center gap-4">
-            <div className="text-bgPrimary cursor-pointer">
-              <BsBellFill size={22} />
+            <div className="cursor-pointer transition-colors duration-300">
+              <BsBellFill
+                size={22}
+                style={{ color: themeStyles.sidebarAccent }}
+              />
             </div>
+
             <div className="relative flex items-center gap-2" ref={dropdownRef}>
-              {/* <img src={avatar} alt="" className="h-8 w-8 rounded-full object-contain " /> */}
-              <h3 className="font-nunito text-sm capitalize">
-                {user?.name || ""}
+              <h3
+                className="font-nunito text-sm capitalize transition-colors duration-300"
+                style={{ color: themeStyles.primaryText }}
+              >
+                {user?.name || "User"}
               </h3>
+
               <button
-                className="text-bgPrimary p-2"
+                className="p-2 transition-colors duration-300"
+                style={{ color: themeStyles.sidebarAccent }}
                 onClick={() => setShowDropdown((prev) => !prev)}
               >
                 <FaCaretDown />
               </button>
 
               {showDropdown && (
-                <div className="absolute top-6 right-2 bg-white shadow-md rounded-lg py-2 px-4 z-50 min-w-[120px]">
+                <div
+                  className="absolute top-6 right-2 shadow-lg rounded-lg py-2 px-4 z-50 min-w-[120px] border transition-colors duration-300"
+                  style={{
+                    backgroundColor: themeStyles.cardBg,
+                    borderColor: themeStyles.secondaryText + "40", // Add opacity
+                  }}
+                >
                   <button
-                    className="text-red-600 font-medium text-sm hover:underline"
+                    className="text-red-600 font-medium text-sm hover:underline disabled:opacity-50"
                     disabled={isLoggingOut}
                     onClick={handleLogout}
                   >
                     {isLoggingOut ? (
                       <>
-                        <span className="animate-spin inline-block h-4 w-4 border-t-2 border-b-2 border-white rounded-full mr-2"></span>
+                        <span className="animate-spin inline-block h-4 w-4 border-t-2 border-b-2 border-red-600 rounded-full mr-2"></span>
                         Logging out...
                       </>
                     ) : (
@@ -91,7 +138,10 @@ const InvestorLayout = () => {
           </div>
         </header>
 
-        <Outlet />
+        {/* Outlet with theme context */}
+        <div className="px-9 pb-7 h-[calc(100%-88px)] overflow-auto">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

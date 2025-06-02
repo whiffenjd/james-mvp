@@ -23,18 +23,18 @@ DashboardThemeRouter.delete(
 DashboardThemeRouter.get(
   '/getTheme/:id',
   verifyToken,
-  themeController.getById as unknown as express.RequestHandler,
+  themeController.getThemeById as unknown as express.RequestHandler,
 );
 DashboardThemeRouter.get(
   '/listThemes',
   verifyToken,
-  themeController.list as unknown as express.RequestHandler,
+  themeController.listSpecificUserThemes as unknown as express.RequestHandler,
 );
 // POST /api/themes/apply - Apply/Update selected theme
 DashboardThemeRouter.post('/applyTheme', verifyToken, themeController.applyTheme);
 
 // GET /api/themes/selected - Get currently selected theme
-DashboardThemeRouter.get('/selectedTheme', verifyToken, themeController.getSelectedTheme);
+DashboardThemeRouter.post('/selectedTheme', verifyToken, themeController.getSelectedTheme);
 
 // DELETE /api/themes/selected - Clear selected theme
 DashboardThemeRouter.delete('/clearSelectedTheme', verifyToken, themeController.clearSelectedTheme);

@@ -10,6 +10,7 @@ import { deleteUserTokenByType } from '../Utils/DeleteTokenByType';
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password, role } = req.body;
+    console.log(`Login attempt for email: ${email}, role: ${role}`);
     const result = await loginUser(email, password, role);
     res.status(200).json({
       success: true,

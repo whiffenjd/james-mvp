@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Building2 } from "lucide-react";
 import { useDashboardAssets } from "../../FundManager/hooks/Theme&AssetsHooks";
 
 interface MenuItem {
@@ -19,6 +18,7 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeItem, setActiveItem] = useState("");
+
   const {
     data: dashboardAssets,
     isLoading: assetsLoading,
@@ -45,6 +45,8 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
       refetchAssets?.();
     }
   }, [userRole, refetchAssets]);
+
+  // Remove the problematic subscription effect
 
   const handleItemClick = (item: MenuItem) => {
     setActiveItem(item.id);
@@ -114,10 +116,11 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                 ) : logo ? (
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                     <img
+                      key={logo} // Add key to force re-render when logo changes
                       src={logo}
                       alt="Project Logo"
                       className="w-full h-full object-contain"
-                      loading="lazy" // Enable lazy loading
+                      loading="lazy"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         const parent = target.parentElement;
@@ -142,7 +145,7 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                 src="/assets/logo.png"
                 alt="Logo"
                 className="h-12 max-h-12 object-contain"
-                loading="lazy" // Enable lazy loading
+                loading="lazy"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   const parent = target.parentElement;
@@ -164,8 +167,11 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
               {isLoading ? (
                 <LoadingSkeleton />
               ) : (
-                <h3 className="text-theme-primary font-semibold text-sm leading-tight truncate">
-                  {projectName || "No Project Name"}
+                <h3
+                  key={projectName} // Add key to force re-render when project name changes
+                  className="text-theme-primary font-semibold text-sm leading-tight truncate"
+                >
+                  {projectName}
                 </h3>
               )}
             </div>

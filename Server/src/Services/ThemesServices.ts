@@ -5,19 +5,32 @@ export interface ThemeUpdateRequest {
   userId: string;
   themeId: string;
 }
-
+export interface Theme {
+  id?: string;
+  userId?: string;
+  name?: string;
+  dashboardBackground: string;
+  cardBackground: string;
+  primaryText: string;
+  secondaryText: string;
+  sidebarAccentText: string;
+  createdAt?: string;
+  selectedTheme?: string | null;
+}
 export interface ThemeResponse {
   success: boolean;
   message?: string;
-  selectedThemeId?: string;
+  selectedTheme?: Theme;
   error?: string;
 }
 export class ThemeService {
   async create(data: any, userId: string) {
-    return await db
+    const [createdTheme] = await db
       .insert(themes)
       .values({ ...data, userId })
       .returning();
+
+    return createdTheme;
   }
 
   async update(id: string, data: any, userId: string) {
@@ -81,10 +94,27 @@ export class ThemeService {
         };
       }
 
+      // Fetch the full theme object using the selectedTheme id
+      let theme: Theme | undefined = undefined;
+      if (updatedUser[0].selectedTheme) {
+        const themeResult = await db
+          .select()
+          .from(themes)
+          .where(eq(themes.id, updatedUser[0].selectedTheme))
+          .limit(1);
+        if (themeResult.length) {
+          theme = {
+            ...themeResult[0],
+            createdAt: themeResult[0].createdAt
+              ? themeResult[0].createdAt.toISOString()
+              : undefined,
+          };
+        }
+      }
       return {
         success: true,
         message: 'Theme updated successfully',
-        selectedThemeId: updatedUser[0].selectedTheme || undefined,
+        selectedTheme: theme,
       };
     } catch (error) {
       console.error('ThemeService - updateSelectedTheme error:', error);
@@ -98,31 +128,33 @@ export class ThemeService {
   /**
    * Get user's selected theme ID
    */
-  async getSelectedTheme(userId: string): Promise<ThemeResponse> {
+  async getSelectedTheme(themeId: string): Promise<ThemeResponse> {
     try {
-      if (!userId) {
+      if (!themeId) {
         return {
           success: false,
           error: 'User ID is required',
         };
       }
 
-      const user = await db
-        .select({ selectedThemeId: UsersTable.selectedTheme })
-        .from(UsersTable)
-        .where(eq(UsersTable.id, userId))
-        .limit(1);
-
-      if (!user.length) {
+      const selectedTheme = await db.select().from(themes).where(eq(themes.id, themeId));
+      if (!selectedTheme.length) {
         return {
           success: false,
-          error: 'User not found',
+          error: 'Selected theme not found',
         };
       }
-
+      // Convert createdAt to string if present, otherwise undefined
+      const theme: Theme = {
+        ...selectedTheme[0],
+        createdAt: selectedTheme[0].createdAt
+          ? selectedTheme[0].createdAt.toISOString()
+          : undefined,
+      };
       return {
         success: true,
-        selectedThemeId: user[0].selectedThemeId || undefined,
+        selectedTheme: theme,
+        message: 'Selected theme fetched successfully',
       };
     } catch (error) {
       console.error('ThemeService - getSelectedTheme error:', error);

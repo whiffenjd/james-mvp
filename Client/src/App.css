@@ -1,16 +1,59 @@
-/* App.css - Scoped theming styles */
+/* 3. UPDATED App.css - Fixed CSS with better specificity and debugging */
+/* App.css - Fixed theming styles with better specificity */
 
-/* Only apply theme variables to fund manager dashboard */
+/* Theme Container Base Styles */
 .theme-container {
-    /* Default theme variables - only active within theme-container */
-    --dashboard-bg: #14B8A6;
-    --card-bg: #FFFFFF;
-    --primary-text: #000000;
-    --secondary-text: #6B7280;
-    --sidebar-accent: #14B8A6;
+    /* Default fallback values */
+    --dashboard-bg: #f3f4f6;
+    --card-bg: #ffffff;
+    --primary-text: #111827;
+    --secondary-text: #6b7280;
+    --sidebar-accent: #3b82f6;
 }
 
-/* Apply theme variables only to children of theme-container */
+/* Debug styles - remove in production */
+.theme-container[data-theme-applied="true"] {
+    border: 2px solid green;
+    /* Visual indicator that theme is applied */
+}
+
+.theme-container[data-theme-applied="false"] {
+    border: 2px solid red;
+    /* Visual indicator that theme is NOT applied */
+}
+
+/* Theme utility classes with higher specificity */
+.theme-container .theme-dashboard-bg,
+.theme-container.theme-dashboard-bg {
+    background-color: var(--dashboard-bg) !important;
+}
+
+.theme-container .theme-card-bg,
+.theme-container.theme-card-bg {
+    background-color: var(--card-bg) !important;
+}
+
+.theme-container .theme-primary-text,
+.theme-container.theme-primary-text {
+    color: var(--primary-text) !important;
+}
+
+.theme-container .theme-secondary-text,
+.theme-container.theme-secondary-text {
+    color: var(--secondary-text) !important;
+}
+
+.theme-container .theme-sidebar-accent,
+.theme-container.theme-sidebar-accent {
+    color: var(--sidebar-accent) !important;
+}
+
+.theme-container .theme-sidebar-accent-bg,
+.theme-container.theme-sidebar-accent-bg {
+    background-color: var(--sidebar-accent) !important;
+}
+
+/* Override existing Tailwind classes within theme container */
 .theme-container .bg-bgPrimary {
     background-color: var(--dashboard-bg) !important;
 }
@@ -31,88 +74,14 @@
     color: var(--sidebar-accent) !important;
 }
 
-/* Theme utility classes - only work inside theme-container */
-.theme-container .theme-dashboard-bg {
-    background-color: var(--dashboard-bg);
-}
-
-.theme-container .theme-card-bg {
-    background-color: var(--card-bg);
-}
-
-.theme-container .theme-primary-text {
-    color: var(--primary-text);
-}
-
-.theme-container .theme-secondary-text {
-    color: var(--secondary-text);
-}
-
-.theme-container .theme-sidebar-accent {
-    color: var(--sidebar-accent);
-}
-
-.theme-container .theme-sidebar-accent-bg {
-    background-color: var(--sidebar-accent);
-}
-
-/* Smooth transitions only for themed elements */
+/* Smooth transitions for themed elements */
+.theme-container,
 .theme-container * {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Default styles for non-themed dashboards */
-.admin-dashboard {
+/* Loading state */
+.theme-container-loading {
     background-color: #f9fafb;
-    /* Default admin theme - gray-50 */
+    color: #6b7280;
 }
-
-.investor-dashboard {
-    background-color: #f8fafc;
-    /* Default investor theme - slate-50 */
-}
-
-/* Existing styles that should work globally */
-.loading-spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-/* Color picker styling */
-input[type="color"] {
-    -webkit-appearance: none;
-    border: none;
-    cursor: pointer;
-}
-
-input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0;
-}
-
-input[type="color"]::-webkit-color-swatch {
-    border: 1px solid #ccc;
-    border-radius: 4px; }

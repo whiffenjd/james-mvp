@@ -29,7 +29,7 @@ const DashboardSettings: React.FC = () => {
   const currentUser = getCurrentUser();
 
   // User-specific query keys
-  const dashboardAssetsQueryKey = ["dashboardAssets", currentUser.userId];
+  const dashboardAssetsQueryKey = ["dashboardAssets"];
   const themesQueryKey = ["themes", currentUser.userId];
 
   // Clear cache when user changes
@@ -63,29 +63,61 @@ const DashboardSettings: React.FC = () => {
       await queryClient.cancelQueries({ queryKey: dashboardAssetsQueryKey });
       const previousAssets = queryClient.getQueryData(dashboardAssetsQueryKey);
 
+      // Get current data to preserve existing logoUrl if no new logo is uploaded
+      const currentData = queryClient.getQueryData(dashboardAssetsQueryKey) as
+        | { data?: DashboardAsset }
+        | undefined;
+
+      const logoFile = formData.get("logo") as File | null;
+      let optimisticLogoUrl = currentData?.data?.logoUrl;
+
+      // Only create blob URL if a new logo file is provided
+      if (logoFile && logoFile.size > 0) {
+        optimisticLogoUrl = URL.createObjectURL(logoFile);
+      }
+
       const optimisticData = {
         data: {
           projectName: formData.get("projectName") as string,
           projectDescription: formData.get("projectDescription") as string,
-          logoUrl: formData.get("logo")
-            ? URL.createObjectURL(formData.get("logo") as Blob)
-            : dashboardAssets?.data?.logoUrl,
+          logoUrl: optimisticLogoUrl,
         },
       };
 
       queryClient.setQueryData(dashboardAssetsQueryKey, optimisticData);
 
-      return { previousAssets };
+      return {
+        previousAssets,
+        blobUrl: logoFile && logoFile.size > 0 ? optimisticLogoUrl : null,
+      };
     },
-    onError: (err, variables, context) => {
+    onError: (
+      _error,
+      _variables,
+      context: { previousAssets?: unknown; blobUrl?: string | null } | undefined
+    ) => {
+      // Clean up blob URL if it was created
+      if (context?.blobUrl) {
+        URL.revokeObjectURL(context.blobUrl);
+      }
+
       // Revert to previous state on error
       queryClient.setQueryData(
         dashboardAssetsQueryKey,
         context?.previousAssets
       );
     },
-    onSuccess: () => {
-      // Invalidate to refetch actual data
+    onSuccess: (_data, _variables, context) => {
+      // Clean up blob URL after successful upload
+      if (context?.blobUrl) {
+        URL.revokeObjectURL(context.blobUrl);
+      }
+
+      // Invalidate to refetch actual data from server
+      queryClient.invalidateQueries({ queryKey: dashboardAssetsQueryKey });
+    },
+    onSettled: () => {
+      // Ensure queries are invalidated regardless of success/error
       queryClient.invalidateQueries({ queryKey: dashboardAssetsQueryKey });
     },
   });
@@ -101,7 +133,11 @@ const DashboardSettings: React.FC = () => {
 
       return { previousAssets };
     },
-    onError: (err, variables, context) => {
+    onError: (
+      _error,
+      _variables,
+      context: { previousAssets?: unknown } | undefined
+    ) => {
       queryClient.setQueryData(
         dashboardAssetsQueryKey,
         context?.previousAssets
@@ -121,7 +157,10 @@ const DashboardSettings: React.FC = () => {
     mutationFn: themesApi.create,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: themesQueryKey });
-      applyTheme(data.data[0]);
+      // Apply the returned theme directly
+      if (data.data) {
+        applyTheme(data.data);
+      }
     },
   });
 

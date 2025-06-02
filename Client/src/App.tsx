@@ -23,8 +23,13 @@ import FundManagerLayout from "./FundManager/Layout/FundManagerLayout";
 import { ThemeLoader, ThemeProvider } from "./Context/ThemeContext";
 import "./App.css";
 import ThemeContainer from "./FundManager/Themes/Components/ThemeContainer";
-import Accounts from "./FundManager/Themes/Pages/Accounts";
 import FundManagerDashboard from "./FundManager/Dashboard";
+import AdminLayout from "./Admin/AdminLayout";
+import {
+  InvestorThemeProvider,
+  ThemeLoaderInvestor,
+} from "./Context/InvestorThemeContext";
+import InvestorThemeContainer from "./FundManager/Themes/Components/InvestorThemeContainer";
 
 function RedirectBasedOnRole() {
   const { user } = useAuth();
@@ -61,11 +66,13 @@ function App() {
               path="/admin/dashboard"
               element={
                 <div className="admin-dashboard min-h-screen bg-gray-50">
-                  <AdminDashboard />
+                  <AdminLayout />
                 </div>
               }
-            />
-            {/* Add more admin routes here */}
+            >
+              <Route index element={<AdminDashboard />} />
+              {/* Add more nested admin routes here */}
+            </Route>
           </Route>
 
           {/* Fund Manager routes - WITH THEMING */}
@@ -73,7 +80,7 @@ function App() {
             <Route
               path="/fundmanager/dashboard"
               element={
-                <ThemeProvider dashboardType="fundManager">
+                <ThemeProvider>
                   <ThemeLoader>
                     <ThemeContainer className="min-h-screen">
                       <FundManagerLayout />
@@ -84,6 +91,7 @@ function App() {
             >
               <Route index element={<FundManagerDashboard />} />
               <Route path="settings" element={<DashboardSettings />} />
+
               {/* Add more fund manager routes here */}
             </Route>
           </Route>
@@ -93,9 +101,13 @@ function App() {
             <Route
               path="/investor/dashboard"
               element={
-                <div className="investor-dashboard min-h-screen bg-slate-50">
-                  <InvestorLayout />
-                </div>
+                <InvestorThemeProvider>
+                  <ThemeLoaderInvestor>
+                    <InvestorThemeContainer className="min-h-screen">
+                      <InvestorLayout />
+                    </InvestorThemeContainer>
+                  </ThemeLoaderInvestor>
+                </InvestorThemeProvider>
               }
             >
               <Route index element={<InvestorDashboard />} />

@@ -1,43 +1,22 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
-import { useState } from "react";
-import Sidebar from "../PublicComponents/Components/Sidebar";
 
 const InvestorDashboard = () => {
-  const { user, logout } = useAuth();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { user } = useAuth();
+  // const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   if (!user) {
     return <Navigate to="/login" />;
   }
 
-  const handleLogout = () => {
-    logout(setIsLoggingOut); // pass setter directly if logout expects it
-  };
+  // const handleLogout = () => {
+  //   logout(setIsLoggingOut); // pass setter directly if logout expects it
+  // };
 
   return (
     <div className=" flex w-full overflow-auto">
       {/* <Sidebar /> */}
       <div className="flex flex-col w-full  ">
-        {/* <header className="bg-white shadow">
-          <div className=" py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md flex items-center justify-center min-w-[100px] "
-            >
-              {isLoggingOut ? (
-                <>
-                  <span className="animate-spin inline-block h-4 w-4 border-t-2 border-b-2 border-white rounded-full mr-2"></span>
-                  Logging out...
-                </>
-              ) : (
-                "Logout"
-              )}
-            </button>
-          </div>
-        </header> */}
         <main>
           <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
             <div className="px-4 py-6 sm:px-0">

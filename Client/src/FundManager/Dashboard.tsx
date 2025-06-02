@@ -1,35 +1,13 @@
-import { useState } from "react";
-
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
-import Sidebar from "../PublicComponents/Components/Sidebar";
-import { LayoutGrid } from "lucide-react";
 
 const FundManagerDashboard = () => {
-  const { user, logout } = useAuth();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { user } = useAuth();
 
   if (!user) {
     return <Navigate to="/login" />;
   }
 
-  const handleLogout = () => {
-    logout(setIsLoggingOut); // pass setter directly if logout expects it
-  };
-  const menuItems = [
-    { id: "dashboard", icon: <LayoutGrid size={22} />, label: "Dashboard" },
-    // { id: "investors", icon: <Users size={22} />, label: "Investors" },
-    // {
-    //   id: "funds",
-    //   icon: <PieChart size={22} />,
-    //   label: "Agreement document",
-    // },
-    // { id: "tax", icon: <FileText size={20} />, label: "Tax Report" },
-    // { id: "kyc", icon: <File size={20} />, label: "Documents" },
-    // { id: "settings", icon: <Settings size={20} />, label: "Settings" },
-    // { id: "notifications", icon: <Bell size={20} />, label: "Notifications" },
-    // { id: "support", icon: <HelpCircle size={20} />, label: "Support" },
-  ];
   return (
     <div className="flex flex-col w-full ">
       <main>

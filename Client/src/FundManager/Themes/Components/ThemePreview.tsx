@@ -1,4 +1,21 @@
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
+
+type Theme = {
+  name: string;
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  text: string;
+};
+
+interface ThemePreviewProps {
+  theme: Theme;
+  isSelected: boolean;
+  onClick: () => void;
+  onDelete: () => void;
+  canDelete?: boolean;
+}
 
 export const ThemePreview = ({
   theme,
@@ -6,7 +23,7 @@ export const ThemePreview = ({
   onClick,
   onDelete,
   canDelete = true,
-}) => {
+}: ThemePreviewProps) => {
   return (
     <div
       className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all ${

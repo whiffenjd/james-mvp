@@ -1,43 +1,15 @@
 import { useAuth } from "../Context/AuthContext";
-import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import Sidebar from "../PublicComponents/Components/Sidebar";
 const AdminDashboard = () => {
-  const { user, logout } = useAuth();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { user } = useAuth();
 
   if (!user) {
     return <Navigate to="/login" />;
   }
 
-  const handleLogout = () => {
-    logout(setIsLoggingOut); // pass setter directly if logout expects it
-  };
   return (
     <div className="min-h-screen bg-gray-100 flex ">
-      <Sidebar menuItems={menuItems} userRole="fundManager" />
       <div className="flex flex-col w-full ">
-        <header className="bg-white shadow">
-          <div className=" py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Admin Dashboard
-            </h1>
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md flex items-center justify-center min-w-[100px] "
-            >
-              {isLoggingOut ? (
-                <>
-                  <span className="animate-spin inline-block h-4 w-4 border-t-2 border-b-2 border-white rounded-full mr-2"></span>
-                  Logging out...
-                </>
-              ) : (
-                "Logout"
-              )}
-            </button>
-          </div>
-        </header>
         <main>
           <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
             <div className="px-4 py-6 sm:px-0">

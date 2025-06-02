@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Edit2, Upload, X } from "lucide-react";
+import { Edit2, Upload } from "lucide-react";
 import type { UseMutationResult } from "@tanstack/react-query";
 import imageCompression from "browser-image-compression"; // Added for image compression
 import type {

@@ -1,6 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
+import { useAuth } from "../../Context/AuthContext";
 
 const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -25,9 +26,11 @@ axiosPrivate.interceptors.response.use(
   (response) => {
     // Check if response data contains isLoggedOut flag
     if (response.data && response.data.isLoggedOut === true) {
+      const { user } = useAuth();
       // Clear auth token from cookies
       Cookies.remove("authToken");
       Cookies.remove("authUser");
+      localStorage.removeItem(`theme_${user?.id}`); // Clear user theme if applicable
       // Show toast notification
       toast.error(
         response.data.message || "You have been logged out. Please login again."

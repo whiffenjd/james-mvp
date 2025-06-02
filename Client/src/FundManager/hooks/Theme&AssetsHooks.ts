@@ -1,4 +1,4 @@
-// hooks/useApi.ts - Custom hooks for API calls
+// hooks/useApi.ts - Fixed Custom hooks for API calls
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   dashboardAssetsApi,
@@ -7,11 +7,14 @@ import {
 } from "../../API/Endpoints/FundManager/Themes&Asset";
 
 // Dashboard Assets Hooks
+export const dashboardAssetsQueryKey = ["dashboardAssets"];
+
 export const useDashboardAssets = () => {
   return useQuery({
-    queryKey: ["dashboardAssets"],
+    queryKey: dashboardAssetsQueryKey,
     queryFn: dashboardAssetsApi.get,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
   });
 };
 
@@ -43,12 +46,13 @@ export const useDeleteDashboardAsset = () => {
   });
 };
 
-// Theme Hooks
-export const useThemes = () => {
+// Theme Hooks - FIXED: Added enabled parameter support
+export const useThemes = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["themes"],
-    queryFn: () => themesApi.list(), // Fetch all themes using the 'list' method
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    queryFn: () => themesApi.list(),
+    staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled !== false, // Default to true unless explicitly false
   });
 };
 
@@ -101,23 +105,22 @@ export const useThemeById = (id: string, enabled: boolean = true) => {
     queryKey: ["theme", id],
     queryFn: () => themesApi.getById(id),
     enabled: enabled && !!id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 };
+
 export const useApplyTheme = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: themesApi.applySelectedTheme,
     onSuccess: (data) => {
-      // Invalidate and refetch selected theme query
       queryClient.invalidateQueries({ queryKey: ["selectedTheme"] });
 
-      // You can also update the cache directly
-      if (data.success && data.data?.selectedThemeId) {
+      if (data.success && data.data?.id) {
         queryClient.setQueryData(["selectedTheme"], {
           success: true,
-          data: { selectedThemeId: data.data.selectedThemeId },
+          data: { selectedThemeId: data.data.id },
         });
       }
     },
@@ -127,15 +130,20 @@ export const useApplyTheme = () => {
   });
 };
 
-export const useSelectedTheme = () => {
+// FIXED: Added enabled parameter support
+export const useSelectedTheme = (
+  options?: { enabled?: boolean },
+  userSelectedThemeId?: string
+) => {
   return useQuery({
-    queryKey: ["selectedTheme"],
-    queryFn: themesApi.getSelectedTheme,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    // cacheTime: 10 * 60 * 1000, // 10 minutes
+    queryKey: ["selectedTheme", userSelectedThemeId], // Key should include dependency
+    queryFn: () =>
+      themesApi.getSelectedTheme({ themeId: userSelectedThemeId ?? "" }),
+    staleTime: 5 * 60 * 1000,
     retry: 2,
-    refetchOnWindowFocus: true, // Refetch when user switches back to tab
-    refetchOnMount: true, // Always refetch on mount
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    enabled: options?.enabled !== false && !!userSelectedThemeId, // prevent call if no ID
   });
 };
 
@@ -145,10 +153,8 @@ export const useClearTheme = () => {
   return useMutation({
     mutationFn: themesApi.clearSelectedTheme,
     onSuccess: () => {
-      // Invalidate selected theme query
       queryClient.invalidateQueries({ queryKey: ["selectedTheme"] });
 
-      // Clear the cache
       queryClient.setQueryData(["selectedTheme"], {
         success: true,
         data: { selectedThemeId: undefined },

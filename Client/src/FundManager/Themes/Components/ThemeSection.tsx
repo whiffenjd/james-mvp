@@ -91,7 +91,7 @@ const ThemesSection: React.FC<ThemesSectionProps> = ({
             return (
               <div
                 key={theme.id}
-                className={`w-[30%] border-2 rounded-lg p-4 cursor-pointer transition-all relative group ${
+                className={`w-[30%] border-2 rounded-lg p-4 cursor-pointer transition-all relative group h-[35%] ${
                   isSelected
                     ? "border-green-500 ring-2 ring-green-200"
                     : "border-gray-200 hover:border-gray-300"

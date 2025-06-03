@@ -4,7 +4,35 @@
 @tailwind components;
 @tailwind utilities;
 
-
 body {
   font-family: poppins, sans-serif;
+}
+
+input[type="radio"] {
+  padding: 5px;
+  accent-color: #017776;
+}
+
+.primary-heading {
+  @apply font-[Poppins] font-medium;
+  font-size: 20px;
+  line-height: 21px;
+  letter-spacing: 0;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.secondary-heading {
+  @apply font-[Poppins] font-normal;
+  font-size: 18px;
+  line-height: 24px;
+  letter-spacing: 0;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.tertiary-heading {
+  @apply font-[Poppins] font-normal;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0;
+  color: rgba(0, 0, 0, 0.7);
 }

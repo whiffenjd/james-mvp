@@ -18,6 +18,7 @@ import FundManagerDashboard from "./FundManager/Dashboard";
 import InvestorDashboard from "./Investor/Dashboard";
 import Unauthorized from "./PublicComponents/Components/Unauthorized";
 import { useAuth } from "./Context/AuthContext";
+import InvestorOnboarding from "./Onboarding/InvestorOnboarding";
 
 function RedirectBasedOnRole() {
   const { user } = useAuth();
@@ -73,6 +74,8 @@ function App() {
 
           {/* Error and fallback routes */}
           <Route path="/unauthorized" element={<Unauthorized />} />
+
+          <Route path="/investor/onboarding" element={<InvestorOnboarding />} />
 
           {/* Redirect root to login or appropriate dashboard based on auth state */}
           <Route

@@ -9,7 +9,9 @@ import UserRouter from './Routes/UserProfileRoutes';
 import investorAuthRouter from './Routes/InvestorAuthRoutes';
 import { setupSwagger } from './configs/Swagger';
 import investorOnboardingRouter from './Routes/investorOnboardingRouter';
+import DashboardAssetRouter from './Routes/DashboardAssetsRoutes';
 import managerOnboardingRouter from './Routes/managerOnboardingRouter';
+import DashboardThemeRouter from './Routes/DashboardThemeRoutes';
 
 dotenv.config();
 export const app = express();
@@ -38,6 +40,8 @@ app.use('/profile/user', UserRouter);
 app.use('/onboarding/investor', investorOnboardingRouter);
 app.use('/list', managerOnboardingRouter);
 
+app.use('/dashboard/assets', DashboardAssetRouter);
+app.use('/dashboard/theme', DashboardThemeRouter);
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');
 });

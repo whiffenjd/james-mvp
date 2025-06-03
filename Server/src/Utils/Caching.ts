@@ -1,5 +1,5 @@
-import NodeCache from "node-cache";
-export type Role = "admin" | "investor" | "fundManager";
+import NodeCache from 'node-cache';
+export type Role = 'admin' | 'investor' | 'fundManager';
 
 export type User = {
   id: string;
@@ -16,8 +16,7 @@ const cache = new NodeCache({
 
 // Enhanced cache utilities with performance monitoring
 export const setCache = <T>(key: string, value: T, ttl?: number) => {
-  const result =
-    ttl !== undefined ? cache.set(key, value, ttl) : cache.set(key, value);
+  const result = ttl !== undefined ? cache.set(key, value, ttl) : cache.set(key, value);
   return result;
 };
 

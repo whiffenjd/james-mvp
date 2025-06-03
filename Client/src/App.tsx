@@ -14,15 +14,26 @@ import {
   PublicRoute,
 } from "./Context/Routing/ProtectedRoutes";
 import AdminDashboard from "./Admin/Dashboard";
-import FundManagerDashboard from "./FundManager/Dashboard";
 import InvestorDashboard from "./Investor/Dashboard";
 import Unauthorized from "./PublicComponents/Components/Unauthorized";
 import { useAuth } from "./Context/AuthContext";
 import InvestorOnboarding from "./Onboarding/InvestorOnboarding";
+import InvestorLayout from "./Investor/Layout";
+import DashboardSettings from "./FundManager/Themes/Pages/DashboardMain";
+import FundManagerLayout from "./FundManager/Layout/FundManagerLayout";
+import { ThemeLoader, ThemeProvider } from "./Context/ThemeContext";
+import "./App.css";
+import ThemeContainer from "./FundManager/Themes/Components/ThemeContainer";
+import FundManagerDashboard from "./FundManager/Dashboard";
+import AdminLayout from "./Admin/AdminLayout";
+import {
+  InvestorThemeProvider,
+  ThemeLoaderInvestor,
+} from "./Context/InvestorThemeContext";
+import InvestorThemeContainer from "./FundManager/Themes/Components/InvestorThemeContainer";
 
 function RedirectBasedOnRole() {
   const { user } = useAuth();
-
   switch (user?.role) {
     case "admin":
       return <Navigate to="/admin/dashboard" replace />;
@@ -40,7 +51,6 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Toaster position="top-right" />
-
         <Routes>
           {/* Public routes - accessible when not logged in */}
           <Route element={<PublicRoute />}>
@@ -51,25 +61,59 @@ function App() {
             <Route path="/verify-email" element={<EmailVerification />} />
           </Route>
 
-          {/* Admin routes */}
+          {/* Admin routes - NO THEMING */}
           <Route element={<AdminRoute />}>
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            {/* Add more admin routes here */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <div className="admin-dashboard min-h-screen bg-gray-50">
+                  <AdminLayout />
+                </div>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              {/* Add more nested admin routes here */}
+            </Route>
           </Route>
 
-          {/* Fund Manager routes */}
+          {/* Fund Manager routes - WITH THEMING */}
           <Route element={<FundManagerRoute />}>
             <Route
               path="/fundmanager/dashboard"
-              element={<FundManagerDashboard />}
-            />
-            {/* Add more fund manager routes here */}
+              element={
+                <ThemeProvider>
+                  <ThemeLoader>
+                    <ThemeContainer className="min-h-screen">
+                      <FundManagerLayout />
+                    </ThemeContainer>
+                  </ThemeLoader>
+                </ThemeProvider>
+              }
+            >
+              <Route index element={<FundManagerDashboard />} />
+              <Route path="settings" element={<DashboardSettings />} />
+
+              {/* Add more fund manager routes here */}
+            </Route>
           </Route>
 
-          {/* Investor routes */}
+          {/* Investor routes - NO THEMING */}
           <Route element={<InvestorRoute />}>
-            <Route path="/investor/dashboard" element={<InvestorDashboard />} />
-            {/* Add more investor routes here */}
+            <Route
+              path="/investor/dashboard"
+              element={
+                <InvestorThemeProvider>
+                  <ThemeLoaderInvestor>
+                    <InvestorThemeContainer className="min-h-screen">
+                      <InvestorLayout />
+                    </InvestorThemeContainer>
+                  </ThemeLoaderInvestor>
+                </InvestorThemeProvider>
+              }
+            >
+              <Route index element={<InvestorDashboard />} />
+              {/* Add more investor routes here */}
+            </Route>
           </Route>
 
           {/* Error and fallback routes */}

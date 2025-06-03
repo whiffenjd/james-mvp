@@ -4,12 +4,13 @@ import { requestPasswordReset, resetPassword } from '../Services/ForgotPasswordS
 import { db } from '../db/DbConnection';
 import { UserTokens } from '../db/schema';
 import { eq } from 'drizzle-orm';
-import { deleteUserTokenByType } from '../Utils/DeleteTokenByType';
 import { deleteCache } from '../Utils/Caching';
+import { deleteUserTokenByType } from '../Utils/DeleteTokenByType';
 
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password, role } = req.body;
+    console.log(`Login attempt for email: ${email}, role: ${role}`);
     const result = await loginUser(email, password, role);
     res.status(200).json({
       success: true,

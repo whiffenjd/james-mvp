@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { getAllUsers, getUserProfileByRole } from '../Services/AuthServices';
-import { getCache, setCache } from '../Utils/Caching';
+
 import { Role, User } from '../Types/User';
+import { getCache, setCache } from '../Utils/Caching';
 
 export const getUserProfile = async (req: Request, res: Response) => {
   const requestStart = performance.now();

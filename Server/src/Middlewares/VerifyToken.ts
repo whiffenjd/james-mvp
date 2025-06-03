@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '../db/DbConnection';
 import { UserTokens } from '../db/schema';
 
@@ -39,14 +39,18 @@ export const verifyToken = async (
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-
+    // console.log('decoded',decoded)
     // Check token exists in DB
+    // const storedToken = await db.query.UserTokens.findFirst({
+    //   where: eq(UserTokens.userId, decoded.id),
+    // });
     const storedToken = await db.query.UserTokens.findFirst({
-      where: eq(UserTokens.userId, decoded.id),
+      // where: eq(UserTokens.userId, decoded.id),
+      where: and(eq(UserTokens.userId, decoded.id), eq(UserTokens.type, 'userAuth')),
     });
 
     if (!storedToken || storedToken.token !== token) {
-      res.status(401).json({ message: 'Session expired or logged out.' });
+      res.status(401).json({ message: 'Session expired or logged out.', loggedOut: true });
       return;
     }
 

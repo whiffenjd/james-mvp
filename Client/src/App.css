@@ -1,0 +1,87 @@
+/* 3. UPDATED App.css - Fixed CSS with better specificity and debugging */
+/* App.css - Fixed theming styles with better specificity */
+
+/* Theme Container Base Styles */
+.theme-container {
+    /* Default fallback values */
+    --dashboard-bg: #f3f4f6;
+    --card-bg: #ffffff;
+    --primary-text: #111827;
+    --secondary-text: #6b7280;
+    --sidebar-accent: #3b82f6;
+}
+
+/* Debug styles - remove in production */
+.theme-container[data-theme-applied="true"] {
+    border: 2px solid green;
+    /* Visual indicator that theme is applied */
+}
+
+.theme-container[data-theme-applied="false"] {
+    border: 2px solid red;
+    /* Visual indicator that theme is NOT applied */
+}
+
+/* Theme utility classes with higher specificity */
+.theme-container .theme-dashboard-bg,
+.theme-container.theme-dashboard-bg {
+    background-color: var(--dashboard-bg) !important;
+}
+
+.theme-container .theme-card-bg,
+.theme-container.theme-card-bg {
+    background-color: var(--card-bg) !important;
+}
+
+.theme-container .theme-primary-text,
+.theme-container.theme-primary-text {
+    color: var(--primary-text) !important;
+}
+
+.theme-container .theme-secondary-text,
+.theme-container.theme-secondary-text {
+    color: var(--secondary-text) !important;
+}
+
+.theme-container .theme-sidebar-accent,
+.theme-container.theme-sidebar-accent {
+    color: var(--sidebar-accent) !important;
+}
+
+.theme-container .theme-sidebar-accent-bg,
+.theme-container.theme-sidebar-accent-bg {
+    background-color: var(--sidebar-accent) !important;
+}
+
+/* Override existing Tailwind classes within theme container */
+.theme-container .bg-bgPrimary {
+    background-color: var(--dashboard-bg) !important;
+}
+
+.theme-container .bg-secondary {
+    background-color: var(--card-bg) !important;
+}
+
+.theme-container .bg-primary {
+    background-color: var(--sidebar-accent) !important;
+}
+
+.theme-container .text-primary {
+    color: var(--sidebar-accent) !important;
+}
+
+.theme-container .text-bgPrimary {
+    color: var(--sidebar-accent) !important;
+}
+
+/* Smooth transitions for themed elements */
+.theme-container,
+.theme-container * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Loading state */
+.theme-container-loading {
+    background-color: #f9fafb;
+    color: #6b7280;
+}

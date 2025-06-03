@@ -7,13 +7,34 @@ export default {
         poppins: ["Poppins", "sans-serif"],
         playfair: ['"Playfair Display"', "serif"],
         markazi: ['"Markazi Text"', "serif"],
+        nunito: ["Nunito", "sans-serif"],
       },
       colors: {
         bgDark: "#2c2c2e",
         bgPrimary: "#2FB5B4",
+        primary: "#2FB5B4",
+        secondary: "#F4F4F5",
+        // Theme-based colors using CSS variables
+        "theme-dashboard": "var(--dashboard-bg)",
+        "theme-card": "var(--card-bg)",
+        "theme-primary-text": "var(--primary-text)",
+        "theme-secondary-text": "var(--secondary-text)",
+        "theme-sidebar-accent": "var(--sidebar-accent)",
       },
-      screens: {
-        short: { raw: "(max-height: 700px)" },
+      backgroundColor: {
+        "theme-dashboard": "var(--dashboard-bg)",
+        "theme-card": "var(--card-bg)",
+        "theme-sidebar-accent": "var(--sidebar-accent)",
+      },
+      textColor: {
+        "theme-primary": "var(--primary-text)",
+        "theme-secondary": "var(--secondary-text)",
+        "theme-accent": "var(--sidebar-accent)",
+      },
+      borderColor: {
+        "theme-primary": "var(--primary-text)",
+        "theme-secondary": "var(--secondary-text)",
+        "theme-accent": "var(--sidebar-accent)",
       },
     },
   },

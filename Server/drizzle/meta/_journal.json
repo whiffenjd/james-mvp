@@ -5,85 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1747220134871,
-      "tag": "0000_stormy_kate_bishop",
+      "when": 1748799086587,
+      "tag": "0000_lucky_korvac",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1747222879315,
-      "tag": "0001_dark_natasha_romanoff",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1747293857307,
-      "tag": "0002_calm_diamondback",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1747318251606,
-      "tag": "0003_cloudy_meteorite",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1747376903219,
-      "tag": "0004_panoramic_deathbird",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1747393833939,
-      "tag": "0005_true_winter_soldier",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1747902612710,
-      "tag": "0006_lush_marvel_zombies",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1748331616948,
-      "tag": "0007_early_arachne",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1748517167827,
-      "tag": "0008_third_vulcan",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1748517237354,
-      "tag": "0009_perpetual_blob",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1748587757358,
-      "tag": "0010_parched_microchip",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "7",
-      "when": 1748591008685,
-      "tag": "0011_goofy_morlocks",
+      "when": 1748799249505,
+      "tag": "0001_greedy_ben_parker",
       "breakpoints": true
     }
   ]

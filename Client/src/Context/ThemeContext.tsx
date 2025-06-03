@@ -94,7 +94,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     data: selectedThemeData,
   } = useSelectedTheme({ enabled: true }, userSelectedThemeId ?? undefined);
 
-  console.log("Selected Theme Data:", selectedThemeData);
+
   const {
     data: allThemesData,
     isLoading: isAllThemesLoading,
@@ -117,7 +117,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
         if (savedTheme) {
           const themeData = JSON.parse(savedTheme);
-          console.log("Loaded theme from storage:", themeData);
+
           return themeData;
         }
       } catch (error) {
@@ -132,8 +132,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   const [currentTheme, setCurrentTheme] = useState<Theme>(defaultTheme);
   const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
 
-  console.log("selectedThemeId:", selectedThemeId);
-  console.log("currentTheme:", currentTheme);
 
   // Only fetch specific theme if we have an ID and it's different from current theme
   const shouldFetchSpecificTheme = !!(
@@ -156,7 +154,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
           timestamp: new Date().toISOString(),
         };
         localStorage.setItem(userThemeKey, JSON.stringify(themeData));
-        console.log("Saved theme to storage:", themeData);
+
       } catch (error) {
         console.error("Error saving theme to localStorage:", error);
       }
@@ -213,7 +211,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   // IMMEDIATE initialization when user changes
   useEffect(() => {
     if (currentUserId.current !== userId) {
-      console.log("User changed, resetting theme state");
+
       currentUserId.current = userId || "";
       setIsThemeReady(false);
       setIsInitializing(true);
@@ -253,7 +251,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       try {
         // Priority 1: Backend selected theme data
         if (selectedThemeData && !isThemeLoading) {
-          console.log("Using backend theme data:", selectedThemeData);
+
           setCurrentTheme(selectedThemeData);
           setSelectedThemeId(selectedThemeData.id || null);
 
@@ -273,7 +271,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         if (isThemeLoading || !selectedThemeData) {
           const cachedTheme = loadThemeFromStorage(userId);
           if (cachedTheme && cachedTheme.id && cachedTheme.id !== "default") {
-            console.log("Using cached theme:", cachedTheme);
+
             setCurrentTheme(cachedTheme);
             setSelectedThemeId(
               cachedTheme.selectedThemeId || cachedTheme.id || null
@@ -290,7 +288,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
         // Priority 3: Default theme (fallback)
         if (!isThemeLoading && !selectedThemeData) {
-          console.log("Using default theme");
+
           setCurrentTheme(defaultTheme);
           setSelectedThemeId(null);
           hasSetInitialTheme.current = true;
@@ -321,7 +319,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   // Enhanced apply theme function with instant refetch
   const applyTheme = useCallback(
     async (theme: Theme) => {
-      console.log("Applying theme:", theme);
+
       setIsApplyingTheme(true);
       setIsThemeReady(false);
 
@@ -343,10 +341,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
             });
 
             // 4. **INSTANTLY REFETCH** the selected theme to update selectedThemeData
-            console.log("Refetching selected theme after apply...");
+
             await refetchSelectedTheme();
 
-            console.log("Theme applied successfully to backend");
+
           } catch (error) {
             console.error("Failed to save theme to database:", error);
             // Revert on backend failure

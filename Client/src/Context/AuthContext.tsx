@@ -26,6 +26,10 @@ export interface User {
   selectedTheme?: string | null;
   createdAt: string;
   updatedAt: string;
+  onboardingStatus?: {
+    status: "pending" | "approved" | "rejected";
+    rejectionNote?: string | null;
+  } | null;
 }
 
 interface AuthContextType {
@@ -193,7 +197,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       Cookies.set("authUser", JSON.stringify(updatedUser), {
         expires: COOKIE_EXPIRATION_DAYS,
       });
-      console.log("AuthProvider: User data updated:", updatedUser.id);
+
     }
   };
 

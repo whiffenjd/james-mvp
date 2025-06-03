@@ -13,7 +13,7 @@ export class ThemeController {
       });
     }
     const result = await this.themeService.create(req.body, userId);
-    console.log(result);
+
     res.status(200).json({
       success: true,
       message: 'Theme Created successfully',

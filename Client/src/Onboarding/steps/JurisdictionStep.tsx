@@ -4,16 +4,21 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useOnboarding } from '../../Context/OnboardingContext';
 import { jurisdictionSchema } from '../schema';
 import { StepHeader } from '../StepHeader';
-
+import { useEffect } from 'react';
 
 // Step 1: Jurisdiction Selection
 export function JurisdictionStep() {
     const { state, updateFormData, nextStep } = useOnboarding();
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { register, handleSubmit, setValue, formState: { errors } } = useForm({
         resolver: zodResolver(jurisdictionSchema),
         defaultValues: { jurisdiction: state.formData.jurisdiction || '' }
     });
 
+    useEffect(() => {
+        if (state.formData.jurisdiction) {
+            setValue('jurisdiction', state.formData.jurisdiction);
+        }
+    }, [state.formData.jurisdiction, setValue]);
     const onSubmit = (data: any) => {
         updateFormData(data);
         nextStep();
@@ -27,9 +32,6 @@ export function JurisdictionStep() {
                 title="Jurisdiction Selection"
                 subtitle="Select your jurisdiction for compliance requirements"
             />
-
-
-
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">

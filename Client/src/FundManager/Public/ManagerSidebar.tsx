@@ -142,9 +142,8 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                         if (parent) {
                           parent.innerHTML = `
                             <div class="w-full h-full bg-theme-sidebar-accent/10 flex items-center justify-center">
-                              <span class="text-theme-sidebar-accent text-xs font-semibold">${
-                                projectName?.charAt(0) || "P"
-                              }</span>
+                              <span class="text-theme-sidebar-accent text-xs font-semibold">${projectName?.charAt(0) || "P"
+                            }</span>
                             </div>
                           `;
                         }
@@ -211,11 +210,10 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
           {menuItems.map((item) => (
             <button
               key={item.id}
-              className={`flex items-center w-full px-4 py-4 rounded-[10px] transition-colors text-sm font-poppins font-normal ${
-                activeItem === item.id
+              className={`flex items-center w-full px-4 py-4 rounded-[10px] transition-colors text-sm font-poppins font-normal ${activeItem === item.id
                   ? "bg-theme-sidebar-accent text-white"
                   : "text-theme-sidebar-accent hover:bg-theme-sidebar-accent hover:text-white"
-              }`}
+                }`}
               onClick={() => handleItemClick(item)}
             >
               <span className="mr-3 text-current">{item.icon}</span>

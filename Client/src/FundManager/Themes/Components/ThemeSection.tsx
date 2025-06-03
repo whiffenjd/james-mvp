@@ -58,7 +58,7 @@ const ThemesSection: React.FC<ThemesSectionProps> = ({
       // Handle the theme deletion in context (this will auto-switch if needed)
       await handleThemeDeleted(themeId, remainingThemes);
 
-      console.log("Theme deleted successfully and fallback applied");
+
     } catch (error) {
       console.error("Failed to delete theme:", error);
     }
@@ -91,11 +91,10 @@ const ThemesSection: React.FC<ThemesSectionProps> = ({
             return (
               <div
                 key={theme.id}
-                className={`w-[30%] border-2 rounded-lg p-4 cursor-pointer transition-all relative group h-[35%] ${
-                  isSelected
+                className={`w-[30%] border-2 rounded-lg p-4 cursor-pointer transition-all relative group h-[35%] ${isSelected
                     ? "border-green-500 ring-2 ring-green-200"
                     : "border-gray-200 hover:border-gray-300"
-                }`}
+                  }`}
                 onClick={() => onThemeSelect(theme)}
               >
                 {theme.id && (

@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import LoadingSpinner from "../../PublicComponents/Components/LoadingSpinner";
 
@@ -87,6 +87,7 @@ export const FundManagerRoute: React.FC<ProtectedRouteProps> = ({
 
 export const InvestorRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
+  const location = useLocation();
 
   // Show loading until authentication state is determined
   if (user === undefined) {
@@ -106,12 +107,21 @@ export const InvestorRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     } else if (user?.role === "fundManager") {
       return <Navigate to="/fundmanager/dashboard" replace />;
     } else {
-      // Fallback for unknown roles
       return <Navigate to="/unauthorized" replace />;
     }
   }
 
-  // Render children or outlet if user is investor
+  // Check onboarding status and redirect if needed
+  if (
+    !user.onboardingStatus?.status ||
+    user.onboardingStatus.status !== "approved"
+  ) {
+    // Allow access to onboarding route
+    if (!location.pathname.includes('/investor/onboarding')) {
+      return <Navigate to="/investor/onboarding" replace />;
+    }
+  }
+
   return children ? <>{children}</> : <Outlet />;
 };
 

@@ -2,11 +2,14 @@ import { Eye, Trash2 } from "lucide-react";
 import { StepHeader } from "../StepHeader";
 import { useOnboarding } from "../../Context/OnboardingContext";
 import { useEffect, useState } from "react";
-import { useStartOnboarding } from "../../API/Endpoints/Onboarding/useInvestorOnboarding";
+import { useStartOnboarding, useUpdateOnboarding } from "../../API/Endpoints/Onboarding/useInvestorOnboarding";
+import { useAuth } from "../../Context/AuthContext";
 
 export function DocumentUploadStepEntity() {
     const { state, updateFormData, nextStep, prevStep } = useOnboarding();
     const { mutate: startOnboarding, isLoading: isStarting } = useStartOnboarding();
+    const { mutate: updateOnboarding, isLoading: isUpdating } = useUpdateOnboarding();
+    const { user } = useAuth();
     // Now selectedFiles[type] is an array of File objects
     const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File[] }>({});
 
@@ -42,20 +45,23 @@ export function DocumentUploadStepEntity() {
     };
 
     const handleSubmit = () => {
-        // For now, just mock url with a placeholder, in real life you'd upload and get a real URL
         const entityDocuments = Object.entries(selectedFiles).flatMap(([type, files]) =>
             files.map(file => ({
                 type,
-                url: "uploaded-file-url", // Replace with actual uploaded file url
+                url: "uploaded-file-url",
                 fileName: file.name
             }))
         );
-        updateFormData({ entityDocuments });
-        startOnboarding({ formData: state.formData });
-        // nextStep();
-    };
 
-    useEffect(() => { console.log("state", state?.formData) }, [state.formData]);
+        updateFormData({ entityDocuments });
+
+        // If rejected, use update mutation, otherwise use start mutation
+        if (user?.onboardingStatus?.status === 'rejected') {
+            updateOnboarding({ formData: state.formData });
+        } else if (!user?.onboardingStatus?.status) {
+            startOnboarding({ formData: state.formData });
+        }
+    };
 
     // For reusable file input + preview row
     function FileInputBlock({ label, desc, ul, inputId, accept, fileKey }) {
@@ -139,6 +145,24 @@ export function DocumentUploadStepEntity() {
                 subtitle="Please upload required documents"
             />
             <div className="space-y-6 max-w-8xl">
+                {/* Show pending notice if status is pending */}
+                {user?.onboardingStatus?.status === 'pending' && (
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-sm text-yellow-800">
+                            <strong>Pending Approval:</strong> Your onboarding submission is currently under review. You cannot make changes until the review is complete.
+                        </p>
+                    </div>
+                )}
+
+                {/* Show rejection notice if status is rejected */}
+                {user?.onboardingStatus?.status === 'rejected' && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-800">
+                            <strong>Update Required:</strong> Please review and update your documents based on the feedback provided.
+                        </p>
+                    </div>
+                )}
+
                 <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
                     <p className="text-sm text-orange-800">
                         <strong>Important Notice:</strong> KYC document verification is required before signing subscription document. You can complete this step later, but please note that investment opportunities will be limited until verification is complete.
@@ -172,10 +196,10 @@ export function DocumentUploadStepEntity() {
                     </button>
                     <button
                         onClick={handleSubmit}
-                        disabled={isStarting}
+                        disabled={isStarting || isUpdating || user?.onboardingStatus?.status === 'pending'}
                         className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
-                        Submit
+                        {user?.onboardingStatus?.status === 'rejected' ? 'Update' : 'Submit'}
                     </button>
                 </div>
             </div>

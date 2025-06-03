@@ -74,3 +74,23 @@ export const getOnboardingStatus = async (userId: string): Promise<OnboardingSta
     rejectionNote: onboarding.rejectionNote ?? undefined,
   };
 };
+
+export const getOnboardingInfo = async (userId: string) => {
+  const [onboarding] = await db
+    .select()
+    .from(InvestorOnboardingTable)
+    .where(eq(InvestorOnboardingTable.userId, userId));
+
+  if (!onboarding) throw new Error('Onboarding not found.');
+
+  // Get associated documents if needed
+  const documents = await db
+    .select()
+    .from(OnboardingDocumentTable)
+    .where(eq(OnboardingDocumentTable.onboardingId, onboarding.id));
+
+  return {
+    ...onboarding,
+    documents: documents || [],
+  };
+};

@@ -217,14 +217,33 @@ export const startOnboarding = async (req: AuthenticatedRequest, res: Response) 
       });
     }
 
-    const payload: CreateOnboardingRequest = req.body;
+    // Extract and decode URLs from the request body
+    const { formData, ...restPayload } = req.body;
+    const decodedFormData = {
+      ...formData,
+      kycDocumentUrl: formData.kycDocumentUrl
+        ? decodeURIComponent(formData.kycDocumentUrl.replace(/&#x2F;/g, '/'))
+        : undefined,
+      proofOfAddressUrl: formData.proofOfAddressUrl
+        ? decodeURIComponent(formData.proofOfAddressUrl.replace(/&#x2F;/g, '/'))
+        : undefined,
+    };
+
+    // Create new payload with decoded URLs
+    const payload: CreateOnboardingRequest = {
+      ...restPayload,
+      formData: decodedFormData,
+    };
+
     const onboarding = await onboardingService.startOnboarding(userId, payload);
+
     res.status(200).json({
       success: true,
       message: 'Onboarding started',
       data: onboarding,
     });
   } catch (error) {
+    console.error('Onboarding error:', error);
     res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : 'An unknown error occurred',
@@ -272,17 +291,36 @@ export const updateOnboarding = async (req: AuthenticatedRequest, res: Response)
       });
     }
 
-    const payload: UpdateOnboardingRequest = req.body;
+    // Extract and decode URLs from the request body
+    const { formData, ...restPayload } = req.body;
+    const decodedFormData = {
+      ...formData,
+      kycDocumentUrl: formData.kycDocumentUrl
+        ? decodeURIComponent(formData.kycDocumentUrl.replace(/&#x2F;/g, '/'))
+        : undefined,
+      proofOfAddressUrl: formData.proofOfAddressUrl
+        ? decodeURIComponent(formData.proofOfAddressUrl.replace(/&#x2F;/g, '/'))
+        : undefined,
+    };
+
+    // Create new payload with decoded URLs
+    const payload: UpdateOnboardingRequest = {
+      ...restPayload,
+      formData: decodedFormData,
+    };
+
     const onboarding = await onboardingService.updateOnboarding(userId, payload);
+
     res.status(200).json({
       success: true,
       message: 'Onboarding updated',
       data: onboarding,
     });
   } catch (error) {
+    console.error('Update onboarding error:', error);
     res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : 'An unknown error occurred',
+      message: error instanceof Error ? error.message : 'An unexpected error occurred',
       data: null,
     });
   }
@@ -333,6 +371,69 @@ export const getOnboardingStatus = async (req: AuthenticatedRequest, res: Respon
       data: status,
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'An unknown error occurred',
+      data: null,
+    });
+  }
+};
+
+/**
+ * @swagger
+ * /onboarding/investor/info:
+ *   get:
+ *     summary: Get the complete onboarding information
+ *     tags: [Investor Onboarding]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Onboarding information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         formData:
+ *                           $ref: '#/components/schemas/InvestorOnboardingPayload'
+ *       401:
+ *         description: User not authenticated
+ *       404:
+ *         description: Onboarding not found
+ *       500:
+ *         description: Server error
+ */
+export const getOnboardingInfo = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated',
+        data: null,
+      });
+    }
+
+    const info = await onboardingService.getOnboardingInfo(userId);
+    res.status(200).json({
+      success: true,
+      message: 'Onboarding information fetched',
+      data: info,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Onboarding not found.') {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+        data: null,
+      });
+    }
     res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : 'An unknown error occurred',

@@ -50,7 +50,7 @@ axiosPrivate.interceptors.response.use(
   (error) => {
     // Handle error responses
     const response = error.response;
-    console.log("res", response);
+   
     if (response && response.data && response.data.loggedOut === true) {
       // Clear auth token from cookies
       Cookies.remove("authToken");

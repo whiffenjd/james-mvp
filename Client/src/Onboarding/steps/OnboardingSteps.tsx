@@ -1,4 +1,6 @@
+import { useAuth } from "../../Context/AuthContext";
 import { useOnboarding } from "../../Context/OnboardingContext";
+import { useOnboardingInfo } from "../../API/Endpoints/Onboarding/useInvestorOnboarding";
 import { DocumentUploadStepEntity } from "./DocumentsUploader";
 import { DocumentUploadStep } from "./DocumentUploadStep";
 import { EntityClassificationStep } from "./EntityClassificationStep";
@@ -8,14 +10,110 @@ import { InvestorTypeStep } from "./InvestorTypeStep";
 import { JurisdictionStep } from "./JurisdictionStep";
 import { ProgressIndicator } from "./ProgressIndicator";
 import { SelfCertifiedSophisticatedStep } from "./SelfCertifiedSophisticatedStep";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { Loader2, LogOut } from "lucide-react";
+
+
+const OnboardingStatus = ({ status, rejectionNote }: { status: string; rejectionNote?: string }) => (
+    <div className="space-y-6 my-4 px-4">
+        <div className="p-6 bg-white rounded-lg shadow">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Onboarding Status</h2>
+            <div className={`p-4 rounded-lg ${status === 'pending' ? 'bg-yellow-50 border border-yellow-200' :
+                status === 'rejected' ? 'bg-red-50 border border-red-200' :
+                    'bg-gray-50 border border-gray-200'
+                }`}>
+                <p className="font-medium mb-2">
+                    Status: <span className="capitalize">{status}</span>
+                </p>
+                {rejectionNote && (
+                    <div className="mt-4">
+                        <p className="font-medium text-red-600">Rejection Reason:</p>
+                        <p className="mt-1 text-gray-700">{rejectionNote}</p>
+                    </div>
+                )}
+                <p className="mt-4 text-sm text-gray-600">
+                    {status === 'pending'
+                        ? 'Your onboarding submission is being reviewed. We will notify you once the review is complete.'
+                        : 'Please review the feedback and resubmit your onboarding information.'}
+                </p>
+            </div>
+        </div>
+    </div>
+);
+
 
 export function OnboardingSteps() {
-    const { state } = useOnboarding();
+    const { state, dispatch, updateFormData } = useOnboarding();
+    const { user, logout } = useAuth();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    // Only fetch onboarding info if user has onboarding status
+    const { data: onboardingInfo, isLoading: isLoadingOnboarding } = useOnboardingInfo({
+        enabled: !!user?.onboardingStatus // Only run query if onboardingStatus exists
+    });
+
+    // Effect to handle existing onboarding data
+    useEffect(() => {
+        if (user?.onboardingStatus && onboardingInfo?.data) {
+            // Clear existing form data
+            dispatch({ type: 'RESET_FORM' });
+
+            // Update with saved onboarding data and set to last step
+            updateFormData(onboardingInfo.data.formData);
+
+            // Set to last step based on investor type
+            const lastStep = onboardingInfo.data.formData.investorType === 'individual' ? 5 : 4;
+            dispatch({ type: 'SET_STEP', payload: lastStep });
+
+            // Show status messages
+            if (user.onboardingStatus.status === 'rejected') {
+                const baseMessage = "Your previous submission was rejected.";
+                const note = user.onboardingStatus?.rejectionNote;
+                toast.error(note ? `${baseMessage}\n${note}` : baseMessage);
+            } else if (user.onboardingStatus.status === 'pending') {
+                toast.error('Your onboarding submission is pending approval');
+            }
+        }
+    }, [user?.onboardingStatus, onboardingInfo?.data]);
+
+    const handleLogout = () => {
+        logout(setIsLoggingOut);
+    };
+
+    // Show loading state only if we're actually fetching data
+    if (user?.onboardingStatus && isLoadingOnboarding) {
+        return (
+            <div className="w-screen h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="animate-spin h-8 w-8 mb-4 text-teal-600" />
+                    <p className="text-gray-600">Loading your onboarding information...</p>
+                </div>
+            </div>
+        );
+    }
 
     // Helper to get total steps based on investor type
     const getTotalSteps = () => state.formData.investorType === 'individual' ? 5 : 4;
 
     const renderCurrentStep = () => {
+        // If there's existing onboarding data, show status at the last step
+        if (user?.onboardingStatus && (state.currentStep === 4 || state.currentStep === 5)) {
+            return (
+                <>
+                    <OnboardingStatus
+                        status={user.onboardingStatus.status}
+                        rejectionNote={user.onboardingStatus.rejectionNote ?? undefined}
+                    />
+                    {/* Still show the document upload step below the status */}
+                    {state.formData.investorType === 'individual'
+                        ? <DocumentUploadStep />
+                        : <DocumentUploadStepEntity />
+                    }
+                </>
+            );
+        }
+
         switch (state.currentStep) {
             case 1:
                 return <JurisdictionStep />;
@@ -33,7 +131,7 @@ export function OnboardingSteps() {
                     } else if (state.formData.individualInvestorType === 'self_certified_sophisticated_investor') {
                         return <SelfCertifiedSophisticatedStep />
                     }
-                    return <div>Qualification Step - To be implemented</div>;
+                    return <div>Step not found</div>;
                 }
                 return <DocumentUploadStepEntity />;
             case 5:
@@ -50,7 +148,27 @@ export function OnboardingSteps() {
     };
 
     return (
-        <div className="w-screen h-screen min-h-screen bg-[#2FB5B4] flex items-center justify-center overflow-auto">
+        <div className="w-screen h-screen min-h-screen bg-[#2FB5B4] flex items-center justify-center overflow-auto relative">
+            {/* Add Logout Button - Floating */}
+            <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="absolute top-4 right-4 bg-transparent hover:bg-neutral-200/60 dark:hover:bg-neutral-800/60 text-neutral-700 dark:text-neutral-200 px-3 py-2 rounded-lg transition-colors flex items-center gap-2"
+            >
+                {isLoggingOut ? (
+                    <>
+                        <Loader2 className="animate-spin w-4 h-4" />
+
+                    </>
+                ) : (
+                    <>
+                        <LogOut className="w-4 h-4" />
+
+                    </>
+                )}
+            </button>
+
+            {/* Existing content */}
             <div className="flex w-[90vw] h-[90vh] gap-4">
                 {/* Progress Sidebar */}
                 <div className="h-full bg-[#F4F4F5] rounded-2xl overflow-hidden">

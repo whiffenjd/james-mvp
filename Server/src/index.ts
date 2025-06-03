@@ -12,6 +12,7 @@ import investorOnboardingRouter from './Routes/investorOnboardingRouter';
 import DashboardAssetRouter from './Routes/DashboardAssetsRoutes';
 import managerOnboardingRouter from './Routes/managerOnboardingRouter';
 import DashboardThemeRouter from './Routes/DashboardThemeRoutes';
+import documentUploadRouter from './Routes/documentUploadRouter';
 
 dotenv.config();
 export const app = express();
@@ -42,6 +43,7 @@ app.use('/list', managerOnboardingRouter);
 
 app.use('/dashboard/assets', DashboardAssetRouter);
 app.use('/dashboard/theme', DashboardThemeRouter);
+app.use('/api/documents', documentUploadRouter);
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');
 });

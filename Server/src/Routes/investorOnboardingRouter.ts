@@ -33,4 +33,10 @@ investorOnboardingRouter.get(
   asyncHandler(onboardingController.getOnboardingStatus),
 );
 
+investorOnboardingRouter.get(
+  '/info',
+  asyncHandler(verifyToken),
+  asyncHandler(onboardingController.getOnboardingInfo),
+);
+
 export default investorOnboardingRouter;

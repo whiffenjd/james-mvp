@@ -10,10 +10,9 @@ import { useThemeContext } from "../Context/InvestorThemeContext";
 
 const InvestorLayout = () => {
   const { user, logout } = useAuth();
+  console.log("user:", user);
   const { currentTheme, isLoadingCurrentTheme } = useThemeContext();
 
-  console.log("Current Theme:", currentTheme);
-  console.log("Is Loading Theme:", isLoadingCurrentTheme);
 
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -55,7 +54,7 @@ const InvestorLayout = () => {
       </div>
     );
   }
-  console.log("Theme Styles53sa4:", currentTheme);
+
   // Default fallback colors if no theme is applied
   const themeStyles = {
     dashboardBg: currentTheme?.dashboardBackground,
@@ -64,7 +63,7 @@ const InvestorLayout = () => {
     secondaryText: currentTheme?.secondaryText || "#6b7280",
     sidebarAccent: currentTheme?.sidebarAccentText || "#3b82f6",
   };
-  console.log("Theme Styles:", themeStyles);
+
   return (
     <div
       className="h-full px-7 py-12 flex gap-9 transition-colors duration-300"

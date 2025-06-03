@@ -75,6 +75,8 @@ function onboardingReducer(state: OnboardingState, action: OnboardingAction): On
         case 'SET_ERRORS':
             return { ...state, errors: action.payload };
         case 'RESET_FORM':
+            // Clear localStorage when resetting
+            localStorage.removeItem('investor_onboarding');
             return initialState;
         default:
             return state;

@@ -99,6 +99,7 @@ function App() {
 
           {/* Investor routes - NO THEMING */}
           <Route element={<InvestorRoute />}>
+            <Route path="/investor/onboarding" element={<InvestorOnboarding />} />
             <Route
               path="/investor/dashboard"
               element={
@@ -116,10 +117,11 @@ function App() {
             </Route>
           </Route>
 
+
           {/* Error and fallback routes */}
           <Route path="/unauthorized" element={<Unauthorized />} />
 
-          <Route path="/investor/onboarding" element={<InvestorOnboarding />} />
+
 
           {/* Redirect root to login or appropriate dashboard based on auth state */}
           <Route

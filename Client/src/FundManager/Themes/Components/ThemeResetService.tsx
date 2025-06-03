@@ -16,7 +16,7 @@ class ThemeResetService {
 
   // Reset all registered themes
   resetAllThemes() {
-    console.log("Resetting all theme states");
+
     this.resetCallbacks.forEach((callback) => {
       try {
         callback();
@@ -39,7 +39,7 @@ class ThemeResetService {
         }
       });
 
-      console.log("Cleared all theme storage");
+
     } catch (error) {
       console.error("Error clearing theme storage:", error);
     }

@@ -1,6 +1,6 @@
 import { desc, eq, lt, or } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
-import { OtpTable, UsersTable } from '../db/schema';
+import { InvestorOnboardingTable, OtpTable, UsersTable } from '../db/schema';
 import { db } from '../db/DbConnection';
 import { transporter } from '../configs/Nodemailer';
 import { signToken } from './jwtService';
@@ -84,6 +84,32 @@ export const loginUser = async (
 
   await deleteUserTokenByType(user.id, email, 'userAuth');
 
+  // If user is an investor, fetch onboarding status
+  let onboardingStatus = null;
+  if (user.role === 'investor') {
+    const onboarding = await db.query.InvestorOnboardingTable.findFirst({
+      where: eq(InvestorOnboardingTable.userId, user.id),
+      columns: {
+        status: true,
+        rejectionNote: true,
+      },
+    });
+    if (onboarding) {
+      onboardingStatus = {
+        status: onboarding.status,
+        rejectionNote: onboarding.rejectionNote,
+      };
+    }
+  }
+
+  const { password: _password, ...userWithoutPassword } = user;
+
+  // Add onboardingStatus if applicable
+  const userWithOnboarding = {
+    ...userWithoutPassword,
+    onboardingStatus,
+  };
+
   // Sign and store new token
   const { token, expiresAt } = signToken({ id: user.id, role: user.role });
   await db.insert(UserTokens).values({
@@ -95,8 +121,45 @@ export const loginUser = async (
     userRole: user.role,
   });
   deleteCache(`userProfile:${user.id}`);
-  return { token, user };
+
+  return {
+    token,
+    user: userWithOnboarding,
+  };
 };
+
+// export const loginUser = async (
+//   email: string,
+//   password: string,
+//   role: 'admin' | 'fundManager' | 'investor',
+// ) => {
+//   const user = await db.query.UsersTable.findFirst({
+//     where: eq(UsersTable.email, email),
+//   });
+
+//   if (!user || !(await bcrypt.compare(password, user.password))) {
+//     throw new Error('Invalid credentials');
+//   }
+
+//   if (!user.isEmailVerified) {
+//     throw new Error('Email not verified');
+//   }
+
+//   await deleteUserTokenByType(user.id, email, 'userAuth');
+
+//   // Sign and store new token
+//   const { token, expiresAt } = signToken({ id: user.id, role: user.role });
+//   await db.insert(UserTokens).values({
+//     userId: user.id,
+//     email: user.email,
+//     token,
+//     expiresAt,
+//     type: 'userAuth',
+//     userRole: user.role,
+//   });
+//   deleteCache(`userProfile:${user.id}`);
+//   return { token, user };
+// };
 
 export const getUserProfileByRole = async (id: string, role: Role): Promise<User | null> => {
   const [user] = await db.select().from(UsersTable).where(eq(UsersTable.id, id));

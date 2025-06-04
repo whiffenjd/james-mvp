@@ -29,21 +29,3 @@ export const InvestorOnboardingTable = pgTable(
     userIdIdx: index('investor_onboarding_user_id_idx').on(onboard.userId),
   }),
 );
-
-// Documents table for uploads
-export const OnboardingDocumentTable = pgTable(
-  'onboarding_documents',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    onboardingId: uuid('onboarding_id')
-      .notNull()
-      .references(() => InvestorOnboardingTable.id, { onDelete: 'cascade' }),
-    type: varchar('type', { length: 50 }).notNull(), // e.g. 'kyc', 'address', 'entity_doc'
-    fileUrl: varchar('file_url', { length: 1024 }).notNull(),
-    fileName: varchar('file_name', { length: 255 }),
-    uploadedAt: timestamp('uploaded_at').defaultNow(),
-  },
-  (doc) => ({
-    onboardingIdIdx: index('onboarding_documents_onboarding_id_idx').on(doc.onboardingId),
-  }),
-);

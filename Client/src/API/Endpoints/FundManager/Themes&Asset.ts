@@ -47,11 +47,11 @@ interface ThemeApiResponse {
   error?: string;
 }
 
-interface SelectedThemeResponse {
-  success: boolean;
-  data?: Theme;
-  error?: string;
-}
+// interface SelectedThemeResponse {
+//   success: boolean;
+//   data?: Theme;
+//   error?: string;
+// }
 
 // Dashboard Assets API
 export const dashboardAssetsApi = {

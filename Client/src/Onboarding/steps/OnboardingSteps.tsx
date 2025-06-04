@@ -12,7 +12,7 @@ import { ProgressIndicator } from "./ProgressIndicator";
 import { SelfCertifiedSophisticatedStep } from "./SelfCertifiedSophisticatedStep";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, LogOut } from "lucide-react";
+import { Loader2, LogOut, RotateCcw } from "lucide-react";
 
 
 const OnboardingStatus = ({
@@ -57,6 +57,34 @@ const OnboardingStatus = ({
     </div>
 );
 
+const syncOnboardingState = async (onboardingInfo, user, dispatch, updateFormData) => {
+    try {
+        // Clear existing form data
+        dispatch({ type: 'RESET_FORM' });
+
+        // Wait for form data update to complete
+        await new Promise<void>(resolve => {
+            if (onboardingInfo.data) {
+                updateFormData(onboardingInfo.data.formData);
+            }
+            setTimeout(resolve, 100);
+        });
+
+        // Set to last step based on investor type, with null check
+        const investorType = onboardingInfo.data?.formData?.investorType;
+        const lastStep = investorType === 'individual' ? 5 : 4;
+        dispatch({ type: 'SET_STEP', payload: lastStep });
+
+        // Show status messages with null checks
+        if (user.onboardingStatus && user.onboardingStatus.status === 'rejected') {
+            toast.error("Your previous submission was rejected.");
+        } else if (user.onboardingStatus && user.onboardingStatus.status === 'pending') {
+            toast.error('Your onboarding submission is pending approval');
+        }
+    } catch (error) {
+        console.error('Error updating onboarding state:', error);
+    }
+};
 
 
 export function OnboardingSteps() {
@@ -65,7 +93,7 @@ export function OnboardingSteps() {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     // Only fetch onboarding info if user has onboarding status
-    const { data: onboardingInfo, isLoading: isLoadingOnboarding } = useOnboardingInfo({
+    const { data: onboardingInfo, isLoading: isLoadingOnboarding, refetch: refetchOnboarding } = useOnboardingInfo({
         enabled: !!user?.onboardingStatus // Only run query if onboardingStatus exists
     });
 
@@ -218,11 +246,33 @@ export function OnboardingSteps() {
                                     </div>
                                     <span className="font-semibold text-[#017776] text-xl tracking-wide">LOGO</span>
                                 </div>
-                                <div className="text-sm text-gray-700">
-                                    <span className="mr-4 font-medium">Need Help?</span>
+                                <div className="flex items-center space-x-4 text-sm text-gray-700">
+                                    {/* Resync Button */}
+                                    {user?.onboardingStatus && (
+                                        <button
+                                            // onClick={async () => {
+                                            //     await refetchOnboarding();
+                                            //     toast.success("Onboarding data re-synced!");
+                                            // }}
+                                            onClick={() => {
+                                                window.location.reload();
+                                            }}
+                                            className="  text-[#017776] rounded-lg px-3 py-1 font-medium hover:bg-[#E0F7F6] transition-colors flex items-center gap-2"
+                                            disabled={isLoadingOnboarding}
+                                        >
+                                            {isLoadingOnboarding ? (
+                                                <Loader2 className="animate-spin h-4 w-4" />
+                                            ) : (
+                                                <RotateCcw />
+                                            )}
+
+                                        </button>
+                                    )}
+                                    <span className="font-medium">Need Help?</span>
                                     <span className="underline cursor-pointer">LogIn</span>
                                 </div>
                             </div>
+
 
                             <div className="mb-6">
                                 <h1 className="text-3xl font-playfair font-bold text-[#017776]">Investor OnBoarding</h1>
@@ -232,6 +282,7 @@ export function OnboardingSteps() {
 
                         {/* Step Content - Scrollable */}
                         <div className="flex-1 overflow-auto">
+
                             {renderCurrentStep()}
                         </div>
 

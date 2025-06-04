@@ -1,5 +1,5 @@
 import { db } from '../db/DbConnection';
-import { InvestorOnboardingTable, OnboardingDocumentTable } from '../db/schema/onboarding';
+import { InvestorOnboardingTable } from '../db/schema/onboarding';
 import { eq } from 'drizzle-orm';
 import {
   CreateOnboardingRequest,
@@ -66,11 +66,6 @@ export const getOnboardingStatus = async (userId: string): Promise<OnboardingSta
 
   if (!onboarding) throw new Error('Onboarding not found.');
 
-  const documents = await db
-    .select()
-    .from(OnboardingDocumentTable)
-    .where(eq(OnboardingDocumentTable.onboardingId, onboarding.id));
-
   return {
     status: onboarding.status,
     rejectionNote: onboarding.rejectionNote ?? undefined,
@@ -85,14 +80,7 @@ export const getOnboardingInfo = async (userId: string) => {
 
   if (!onboarding) throw new Error('Onboarding not found.');
 
-  // Get associated documents if needed
-  const documents = await db
-    .select()
-    .from(OnboardingDocumentTable)
-    .where(eq(OnboardingDocumentTable.onboardingId, onboarding.id));
-
   return {
     ...onboarding,
-    documents: documents || [],
   };
 };

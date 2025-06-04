@@ -140,7 +140,7 @@ export function DocumentUploadStepEntity() {
 
                     // Load new onboarding data
                     if (response.data?.formData) {
-                        console.log("updating")
+
                         await new Promise<void>(resolve => {
                             updateFormData(response.data.formData);
                             setTimeout(resolve, 100);

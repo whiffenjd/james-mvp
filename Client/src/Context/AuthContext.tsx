@@ -61,10 +61,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isAuthInitialized, setIsAuthInitialized] = useState(false);
   const navigate = useNavigate();
   const logoutMutation = useLogout();
-  const getUserThemeKey = useCallback(
-    (userId: string) => `theme_${userId}`,
-    []
-  );
+  // const getUserThemeKey = useCallback(
+  //   (userId: string) => `theme_${userId}`,
+  //   []
+  // );
 
   // Check for existing auth data on load - SYNCHRONOUSLY
   useEffect(() => {

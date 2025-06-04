@@ -10,7 +10,7 @@ import { useThemeContext } from "../Context/InvestorThemeContext";
 
 const InvestorLayout = () => {
   const { user, logout } = useAuth();
-  console.log("user:", user);
+
   const { currentTheme, isLoadingCurrentTheme } = useThemeContext();
 
 

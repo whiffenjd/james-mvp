@@ -9,7 +9,7 @@ interface DocumentPreviewModalProps {
 
 export function DocumentPreviewModal({ isOpen, onClose, fileUrl, fileType }: DocumentPreviewModalProps) {
     if (!isOpen) return null;
-    console.log("url ", fileUrl, fileType)
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div

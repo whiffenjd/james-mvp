@@ -1,5 +1,5 @@
 import { eq, sql } from 'drizzle-orm';
-import { InvestorOnboardingTable, OnboardingDocumentTable } from '../db/schema/onboarding';
+import { InvestorOnboardingTable } from '../db/schema/onboarding';
 import { UsersTable } from '../db/schema/Admin';
 import {
   InvestorListItem,
@@ -55,11 +55,7 @@ export async function getInvestorOnboardingDetails(investorId: string) {
   const details = await db
     .select()
     .from(InvestorOnboardingTable)
-    .where(eq(InvestorOnboardingTable.userId, investorId))
-    .leftJoin(
-      OnboardingDocumentTable,
-      eq(InvestorOnboardingTable.id, OnboardingDocumentTable.onboardingId),
-    );
+    .where(eq(InvestorOnboardingTable.userId, investorId));
 
   if (!details.length) {
     throw new Error('Investor onboarding details not found');

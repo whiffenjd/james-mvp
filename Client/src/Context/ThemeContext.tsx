@@ -404,7 +404,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       selectedThemeId === specificThemeData.data.id &&
       currentTheme.id !== specificThemeData.data.id
     ) {
-      console.log("Loading specific theme:", specificThemeData.data);
+
       setIsApplyingTheme(true);
       setIsThemeReady(false);
 

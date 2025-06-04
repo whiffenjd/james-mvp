@@ -48,6 +48,8 @@ export const updateOnboarding = async (userId: string, payload: UpdateOnboarding
           ? payload.formData
           : {}),
       },
+      status: 'pending', // Reset status to pending as user has updated , would be under review
+      rejectionNote: null, // Clear rejection note
       updatedAt: new Date(),
     })
     .where(eq(InvestorOnboardingTable.userId, userId))

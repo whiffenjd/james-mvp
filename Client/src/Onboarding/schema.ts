@@ -148,27 +148,35 @@ export const selfCertifiedSophisticatedSchema = z.object({
     })
     .min(1, "Please provide the date"),
 });
-export const entityDetailsSchema = z.object({
-  entityType: z.enum([
-    "investment_professional",
-    "high_net_worth_company",
-    "other",
-  ]),
-  entityName: z.string().min(1, "Entity name is required"),
-  referenceNumber: z.string().optional(),
-  // Only for high net worth company
-  highNetWorthCompanySubType: z
-    .enum(["a", "b", "c", "d", "e"])
-    .optional()
-    .nullable(),
-  bodyCorporateBDetails: z
-    .object({
-      companyName: z.string().min(1, "Company name is required"),
-      companyNumber: z.string().optional(),
-    })
-    .optional(),
-  shareCapital: z.number().optional(),
-  netAssets: z.number().optional(),
-  membersCount: z.number().optional(),
-  trustAssetsValue: z.number().optional(),
-});
+export const entityDetailsSchema = z
+  .object({
+    entityType: z.enum(
+      ["investment_professional", "high_net_worth_company", "other"],
+      {
+        required_error: "Please select an entity type",
+      }
+    ),
+    entityName: z.string().min(1, "Entity name is required"),
+    referenceNumber: z.string().optional().nullable(),
+    highNetWorthCompanySubType: z
+      .enum(["a", "b", "c", "d", "e"], {
+        required_error: "Please select a company type",
+      })
+      .optional()
+      .nullable(),
+  })
+  .refine(
+    (data) => {
+      if (data.entityType === "high_net_worth_company") {
+        return (
+          data.highNetWorthCompanySubType !== undefined &&
+          data.highNetWorthCompanySubType !== null
+        );
+      }
+      return true;
+    },
+    {
+      message: "Please select a company type",
+      path: ["highNetWorthCompanySubType"], // This will show error on the specific field
+    }
+  );

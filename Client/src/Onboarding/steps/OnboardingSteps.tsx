@@ -15,32 +15,48 @@ import toast from "react-hot-toast";
 import { Loader2, LogOut } from "lucide-react";
 
 
-const OnboardingStatus = ({ status, rejectionNote }: { status: string; rejectionNote?: string }) => (
-    <div className="space-y-6 my-4 px-4">
-        <div className="p-6 bg-white rounded-lg shadow">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Onboarding Status</h2>
-            <div className={`p-4 rounded-lg ${status === 'pending' ? 'bg-yellow-50 border border-yellow-200' :
-                status === 'rejected' ? 'bg-red-50 border border-red-200' :
-                    'bg-gray-50 border border-gray-200'
-                }`}>
-                <p className="font-medium mb-2">
-                    Status: <span className="capitalize">{status}</span>
-                </p>
-                {rejectionNote && (
-                    <div className="mt-4">
-                        <p className="font-medium text-red-600">Rejection Reason:</p>
-                        <p className="mt-1 text-gray-700">{rejectionNote}</p>
-                    </div>
-                )}
-                <p className="mt-4 text-sm text-gray-600">
-                    {status === 'pending'
-                        ? 'Your onboarding submission is being reviewed. We will notify you once the review is complete.'
-                        : 'Please review the feedback and resubmit your onboarding information.'}
-                </p>
+const OnboardingStatus = ({
+    status,
+    rejectionNote
+}: {
+    status: string;
+    rejectionNote?: string;
+}) => (
+    <div className="my-6 px-4">
+        <div className={`rounded-xl p-5 shadow-sm border
+            ${status === 'pending'
+                ? 'bg-yellow-50 border-yellow-200'
+                : status === 'rejected'
+                    ? 'bg-red-50 border-red-200'
+                    : 'bg-gray-50 border-gray-200'
+            }`
+        }>
+            <div className="flex items-center gap-2 mb-2">
+                <span className="font-semibold text-lg">
+                    {status === 'pending' && '⏳'}
+                    {status === 'rejected' && '❌'}
+
+                </span>
+                <span className="font-semibold text-gray-800 text-lg capitalize">
+                    {status}
+                </span>
+            </div>
+            {rejectionNote && (
+                <div className="mt-2 text-sm text-red-600">
+                    {rejectionNote}
+                </div>
+            )}
+            <div className="mt-2 text-sm text-gray-600">
+                {status === 'pending'
+                    ? 'Your submission is under review.'
+                    : status === 'rejected'
+                        ? 'Please review the reason and resubmit.'
+                        : 'You have completed onboarding.'}
             </div>
         </div>
     </div>
 );
+
 
 
 export function OnboardingSteps() {
@@ -55,27 +71,39 @@ export function OnboardingSteps() {
 
     // Effect to handle existing onboarding data
     useEffect(() => {
-        if (user?.onboardingStatus && onboardingInfo?.data) {
-            // Clear existing form data
-            dispatch({ type: 'RESET_FORM' });
+        if (user?.onboardingStatus && onboardingInfo?.data?.formData) {
+            const updateStates = async () => {
+                try {
+                    // Clear existing form data
+                    dispatch({ type: 'RESET_FORM' });
 
-            // Update with saved onboarding data and set to last step
-            updateFormData(onboardingInfo.data.formData);
+                    // Wait for form data update to complete
+                    await new Promise<void>(resolve => {
+                        if (onboardingInfo.data) {
+                            updateFormData(onboardingInfo.data.formData);
+                        }
+                        setTimeout(resolve, 100);
+                    });
 
-            // Set to last step based on investor type
-            const lastStep = onboardingInfo.data.formData.investorType === 'individual' ? 5 : 4;
-            dispatch({ type: 'SET_STEP', payload: lastStep });
+                    // Set to last step based on investor type, with null check
+                    const investorType = onboardingInfo.data?.formData?.investorType;
+                    const lastStep = investorType === 'individual' ? 5 : 4;
+                    dispatch({ type: 'SET_STEP', payload: lastStep });
 
-            // Show status messages
-            if (user.onboardingStatus.status === 'rejected') {
-                const baseMessage = "Your previous submission was rejected.";
-                const note = user.onboardingStatus?.rejectionNote;
-                toast.error(note ? `${baseMessage}\n${note}` : baseMessage);
-            } else if (user.onboardingStatus.status === 'pending') {
-                toast.error('Your onboarding submission is pending approval');
-            }
+                    // Show status messages with null checks
+                    if (user.onboardingStatus && user.onboardingStatus.status === 'rejected') {
+                        toast.error("Your previous submission was rejected.");
+                    } else if (user.onboardingStatus && user.onboardingStatus.status === 'pending') {
+                        toast.error('Your onboarding submission is pending approval');
+                    }
+                } catch (error) {
+                    console.error('Error updating onboarding state:', error);
+                }
+            };
+
+            updateStates();
         }
-    }, [user?.onboardingStatus, onboardingInfo?.data]);
+    }, [user?.onboardingStatus, onboardingInfo?.data?.formData]); // Updated dependency array
 
     const handleLogout = () => {
         logout(setIsLoggingOut);
@@ -97,8 +125,12 @@ export function OnboardingSteps() {
     const getTotalSteps = () => state.formData.investorType === 'individual' ? 5 : 4;
 
     const renderCurrentStep = () => {
+        const totalSteps = getTotalSteps();
         // If there's existing onboarding data, show status at the last step
-        if (user?.onboardingStatus && (state.currentStep === 4 || state.currentStep === 5)) {
+        if (
+            user?.onboardingStatus &&
+            state.currentStep === totalSteps
+        ) {
             return (
                 <>
                     <OnboardingStatus
@@ -149,7 +181,7 @@ export function OnboardingSteps() {
 
     return (
         <div className="w-screen h-screen min-h-screen bg-[#2FB5B4] flex items-center justify-center overflow-auto relative">
-            {/* Add Logout Button - Floating */}
+
             <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
@@ -208,7 +240,7 @@ export function OnboardingSteps() {
                             <div className="flex items-center space-x-2 mb-6">
                                 {Array.from({ length: getTotalSteps() }, (_, i) => i + 1).map((step) => (
                                     <div key={step} className="flex items-center">
-                                        <div className={`h-2 w-16 rounded-full ${step <= state.currentStep ? 'bg-teal-600' : 'bg-gray-200'
+                                        <div className={`h-2 w-16 rounded-full ${step <= state.currentStep ? 'bg-[#017776]' : 'bg-gray-200'
                                             }`} />
                                         {step < getTotalSteps() && <div className="w-2" />}
                                     </div>

@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import type { InvestorOnboardingPayload } from '../Onboarding/types';
+import { onboardingResetService } from '../Onboarding/services/OnboardingResetService';
 
 
 interface OnboardingState {
@@ -75,9 +76,8 @@ function onboardingReducer(state: OnboardingState, action: OnboardingAction): On
         case 'SET_ERRORS':
             return { ...state, errors: action.payload };
         case 'RESET_FORM':
-            // Clear localStorage when resetting
-            localStorage.removeItem('investor_onboarding');
             return initialState;
+
         default:
             return state;
     }
@@ -93,6 +93,7 @@ const OnboardingContext = createContext<{
 
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
     const [state, dispatch] = useReducer(onboardingReducer, initialState);
+    const [isResetting, setIsResetting] = useState(false);
 
     const nextStep = () => {
         dispatch({ type: 'SET_STEP', payload: state.currentStep + 1 });
@@ -127,11 +128,30 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
     // Save data to localStorage when state changes
     useEffect(() => {
+        // Don't save if we're in the process of resetting
+        if (isResetting) return;
+
         localStorage.setItem('investor_onboarding', JSON.stringify({
             formData: state.formData,
             currentStep: state.currentStep
         }));
-    }, [state.formData, state.currentStep]);
+    }, [state.formData, state.currentStep, isResetting]);
+
+    useEffect(() => {
+        const resetCallback = () => {
+            setIsResetting(true);
+            localStorage.removeItem('investor_onboarding');
+            dispatch({ type: 'RESET_FORM' });
+            // Reset the flag after a small delay to ensure state updates have processed
+            setTimeout(() => setIsResetting(false), 0);
+        };
+
+        onboardingResetService.registerResetCallback(resetCallback);
+
+        return () => {
+            onboardingResetService.unregisterResetCallback(resetCallback);
+        };
+    }, []);
 
     return (
         <OnboardingContext.Provider value={{ state, dispatch, nextStep, prevStep, updateFormData }}>

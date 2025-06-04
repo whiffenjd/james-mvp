@@ -18,6 +18,7 @@ const upload = multer({
   storage: multerS3({
     s3: s3Client,
     bucket: process.env.BUCKET_NAME!,
+    contentType: multerS3.AUTO_CONTENT_TYPE, // Add this line
     metadata: (
       req: express.Request,
       file: Express.Multer.File,
@@ -27,6 +28,7 @@ const upload = multer({
       cb(null, {
         userId: authReq.user?.id,
         fieldName: file.fieldname,
+        contentType: file.mimetype, // Add content type to metadata
       });
     },
     key: (
@@ -40,8 +42,14 @@ const upload = multer({
       cb(null, fileName);
     },
   }),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    // Validate file types
+    const allowedMimes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPEG, PNG and PDF files are allowed.'));
+    }
   },
 });
 
@@ -49,7 +57,7 @@ const upload = multer({
 export const cleanupPreviousUploads = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction,
+  next: Function,
 ) => {
   try {
     const userId = req.user?.id;

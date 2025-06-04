@@ -62,16 +62,39 @@ export function EntityClassificationStep() {
             entityType: state.formData.entityDetails?.entityType || "",
             entityName: state.formData.entityDetails?.entityName || "",
             referenceNumber: state.formData.entityDetails?.referenceNumber || "",
-            highNetWorthCompanySubType: state.formData.entityDetails?.highNetWorthCompanySubType || "",
-        }
+            highNetWorthCompanySubType: state.formData.entityDetails?.highNetWorthCompanySubType || null,
+        },
+        mode: "onChange" // Enable real-time validation
     });
 
     const entityType = watch("entityType");
     const subType = watch("highNetWorthCompanySubType");
 
     const onSubmit = (data) => {
-        updateFormData({ entityDetails: data });
+        // Clean up the data based on entity type
+        const cleanData = {
+            ...data,
+            // Clear highNetWorthCompanySubType if not high net worth company
+            highNetWorthCompanySubType:
+                data.entityType === "high_net_worth_company"
+                    ? data.highNetWorthCompanySubType
+                    : null
+        };
+
+        updateFormData({ entityDetails: cleanData });
         nextStep();
+    };
+
+    // Show formatted error messages
+    const getErrorMessage = (fieldName) => {
+        if (!errors[fieldName]) return null;
+
+        // Map enum errors to user-friendly messages
+        if (errors[fieldName].type === "invalid_enum_value") {
+            return "Please select an option";
+        }
+
+        return errors[fieldName].message;
     };
 
     return (
@@ -83,9 +106,15 @@ export function EntityClassificationStep() {
 
             {/* Entity Type Radios */}
             <div className="space-y-6">
-                <label className={clsx(
-                    "block rounded-lg border border-[#979797] p-5 transition-all",
+                {/* Show entity type error if any */}
+                {errors.entityType && (
+                    <p className="text-red-500 text-sm mt-1">{getErrorMessage("entityType")}</p>
+                )}
 
+                <label className={clsx(
+                    "block rounded-lg border p-5 transition-all",
+                    errors.entityType ? "border-red-500" : "border-[#979797]",
+                    entityType === "investment_professional" && "border-[#2FB5B4]"
                 )}>
                     <input
                         type="radio"
@@ -103,22 +132,44 @@ export function EntityClassificationStep() {
                     {entityType === "investment_professional" && (
                         <div className="mt-4 p-4 bg-[#2FB5B433]/20 w-[70%] rounded-xl">
                             <div className="font-base mb-2">Input Details</div>
-                            <input
-                                {...register("entityName")}
-                                placeholder="Entity Name"
-                                className="mb-2 w-full bg-transparent p-2 outline-none rounded-lg border border-[#2C2C2E]"
-                            />
-                            <input
-                                {...register("referenceNumber")}
-                                placeholder="Reference No (If applicable)"
-                                className="w-full p-2  bg-transparent outline-none rounded-lg border  border-[#2C2C2E]"
-                            />
+                            <div className="space-y-4">
+                                <div>
+                                    <input
+                                        {...register("entityName")}
+                                        placeholder="Entity Name"
+                                        className={clsx(
+                                            "mb-1 w-full bg-transparent p-2 outline-none rounded-lg border",
+                                            errors.entityName ? "border-red-500" : "border-[#2C2C2E]"
+                                        )}
+                                    />
+                                    {errors.entityName && (
+                                        <p className="text-red-500 text-sm mt-1">
+                                            {getErrorMessage("entityName")}
+                                        </p>
+                                    )}
+                                </div>
+                                <div>
+                                    <input
+                                        {...register("referenceNumber")}
+                                        placeholder="Reference No (If applicable)"
+                                        className={clsx(
+                                            "w-full p-2 bg-transparent outline-none rounded-lg border",
+                                            errors.referenceNumber ? "border-red-500" : "border-[#2C2C2E]"
+                                        )}
+                                    />
+                                    {errors.referenceNumber && (
+                                        <p className="text-red-500 text-sm">{errors.referenceNumber.message}</p>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     )}
                 </label>
 
                 <label className={clsx(
-                    "block rounded-lg border border-[#979797] p-5 transition-all  "
+                    "block rounded-lg border p-5 transition-all",
+                    errors.entityType ? "border-red-500" : "border-[#979797]",
+                    entityType === "high_net_worth_company" && "border-[#2FB5B4]"
                 )}>
                     <input
                         type="radio"
@@ -150,6 +201,13 @@ export function EntityClassificationStep() {
                     {/* If selected, show subtypes */}
                     {entityType === "high_net_worth_company" && (
                         <div className="mt-6 space-y-3">
+                            {/* Show subtype error if any */}
+                            {errors.highNetWorthCompanySubType && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {getErrorMessage("highNetWorthCompanySubType")}
+                                </p>
+                            )}
+
                             {highNetWorthOptions.map(opt => (
                                 <label key={opt.value} className="flex tertiary-heading items-start gap-2">
                                     <input
@@ -165,22 +223,40 @@ export function EntityClassificationStep() {
                             {["a", "b", "c", "d"].includes(subType) && (
                                 <div className="mt-3 p-4 w-[70%] bg-[#D1EAED] rounded-xl">
                                     <div className="font-medium mb-2">Input Details</div>
-                                    <input
-                                        {...register("entityName")}
-                                        placeholder="Entity Name"
-                                        className="mb-2 w-full bg-transparent p-2 outline-none rounded border border-[#2C2C2E]"
-                                    />
-                                    <input
-                                        {...register("referenceNumber")}
-                                        placeholder="Reference No (If applicable)"
-                                        className="w-full bg-transparent p-2 outline-none  rounded border border-[#2C2C2E]"
-                                    />
-
+                                    <div className="space-y-4">
+                                        <div>
+                                            <input
+                                                {...register("entityName")}
+                                                placeholder="Entity Name"
+                                                className={clsx(
+                                                    "mb-1 w-full bg-transparent p-2 outline-none rounded border",
+                                                    errors.entityName ? "border-red-500" : "border-[#2C2C2E]"
+                                                )}
+                                            />
+                                            {errors.entityName && (
+                                                <p className="text-red-500 text-sm">{errors.entityName.message}</p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <input
+                                                {...register("referenceNumber")}
+                                                placeholder="Reference No (If applicable)"
+                                                className={clsx(
+                                                    "w-full bg-transparent p-2 outline-none rounded border",
+                                                    errors.referenceNumber ? "border-red-500" : "border-[#2C2C2E]"
+                                                )}
+                                            />
+                                            {errors.referenceNumber && (
+                                                <p className="text-red-500 text-sm">{errors.referenceNumber.message}</p>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
                     )}
                 </label>
+
                 <div className="flex space-x-4">
                     <button
                         type="button"

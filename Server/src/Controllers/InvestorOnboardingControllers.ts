@@ -206,6 +206,14 @@ interface AuthenticatedRequest extends Request {
  *       500:
  *         description: Server error
  */
+// Helper function to decode URLs
+const decodeDocumentUrls = (documents: any[] = []) => {
+  return documents.map((doc) => ({
+    ...doc,
+    url: doc.url ? decodeURIComponent(doc.url.replace(/&#x2F;/g, '/')) : undefined,
+  }));
+};
+
 export const startOnboarding = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
@@ -226,6 +234,10 @@ export const startOnboarding = async (req: AuthenticatedRequest, res: Response) 
         : undefined,
       proofOfAddressUrl: formData.proofOfAddressUrl
         ? decodeURIComponent(formData.proofOfAddressUrl.replace(/&#x2F;/g, '/'))
+        : undefined,
+      // Add entity documents decoding
+      entityDocuments: formData.entityDocuments
+        ? decodeDocumentUrls(formData.entityDocuments)
         : undefined,
     };
 
@@ -300,6 +312,10 @@ export const updateOnboarding = async (req: AuthenticatedRequest, res: Response)
         : undefined,
       proofOfAddressUrl: formData.proofOfAddressUrl
         ? decodeURIComponent(formData.proofOfAddressUrl.replace(/&#x2F;/g, '/'))
+        : undefined,
+      // Add entity documents decoding
+      entityDocuments: formData.entityDocuments
+        ? decodeDocumentUrls(formData.entityDocuments)
         : undefined,
     };
 

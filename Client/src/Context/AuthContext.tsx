@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import { useLogout } from "../API/Endpoints/Auth/AuthApis";
 import { QueryClient } from "@tanstack/react-query";
 import { themeResetService } from "../FundManager/Themes/Components/ThemeResetService";
+import { onboardingResetService } from '../Onboarding/services/OnboardingResetService';
 
 // Types for our auth data
 export interface User {
@@ -44,6 +45,7 @@ interface AuthContextType {
   logoutAuto: () => void;
   getToken: () => string | null;
   updateUser: (userData: Partial<User>) => void;
+  updateOnboardingStatus: (status: string, rejectionNote?: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -125,15 +127,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     // Reset theme states BEFORE clearing auth
     themeResetService.performCompleteReset();
 
+    // Reset onboarding form
+    onboardingResetService.performReset();
+
     // Reset auth state
     setUser(null);
     setToken(null);
-    // Keep isAuthInitialized as true to prevent re-initialization
 
     // Clear cookies
     Cookies.remove("authToken");
     Cookies.remove("authUser");
-    // localStorage.removeItem(getUserThemeKey(user?.id || ""));
+
     // Clear query cache
     queryClient.clear();
   }, [queryClient]);
@@ -201,6 +205,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const updateOnboardingStatus = useCallback((status: string, rejectionNote?: string) => {
+    setUser(prev => prev ? {
+      ...prev,
+      onboardingStatus: {
+        status,
+        rejectionNote
+      }
+    } : null);
+  }, []);
+
   const contextValue: AuthContextType = {
     user,
     token,
@@ -211,6 +225,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     logoutAuto,
     getToken,
     updateUser,
+    updateOnboardingStatus
   };
 
   return (

@@ -8,16 +8,21 @@ import {
     useUpdateOnboarding,
     useDocumentUpload,
     useDocumentDelete,
-    prepareDocumentUpload
 } from "../../API/Endpoints/Onboarding/useInvestorOnboarding";
 import toast from "react-hot-toast";
+import { DocumentPreviewModal } from '../../Components/DocumentPreviewModal';
 
 export function DocumentUploadStep() {
-    const { state, updateFormData, nextStep, prevStep } = useOnboarding();
-    const { user } = useAuth();
-    const { mutateAsync: startOnboarding, isLoading: isStarting } = useStartOnboarding();
-    const { mutateAsync: updateOnboarding, isLoading: isUpdating } = useUpdateOnboarding();
-    const { mutateAsync: uploadDocuments, isLoading: isUploading } = useDocumentUpload();
+    const { state, updateFormData, prevStep, dispatch } = useOnboarding();
+    const { user, updateOnboardingStatus } = useAuth();
+    const { mutateAsync: startOnboarding, status: startOnboardingStatus } = useStartOnboarding();
+    const isStarting = startOnboardingStatus === 'pending';
+    const { mutateAsync: updateOnboarding, status: updateStatus } = useUpdateOnboarding();
+    const isUpdating = updateStatus === 'pending';
+
+    const { mutateAsync: uploadDocuments, status: uploadeDocumentStatus } = useDocumentUpload();
+    const isUploading = uploadeDocumentStatus === 'pending';
+
     const { mutateAsync: deleteDocument } = useDocumentDelete();
     const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File | null }>({});
     const [uploadedFiles, setUploadedFiles] = useState<Array<{ key: string; url: string }>>([]);
@@ -26,28 +31,45 @@ export function DocumentUploadStep() {
         address?: { url: string; filename: string };
     }>({});
 
+    // Add state for modal
+    const [previewModal, setPreviewModal] = useState<{
+        isOpen: boolean;
+        url: string;
+        type: string;
+    }>({
+        isOpen: false,
+        url: '',
+        type: ''
+    });
+
+
     const handleFileSelect = (type: string, file: File | null) => {
         setSelectedFiles(prev => ({ ...prev, [type]: file }));
     };
 
+    // Update preview handler
     const handlePreview = (type: string) => {
         const file = selectedFiles[type];
         if (!file) return;
 
         const url = URL.createObjectURL(file);
+        setPreviewModal({
+            isOpen: true,
+            url,
+            type: file.type
+        });
+    };
 
-        if (file.type === 'application/pdf') {
-            // Open PDF in new tab
-            window.open(url, "_blank");
-        } else if (file.type.startsWith("image/")) {
-            // Open image in new tab
-            window.open(url, "_blank");
-        } else {
-            alert("Preview available only for PDFs and images.");
+    // Add cleanup function
+    const handleClosePreview = () => {
+        if (previewModal.url) {
+            URL.revokeObjectURL(previewModal.url);
         }
-
-        // Clean up the URL object
-        setTimeout(() => URL.revokeObjectURL(url), 100);
+        setPreviewModal({
+            isOpen: false,
+            url: '',
+            type: ''
+        });
     };
 
     const handleDelete = (type: string) => {
@@ -60,7 +82,6 @@ export function DocumentUploadStep() {
         try {
             // Prepare and upload files - order matters here
             const formData = new FormData();
-            // Add files in specific order: KYC first, then address
             formData.append('documents', selectedFiles.kyc);
             formData.append('documents', selectedFiles.address);
 
@@ -74,34 +95,60 @@ export function DocumentUploadStep() {
             );
 
             if (uploadResponse.success) {
-                // Store uploaded files for potential cleanup
                 setUploadedFiles(uploadResponse.data.map(doc => ({
                     key: doc.key,
                     url: doc.url
                 })));
 
-                // Use array indices since we know the order: 
-                // Index 0 = KYC, Index 1 = Address
+                // Create document URLs
                 const documentUrls = {
                     kycDocumentUrl: uploadResponse.data[0]?.url,
                     proofOfAddressUrl: uploadResponse.data[1]?.url
                 };
 
-                updateFormData(documentUrls);
+                // Wait for form data update to complete
+                await new Promise<void>(resolve => {
+                    updateFormData(documentUrls);
+                    // Give time for state to update
+                    setTimeout(resolve, 100);
+                });
 
-                // Submit onboarding
+                // Submit onboarding with updated form data
                 try {
-                    const onboardingPromise = user?.onboardingStatus?.status === 'rejected'
-                        ? updateOnboarding({ formData: state.formData })
-                        : startOnboarding({ formData: state.formData });
+                    const updatedFormData = {
+                        ...state.formData,
+                        ...documentUrls
+                    };
 
-                    await toast.promise(onboardingPromise, {
+                    const onboardingPromise = user?.onboardingStatus?.status === 'rejected'
+                        ? updateOnboarding({ formData: updatedFormData })
+                        : startOnboarding({ formData: updatedFormData });
+
+                    const response = await toast.promise(onboardingPromise, {
                         loading: 'Submitting onboarding information...',
                         success: 'Onboarding submitted successfully',
                         error: 'Failed to submit onboarding'
                     });
 
-                    setUploadedFiles([]); // Clear on success
+                    // Update onboarding status to pending
+                    updateOnboardingStatus('pending');
+
+                    // Reset files
+                    setUploadedFiles([]);
+                    setSelectedFiles({});
+
+                    // Clear form data and reset to initial state
+                    dispatch({ type: 'RESET_FORM' });
+
+                    // Load new onboarding data
+                    if (response.data?.formData) {
+                        await new Promise<void>(resolve => {
+                            updateFormData(response.data.formData);
+                            setTimeout(resolve, 100);
+                        });
+                    }
+
+
                 } catch (error) {
                     // Clean up uploaded files on failure
                     await Promise.all(
@@ -160,7 +207,13 @@ export function DocumentUploadStep() {
                                 <button
                                     type="button"
                                     title="View Document"
-                                    onClick={() => window.open(existingDocuments[fileKey]?.url, "_blank")}
+                                    onClick={() => setPreviewModal({
+                                        isOpen: true,
+                                        url: existingDocuments[fileKey]?.url || '',
+                                        type: existingDocuments[fileKey]?.filename.toLowerCase().endsWith('.pdf')
+                                            ? 'application/pdf'
+                                            : 'image/*'
+                                    })}
                                     className="text-[#2FB5B4] hover:text-[#145D5D] p-1"
                                 >
                                     <Eye size={20} />
@@ -252,94 +305,104 @@ export function DocumentUploadStep() {
     }, [state.formData]);
 
     return (
-        <div className="space-y-6">
-            <StepHeader
-                step={5}
-                title="Document Upload"
-                subtitle="Please upload required documents"
-            />
-            <div className="space-y-6 max-w-8xl">
-                {/* Show pending notice if status is pending */}
-                {user?.onboardingStatus?.status === 'pending' && (
-                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <p className="text-sm text-yellow-800">
-                            <strong>Pending Approval:</strong> Your onboarding submission is currently under review. You cannot make changes until the review is complete.
+        <>
+            <div className="space-y-6">
+                <StepHeader
+                    step={5}
+                    title="Document Upload"
+                    subtitle="Please upload required documents"
+                />
+                <div className="space-y-6 max-w-8xl">
+                    {/* Show pending notice if status is pending */}
+                    {user?.onboardingStatus?.status === 'pending' && (
+                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <p className="text-sm text-yellow-800">
+                                <strong>Pending Approval:</strong> Your onboarding submission is currently under review. You cannot make changes until the review is complete.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Show rejection notice if status is rejected */}
+                    {user?.onboardingStatus?.status === 'rejected' && (
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-800">
+                                <strong>Update Required:</strong> Please review and update your documents based on the feedback provided.
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                        <p className="text-sm text-orange-800">
+                            <strong>Important Notice:</strong> KYC document verification is required before signing subscription document. You can complete this step later, but please note that investment opportunities will be limited until verification is complete.
                         </p>
                     </div>
-                )}
-
-                {/* Show rejection notice if status is rejected */}
-                {user?.onboardingStatus?.status === 'rejected' && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-sm text-red-800">
-                            <strong>Update Required:</strong> Please review and update your documents based on the feedback provided.
-                        </p>
+                    <div className="space-y-8">
+                        <FileInputBlock
+                            label="ID Document (Certified)"
+                            desc="Please provide one of the following certified documents:"
+                            ul={
+                                <>
+                                    <li>Current passport/national identity card with photograph</li>
+                                    <li>Current photographic identity card which includes photograph</li>
+                                </>
+                            }
+                            inputId="kyc-upload"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            fileKey="kyc"
+                        />
+                        <FileInputBlock
+                            label="Proof of Address (Certified)"
+                            desc="Please provide one of the following certified documents:"
+                            ul={
+                                <>
+                                    <li>Valid driving license</li>
+                                    <li>Utility bill dated within the last 3 months</li>
+                                    <li>Bank statement dated within the last 3 months</li>
+                                    <li>Correspondence from an independent source</li>
+                                </>
+                            }
+                            inputId="address-upload"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            fileKey="address"
+                        />
                     </div>
-                )}
-
-                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                    <p className="text-sm text-orange-800">
-                        <strong>Important Notice:</strong> KYC document verification is required before signing subscription document. You can complete this step later, but please note that investment opportunities will be limited until verification is complete.
-                    </p>
-                </div>
-                <div className="space-y-8">
-                    <FileInputBlock
-                        label="ID Document (Certified)"
-                        desc="Please provide one of the following certified documents:"
-                        ul={
-                            <>
-                                <li>Current passport/national identity card with photograph</li>
-                                <li>Current photographic identity card which includes photograph</li>
-                            </>
-                        }
-                        inputId="kyc-upload"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        fileKey="kyc"
-                    />
-                    <FileInputBlock
-                        label="Proof of Address (Certified)"
-                        desc="Please provide one of the following certified documents:"
-                        ul={
-                            <>
-                                <li>Valid driving license</li>
-                                <li>Utility bill dated within the last 3 months</li>
-                                <li>Bank statement dated within the last 3 months</li>
-                                <li>Correspondence from an independent source</li>
-                            </>
-                        }
-                        inputId="address-upload"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        fileKey="address"
-                    />
-                </div>
-                <div className="flex space-x-4">
-                    <button
-                        type="button"
-                        onClick={prevStep}
-                        disabled={isUploading || isStarting || isUpdating}
-                        className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    >
-                        Back
-                    </button>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={
-                            !selectedFiles.kyc ||
-                            !selectedFiles.address ||
-                            isUploading ||
-                            isStarting ||
-                            isUpdating ||
-                            user?.onboardingStatus?.status === 'pending'
-                        }
-                        className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                        {(isUploading || isStarting || isUpdating) && (
-                            <Loader2 className="animate-spin h-4 w-4" />
-                        )}
-                        {user?.onboardingStatus?.status === 'rejected' ? 'Update' : 'Submit'}
-                    </button>
+                    <div className="flex space-x-4">
+                        <button
+                            type="button"
+                            onClick={prevStep}
+                            disabled={isUploading || isStarting || isUpdating}
+                            className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        >
+                            Back
+                        </button>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={
+                                !selectedFiles.kyc ||
+                                !selectedFiles.address ||
+                                isUploading ||
+                                isStarting ||
+                                isUpdating ||
+                                user?.onboardingStatus?.status === 'pending'
+                            }
+                            className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                            {(isUploading || isStarting || isUpdating) && (
+                                <Loader2 className="animate-spin h-4 w-4" />
+                            )}
+                            {user?.onboardingStatus?.status === 'rejected' ? 'Update' : 'Submit'}
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            {/* Add modal */}
+            <DocumentPreviewModal
+                isOpen={previewModal.isOpen}
+                onClose={handleClosePreview}
+                fileUrl={previewModal.url}
+                fileType={previewModal.type}
+            />
+        </>
     );
 }

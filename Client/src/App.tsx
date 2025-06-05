@@ -31,6 +31,7 @@ import {
   ThemeLoaderInvestor,
 } from "./Context/InvestorThemeContext";
 import InvestorThemeContainer from "./FundManager/Themes/Components/InvestorThemeContainer";
+import InvestorsPage from "./FundManager/InvestorsPage/Investors";
 
 function RedirectBasedOnRole() {
   const { user } = useAuth();
@@ -91,6 +92,7 @@ function App() {
               }
             >
               <Route index element={<FundManagerDashboard />} />
+              <Route path="investors" element={<InvestorsPage />} />
               <Route path="settings" element={<DashboardSettings />} />
 
               {/* Add more fund manager routes here */}

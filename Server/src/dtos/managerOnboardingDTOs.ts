@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const PaginationQuerySchema = z.object({
   page: z.string().transform(Number).default('1'),
   limit: z.string().transform(Number).default('10'),
+  status: z.enum(['pending', 'approved', 'rejected']).optional(),
 });
 
 export const UpdateOnboardingStatusSchema = z.object({

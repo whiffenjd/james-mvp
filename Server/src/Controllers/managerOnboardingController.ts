@@ -185,8 +185,8 @@ import { PaginationQuerySchema, UpdateOnboardingStatusSchema } from '../dtos/man
 
 export async function getInvestorsList(req: Request, res: Response) {
   try {
-    const { page, limit } = PaginationQuerySchema.parse(req.query);
-    const investors = await managerOnboardingService.getInvestorsList(page, limit);
+    const { page, limit, status } = PaginationQuerySchema.parse(req.query);
+    const investors = await managerOnboardingService.getInvestorsList(page, limit, status);
 
     return res.status(200).json({
       success: true,
@@ -224,6 +224,7 @@ export async function getInvestorDetails(req: Request, res: Response) {
 export async function updateOnboardingStatus(req: Request, res: Response) {
   try {
     const { onboardingId } = req.params;
+
     const payload = UpdateOnboardingStatusSchema.parse(req.body);
 
     const updated = await managerOnboardingService.updateOnboardingStatus(onboardingId, payload);

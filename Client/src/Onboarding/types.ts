@@ -15,7 +15,6 @@ export interface InvestorOnboardingPayload {
   declarationAccepted?: boolean;
   signature?: string;
   signatureDate?: string;
-  lastCompletedStep?: string;
   [key: string]: any;
 }
 

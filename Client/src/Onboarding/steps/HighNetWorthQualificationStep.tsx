@@ -20,14 +20,12 @@ export function HighNetWorthQualificationStep() {
     const watched = watch("highNetWorthQualification");
     const noneApply = watched?.noneApply === true;
 
-
-
     // Handle mutually exclusive logic: If "None Apply" is true, reset A and B
     React.useEffect(() => {
         if (noneApply) {
-            setValue("highNetWorthQualification.incomeQualified", false);
+            setValue("highNetWorthQualification.incomeQualified", "false");
             setValue("highNetWorthQualification.incomeAmount", undefined);
-            setValue("highNetWorthQualification.netAssetsQualified", false);
+            setValue("highNetWorthQualification.netAssetsQualified", "false");
             setValue("highNetWorthQualification.netAssetsAmount", undefined);
         }
     }, [noneApply, setValue]);
@@ -38,6 +36,10 @@ export function HighNetWorthQualificationStep() {
         updateFormData(data);
         nextStep();
     };
+    useEffect(() => {
+        // Set the signatureDate to today's date on mount
+        setValue("signatureDate", new Date().toISOString().split("T")[0]);
+    }, [setValue]);
 
 
     return (
@@ -253,6 +255,7 @@ export function HighNetWorthQualificationStep() {
                             type="date"
                             {...register("signatureDate")}
                             required
+                            disabled
                             className="w-full p-2 outline-none border border-gray-300 rounded focus:ring-2 focus:ring-[#2FB5B4]"
                         />
                     </div>

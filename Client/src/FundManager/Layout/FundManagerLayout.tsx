@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import { LayoutGrid, Loader2, Settings } from "lucide-react";
+import { CircleDollarSign, LayoutGrid, Loader2, Settings } from "lucide-react";
 import { useAuth } from "../../Context/AuthContext";
 import { useTheme } from "../../Context/ThemeContext";
 import ManagerSidebar from "../Public/ManagerSidebar";
@@ -42,11 +42,18 @@ const FundManagerLayout = () => {
       path: "/fundmanager/dashboard", // This should match your index route
     },
     {
+      id: "investors",
+      icon: <CircleDollarSign size={22} />,
+      label: "Investors",
+      path: "/fundmanager/dashboard/investors", // This matches your nested route
+    },
+    {
       id: "settings",
       icon: <Settings size={22} />,
       label: "Settings",
       path: "/fundmanager/dashboard/settings", // This matches your nested route
     },
+
   ];
 
   return (
@@ -56,10 +63,10 @@ const FundManagerLayout = () => {
     >
       <ManagerSidebar menuItems={menuItems} userRole="fundManager" />
       <div
-        className="w-full h-[calc(100vh-96px)] rounded-[40px]"
+        className="w-full h-[calc(100vh-96px)] rounded-[40px] flex flex-col"
         style={{ backgroundColor: currentTheme.cardBackground }}
       >
-        <header className="w-full flex justify-between items-center py-7 px-9 relative">
+        <header className="w-full flex justify-between items-center py-7 px-9 relative flex-shrink-0">
           <h3
             className="text-xl font-semibold"
             style={{ color: currentTheme.primaryText }}
@@ -111,7 +118,9 @@ const FundManagerLayout = () => {
             </div>
           </div>
         </header>
-        <Outlet />
+        <div className="flex-1 overflow-auto px-9 pb-9">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

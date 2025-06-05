@@ -38,7 +38,10 @@ export function SelfCertifiedSophisticatedStep() {
         updateFormData(data);
         nextStep();
     };
-
+    useEffect(() => {
+        // Set the signatureDate to today's date on mount
+        setValue("signatureDate", new Date().toISOString().split("T")[0]);
+    }, [setValue]);
     return (
         <div className="p-2 mx-auto space-y-8">
             <div>
@@ -353,6 +356,7 @@ export function SelfCertifiedSophisticatedStep() {
                             type="date"
                             {...register("signatureDate")}
                             required
+                            disabled
                             className="w-full p-2 outline-none border border-gray-300 rounded focus:ring-2 focus:ring-[#2FB5B4]"
                         />
                     </div>

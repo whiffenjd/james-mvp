@@ -17,7 +17,7 @@ export default {
         // Theme-based colors using CSS variables
         "theme-dashboard": "var(--dashboard-bg)",
         "theme-card": "var(--card-bg)",
-        "theme-primary-text": "var(--primary-text)",
+        "theme-primary-text": "var(--primary-text) ",
         "theme-secondary-text": "var(--secondary-text)",
         "theme-sidebar-accent": "var(--sidebar-accent)",
       },

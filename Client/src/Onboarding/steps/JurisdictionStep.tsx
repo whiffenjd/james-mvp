@@ -39,12 +39,12 @@ export function JurisdictionStep() {
                     </label>
                     <select
                         {...register('jurisdiction')}
-                        className="w-[80vw] p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                        className="w-[80vw] p-3 border outline-none border-gray-300 rounded-lg "
                     >
-                        <option value="" className="hover:bg-[#2FB5B4]">Select your jurisdiction</option>
-                        <option value="united_states" className="hover:bg-[#2FB5B4]">United States</option>
-                        <option value="united_kingdom" className="hover:bg-[#2FB5B4]">United Kingdom</option>
-                        <option value="european_union" className="hover:bg-[#2FB5B4]">European Union</option>
+                        <option value="" className="hover:!bg-[#2FB5B4]">Select your jurisdiction</option>
+                        <option value="united_states" className="hover:!bg-[#2FB5B4]">United States</option>
+                        <option value="united_kingdom" className="hover:!bg-[#2FB5B4]">United Kingdom</option>
+                        <option value="european_union" className="hover:!bg-[#2FB5B4]">European Union</option>
                     </select>
                     {errors.jurisdiction && (
                         <p className="mt-1 text-sm text-red-600">{errors.jurisdiction.message}</p>

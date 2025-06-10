@@ -17,6 +17,7 @@ interface Investor {
     email: string;
     onboardingStatus: "pending" | "approved" | "rejected";
     createdAt: string;
+    lastLoginAt: string;
     status: "pending" | "approved" | "rejected";
 }
 
@@ -58,8 +59,8 @@ function InvestorsPage() {
         { key: "name", header: "Investor Name", sortable: false },
         { key: "email", header: "Email Address", sortable: false },
         {
-            key: "createdAt",
-            header: "Created At",
+            key: "lastLoginAt",
+            header: "Last Activity",
             sortable: false,
             render: (value: string) => (
                 <span>{formatDateToDDMMYYYY(value)}</span>

@@ -1,4 +1,10 @@
-export function StepHeader({ step, title, subtitle }) {
+interface StepHeaderProps {
+    step: number | string; // Depending on what you expect
+    title: string;
+    subtitle: string;
+}
+
+export function StepHeader({ step, title, subtitle }: StepHeaderProps) {
     return (
         <div className="flex items-center gap-4 mb-6">
             <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[#147574] text-white font-semibold text-base">

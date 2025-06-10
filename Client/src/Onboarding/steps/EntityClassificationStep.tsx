@@ -1,10 +1,10 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useOnboarding } from "../../Context/OnboardingContext";
-import { useState } from "react";
 import clsx from "clsx";
 import { entityDetailsSchema } from "../schema";
 import { useAuth } from "../../Context/AuthContext";
+import type { z } from "zod";
 
 const highNetWorthOptions = [
     {
@@ -56,16 +56,20 @@ const highNetWorthOptions = [
 
 export function EntityClassificationStep() {
     const { state, updateFormData, nextStep, prevStep } = useOnboarding();
-
-    const { register, handleSubmit, watch, formState: { errors } } = useForm({
+    type EntityDetailsFormValues = z.infer<typeof entityDetailsSchema>;
+    const { register, handleSubmit, watch, formState: { errors } } = useForm<EntityDetailsFormValues>({
         resolver: zodResolver(entityDetailsSchema),
         defaultValues: {
-            entityType: state.formData.entityDetails?.entityType || "",
-            entityName: state.formData.entityDetails?.entityName || "",
-            referenceNumber: state.formData.entityDetails?.referenceNumber || "",
-            highNetWorthCompanySubType: state.formData.entityDetails?.highNetWorthCompanySubType || null,
+            entityType: state.formData.entityDetails?.entityType ?? undefined,
+            entityName: state.formData.entityDetails?.entityName ?? "",
+            referenceNumber: state.formData.entityDetails?.referenceNumber ?? "",
+            highNetWorthCompanySubType: (
+                ["a", "b", "c", "d", "e"].includes(state.formData.entityDetails?.highNetWorthCompanySubType as string)
+                    ? state.formData.entityDetails?.highNetWorthCompanySubType
+                    : undefined
+            ) as "a" | "b" | "c" | "d" | "e" | null | undefined,
         },
-        mode: "onChange" // Enable real-time validation
+        mode: "onChange"
     });
 
     const { user } = useAuth();
@@ -75,7 +79,7 @@ export function EntityClassificationStep() {
     const entityType = watch("entityType");
     const subType = watch("highNetWorthCompanySubType");
 
-    const onSubmit = (data) => {
+    const onSubmit = (data: any) => {
         // Clean up the data based on entity type
         const cleanData = {
             ...data,
@@ -91,7 +95,7 @@ export function EntityClassificationStep() {
     };
 
     // Show formatted error messages
-    const getErrorMessage = (fieldName) => {
+    const getErrorMessage = (fieldName: keyof typeof errors) => {
         if (!errors[fieldName]) return null;
 
         // Map enum errors to user-friendly messages
@@ -230,7 +234,7 @@ export function EntityClassificationStep() {
                                 </label>
                             ))}
                             {/* Show details input for subtypes a/b/c/d */}
-                            {["a", "b", "c", "d"].includes(subType) && (
+                            {typeof subType === "string" && ["a", "b", "c", "d"].includes(subType) && (
                                 <div className="mt-3 p-4 w-[70%] bg-[#D1EAED] rounded-xl">
                                     <div className="font-medium mb-2">Input Details</div>
                                     <div className="space-y-4">

@@ -11,6 +11,14 @@ import {
 } from "../../API/Endpoints/Onboarding/useInvestorOnboarding";
 import toast from "react-hot-toast";
 import { DocumentPreviewModal } from '../../Components/DocumentPreviewModal';
+interface FileInputBlockProps {
+    label: string;
+    desc: string;
+    ul: React.ReactNode;
+    inputId: string;
+    accept: string;
+    fileKey: 'kyc' | 'address';
+}
 
 export function DocumentUploadStep() {
     const { state, updateFormData, prevStep, dispatch } = useOnboarding();
@@ -168,7 +176,7 @@ export function DocumentUploadStep() {
     };
 
     // For reusable file input + preview row
-    function FileInputBlock({ label, desc, ul, inputId, accept, fileKey }) {
+    function FileInputBlock({ label, desc, ul, inputId, accept, fileKey }: FileInputBlockProps) {
         const hasExistingDocument = existingDocuments[fileKey]?.url;
         const isPending = user?.onboardingStatus?.status === 'pending';
         const isRejected = user?.onboardingStatus?.status === 'rejected';

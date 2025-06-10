@@ -8,9 +8,10 @@ import { useAuth } from "../../Context/AuthContext";
 // Step 2: Investor Type Selection
 export function InvestorTypeStep() {
     const { state, updateFormData, nextStep, prevStep } = useOnboarding();
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    type InvestorTypeForm = { investorType: "individual" | "entity" };
+    const { register, handleSubmit, formState: { errors } } = useForm<InvestorTypeForm>({
         resolver: zodResolver(investorTypeSchema),
-        defaultValues: { investorType: state.formData.investorType || '' }
+        defaultValues: { investorType: (state.formData.investorType as "individual" | "entity") || "individual" }
     });
     const { user } = useAuth();
     const isPending = user?.onboardingStatus?.status === 'pending';

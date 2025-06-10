@@ -54,10 +54,12 @@ const upload = multer({
 });
 
 // Create middleware to clean up old files
+import { Response, NextFunction } from 'express';
+
 export const cleanupPreviousUploads = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: Function,
+  next: NextFunction,
 ) => {
   try {
     const userId = req.user?.id;

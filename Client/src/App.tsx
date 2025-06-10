@@ -84,7 +84,7 @@ function App() {
               element={
                 <ThemeProvider>
                   <ThemeLoader>
-                    <ThemeContainer className="min-h-screen">
+                    <ThemeContainer >
                       <FundManagerLayout />
                     </ThemeContainer>
                   </ThemeLoader>
@@ -107,7 +107,7 @@ function App() {
               element={
                 <InvestorThemeProvider>
                   <ThemeLoaderInvestor>
-                    <InvestorThemeContainer className="min-h-screen">
+                    <InvestorThemeContainer >
                       <InvestorLayout />
                     </InvestorThemeContainer>
                   </ThemeLoaderInvestor>

@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { selfCertifiedSophisticatedSchema } from "../schema"; // Adjust path
 import { useOnboarding } from "../../Context/OnboardingContext";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 export function SelfCertifiedSophisticatedStep() {
     const { state, updateFormData, nextStep, prevStep } = useOnboarding();
@@ -10,7 +10,27 @@ export function SelfCertifiedSophisticatedStep() {
     const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
         resolver: zodResolver(selfCertifiedSophisticatedSchema),
         defaultValues: {
-            selfCertifiedSophisticatedInvestor: state.formData.selfCertifiedSophisticatedInvestor || {},
+            selfCertifiedSophisticatedInvestor: {
+                ...state.formData.selfCertifiedSophisticatedInvestor,
+                professionalCapacity: typeof state.formData.selfCertifiedSophisticatedInvestor?.professionalCapacity === "boolean"
+                    ? String(state.formData.selfCertifiedSophisticatedInvestor.professionalCapacity)
+                    : state.formData.selfCertifiedSophisticatedInvestor?.professionalCapacity || undefined,
+                director: typeof state.formData.selfCertifiedSophisticatedInvestor?.director === "boolean"
+                    ? String(state.formData.selfCertifiedSophisticatedInvestor.director)
+                    : state.formData.selfCertifiedSophisticatedInvestor?.director || undefined,
+                unlistedInvestments: typeof state.formData.selfCertifiedSophisticatedInvestor?.unlistedInvestments === "boolean"
+                    ? String(state.formData.selfCertifiedSophisticatedInvestor.unlistedInvestments)
+                    : state.formData.selfCertifiedSophisticatedInvestor?.unlistedInvestments || undefined,
+                businessAngel: typeof state.formData.selfCertifiedSophisticatedInvestor?.businessAngel === "boolean"
+                    ? String(state.formData.selfCertifiedSophisticatedInvestor.businessAngel)
+                    : state.formData.selfCertifiedSophisticatedInvestor?.businessAngel || undefined,
+                noneApply: state.formData.selfCertifiedSophisticatedInvestor?.noneApply ?? false,
+                professionalCapacityDetails: state.formData.selfCertifiedSophisticatedInvestor?.professionalCapacityDetails || "",
+                directorDetails: state.formData.selfCertifiedSophisticatedInvestor?.directorDetails || {},
+                unlistedInvestmentsCount: state.formData.selfCertifiedSophisticatedInvestor?.unlistedInvestmentsCount || "",
+                businessAngelNetwork: state.formData.selfCertifiedSophisticatedInvestor?.businessAngelNetwork || "",
+                declarationAccepted: state.formData.selfCertifiedSophisticatedInvestor?.declarationAccepted ?? false,
+            },
             signature: state.formData.signature || "",
             signatureDate: state.formData.signatureDate || "",
         },
@@ -34,7 +54,7 @@ export function SelfCertifiedSophisticatedStep() {
         }
     }, [noneApply, setValue]);
 
-    const onSubmit = (data) => {
+    const onSubmit = (data: any) => {
         updateFormData(data);
         nextStep();
     };

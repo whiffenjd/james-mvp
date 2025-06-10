@@ -7,10 +7,18 @@ import { useAuth } from "../../Context/AuthContext";
 import toast from "react-hot-toast";
 import { DocumentPreviewModal } from '../../Components/DocumentPreviewModal';
 
+interface FileInputBlockProps {
+    label: string;
+    desc: string;
+    ul: React.ReactNode;
+    inputId: string;
+    accept: string;
+    fileKey: string;
+}
 
 
 export function DocumentUploadStepEntity() {
-    const { state, updateFormData, nextStep, prevStep, dispatch } = useOnboarding();
+    const { state, updateFormData, prevStep, dispatch } = useOnboarding();
     const { user, updateOnboardingStatus } = useAuth();
     // const { mutateAsync: startOnboarding, isLoading: isStarting } = useStartOnboarding();
     // const { mutateAsync: updateOnboarding, isLoading: isUpdating } = useUpdateOnboarding();
@@ -20,8 +28,8 @@ export function DocumentUploadStepEntity() {
     const { mutateAsync: updateOnboarding, status: updateStatus } = useUpdateOnboarding();
     const isUpdating = updateStatus === 'pending';
 
-    const { mutateAsync: uploadDocuments, status: uploadeDocumentStatus } = useDocumentUpload();
-    const isUploading = uploadeDocumentStatus === 'pending';
+    const { mutateAsync: uploadDocuments } = useDocumentUpload();
+
     const { mutateAsync: deleteDocument } = useDocumentDelete();
     const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File[] }>({});
     const [uploadedFiles, setUploadedFiles] = useState<Array<{ key: string; url: string }>>([]);
@@ -178,7 +186,7 @@ export function DocumentUploadStepEntity() {
     }, [state.formData]);
 
     // For reusable file input + preview row
-    function FileInputBlock({ label, desc, ul, inputId, accept, fileKey }) {
+    function FileInputBlock({ label, desc, ul, inputId, accept, fileKey }: FileInputBlockProps) {
         const isPending = user?.onboardingStatus?.status === 'pending';
         const isRejected = user?.onboardingStatus?.status === 'rejected';
 

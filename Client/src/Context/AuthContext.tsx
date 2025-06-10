@@ -46,7 +46,7 @@ interface AuthContextType {
   logoutAuto: () => void;
   getToken: () => string | null;
   updateUser: (userData: Partial<User>) => void;
-  updateOnboardingStatus: (status: string, rejectionNote?: string) => void;
+  updateOnboardingStatus: (status: "pending" | "approved" | "rejected", rejectionNote?: string) => void;
   updateOnboardedStatus: (isOnboarded: boolean) => void; // Add this line
 
 }

@@ -162,12 +162,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   );
 
   // Find theme from available themes by ID
-  const findThemeById = useCallback(
-    (themeId: string, themes: Theme[]): Theme | null => {
-      return themes.find((theme) => theme.id === themeId) || null;
-    },
-    []
-  );
+
 
   // COMPLETE RESET function for theme state
   const resetThemeState = useCallback(() => {

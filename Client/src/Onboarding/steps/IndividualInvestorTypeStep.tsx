@@ -8,9 +8,13 @@ import { StepHeader } from '../StepHeader';
 // Step 3: Individual Investor Type Selection
 export function IndividualInvestorTypeStep() {
     const { state, updateFormData, nextStep, prevStep } = useOnboarding();
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    type IndividualInvestorTypeForm = {
+        individualInvestorType: "high_net_worth" | "self_certified_sophisticated_investor";
+    };
+
+    const { register, handleSubmit, formState: { errors } } = useForm<IndividualInvestorTypeForm>({
         resolver: zodResolver(individualInvestorTypeSchema),
-        defaultValues: { individualInvestorType: state.formData.individualInvestorType || '' }
+        defaultValues: { individualInvestorType: state.formData.individualInvestorType || '' as IndividualInvestorTypeForm["individualInvestorType"] }
     });
 
     const onSubmit = (data: any) => {

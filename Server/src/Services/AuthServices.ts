@@ -120,6 +120,12 @@ export const loginUser = async (
     type: 'userAuth',
     userRole: user.role,
   });
+  await db
+    .update(UsersTable)
+    .set({
+      lastLoginAt: new Date(),
+    })
+    .where(eq(UsersTable.id, user.id));
   deleteCache(`userProfile:${user.id}`);
 
   return {

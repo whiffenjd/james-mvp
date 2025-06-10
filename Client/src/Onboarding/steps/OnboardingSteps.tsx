@@ -13,7 +13,7 @@ import { SelfCertifiedSophisticatedStep } from "./SelfCertifiedSophisticatedStep
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Loader2, LogOut, RotateCcw } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+
 import { OnboardingComplete } from "./OnboardingComplete";
 
 
@@ -59,43 +59,15 @@ const OnboardingStatus = ({
     </div>
 );
 
-const syncOnboardingState = async (onboardingInfo, user, dispatch, updateFormData) => {
-    try {
-        // Clear existing form data
-        dispatch({ type: 'RESET_FORM' });
 
-        // Wait for form data update to complete
-        await new Promise<void>(resolve => {
-            if (onboardingInfo.data) {
-                updateFormData(onboardingInfo.data.formData);
-            }
-            setTimeout(resolve, 100);
-        });
-
-        // Set to last step based on investor type, with null check
-        const investorType = onboardingInfo.data?.formData?.investorType;
-        const lastStep = investorType === 'individual' ? 5 : 4;
-        dispatch({ type: 'SET_STEP', payload: lastStep });
-
-        // Show status messages with null checks
-        if (user.onboardingStatus && user.onboardingStatus.status === 'rejected') {
-            toast.error("Your previous submission was rejected.");
-        } else if (user.onboardingStatus && user.onboardingStatus.status === 'pending') {
-            toast.error('Your onboarding submission is pending approval');
-        }
-    } catch (error) {
-        console.error('Error updating onboarding state:', error);
-    }
-};
 
 
 export function OnboardingSteps() {
     const { state, dispatch, updateFormData } = useOnboarding();
     const { user, logout, updateOnboardingStatus } = useAuth();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-    const nav = useNavigate();
     // Only fetch onboarding info if user has onboarding status
-    const { data: onboardingInfo, isLoading: isLoadingOnboarding, refetch: refetchOnboarding } = useOnboardingInfo({
+    const { data: onboardingInfo, isLoading: isLoadingOnboarding } = useOnboardingInfo({
         enabled: !!user?.onboardingStatus // Only run query if onboardingStatus exists
     });
 

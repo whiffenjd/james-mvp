@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-nocheck
 import { and, eq, sql } from 'drizzle-orm';
 import { InvestorOnboardingTable } from '../db/schema/onboarding';
 import { UsersTable } from '../db/schema/Admin';
@@ -33,6 +33,7 @@ export async function getInvestorsList(
         email: UsersTable.email,
         onboardingStatus: InvestorOnboardingTable.status,
         createdAt: InvestorOnboardingTable.createdAt,
+        lastLoginAt: UsersTable.lastLoginAt,
         status: InvestorOnboardingTable.status,
       })
       .from(UsersTable)

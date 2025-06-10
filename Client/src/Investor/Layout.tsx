@@ -66,7 +66,7 @@ const InvestorLayout = () => {
 
   return (
     <div
-      className="h-full px-7 py-12 flex gap-9 transition-colors duration-300"
+      className="min-h-screen px-7 py-12 flex gap-9 transition-colors duration-300"
       style={{
         backgroundColor: currentTheme?.dashboardBackground,
       }}

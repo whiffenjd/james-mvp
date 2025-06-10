@@ -1,6 +1,11 @@
+interface DocumentPreviewModalProps {
+    open: boolean;
+    url: string;
+    onClose: () => void;
+    fileName?: string;
+}
 
-
-export function DocumentPreviewModal({ open, url, onClose, fileName }) {
+export function DocumentPreviewModal({ open, url, onClose, fileName }: DocumentPreviewModalProps) {
     if (!open) return null;
     if (!url) return null;
 

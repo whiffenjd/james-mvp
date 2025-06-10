@@ -32,7 +32,7 @@ export function HighNetWorthQualificationStep() {
 
 
 
-    const onSubmit = (data) => {
+    const onSubmit = (data: any) => {
         updateFormData(data);
         nextStep();
     };

@@ -23,8 +23,8 @@ export const uploadDocuments = async (req: AuthenticatedRequest, res: Response) 
 
     // Return array of uploaded file URLs
     const uploadedFiles = files.map((file) => ({
-      url: file.location,
-      key: file.key,
+      url: (file as any).location || file.path,
+      key: (file as any).key,
       fileName: file.originalname,
       type: req.body.documentType,
     }));

@@ -24,6 +24,7 @@ export interface InvestorListItem {
   onboardingStatus: "pending" | "approved" | "rejected";
   createdAt: string;
   status: "pending" | "approved" | "rejected";
+  lastLoginAt: string;
 }
 
 export interface PaginatedInvestorResponse {

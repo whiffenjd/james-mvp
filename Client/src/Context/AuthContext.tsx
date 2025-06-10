@@ -27,6 +27,7 @@ export interface User {
   selectedTheme?: string | null;
   createdAt: string;
   updatedAt: string;
+  isOnboarded?: boolean;
   onboardingStatus?: {
     status: "pending" | "approved" | "rejected";
     rejectionNote?: string | null;
@@ -46,6 +47,8 @@ interface AuthContextType {
   getToken: () => string | null;
   updateUser: (userData: Partial<User>) => void;
   updateOnboardingStatus: (status: string, rejectionNote?: string) => void;
+  updateOnboardedStatus: (isOnboarded: boolean) => void; // Add this line
+
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -205,14 +208,44 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const updateOnboardingStatus = useCallback((status: string, rejectionNote?: string) => {
+  const updateOnboardingStatus = useCallback(
+    (
+      status: "pending" | "approved" | "rejected",
+      rejectionNote?: string
+    ) => {
+      setUser((prev) =>
+        prev
+          ? {
+            ...prev,
+            onboardingStatus: {
+              status,
+              rejectionNote,
+            },
+          }
+          : null
+      );
+    },
+    []
+  );
+
+  const updateOnboardedStatus = useCallback((isOnboarded: boolean) => {
     setUser(prev => prev ? {
       ...prev,
-      onboardingStatus: {
-        status,
-        rejectionNote
-      }
+      isOnboarded
     } : null);
+
+    // Also update the cookie
+    const storedUser = Cookies.get("authUser");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      const updatedUser = {
+        ...parsedUser,
+        isOnboarded
+      };
+      Cookies.set("authUser", JSON.stringify(updatedUser), {
+        expires: COOKIE_EXPIRATION_DAYS,
+      });
+    }
   }, []);
 
   const contextValue: AuthContextType = {
@@ -225,7 +258,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     logoutAuto,
     getToken,
     updateUser,
-    updateOnboardingStatus
+    updateOnboardingStatus,
+    updateOnboardedStatus
   };
 
   return (

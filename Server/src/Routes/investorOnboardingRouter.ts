@@ -39,4 +39,10 @@ investorOnboardingRouter.get(
   asyncHandler(onboardingController.getOnboardingInfo),
 );
 
+investorOnboardingRouter.post(
+  '/proceed',
+  asyncHandler(verifyToken),
+  asyncHandler(onboardingController.proceedOnboarding),
+);
+
 export default investorOnboardingRouter;

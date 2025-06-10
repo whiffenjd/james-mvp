@@ -84,22 +84,61 @@ export async function updateOnboardingStatus(
   onboardingId: string,
   data: UpdateOnboardingStatusRequest,
 ) {
-  const result = await db
-    .update(InvestorOnboardingTable)
-    .set({
-      status: data.status,
-      rejectionNote: data.rejectionNote,
-      updatedAt: new Date(),
-    })
-    .where(eq(InvestorOnboardingTable.userId, onboardingId))
-    .returning();
+  // Start a transaction to update both tables
+  const result = await db.transaction(async (tx) => {
+    // Update onboarding status
+    const [onboarding] = await tx
+      .update(InvestorOnboardingTable)
+      .set({
+        status: data.status,
+        rejectionNote: data.rejectionNote,
+        updatedAt: new Date(),
+      })
+      .where(eq(InvestorOnboardingTable.userId, onboardingId))
+      .returning();
+
+    // If status is rejected, update user's isOnboarded to false
+    if (data.status === 'rejected') {
+      await tx
+        .update(UsersTable)
+        .set({
+          isOnboarded: false,
+          updatedAt: new Date(),
+        })
+        .where(eq(UsersTable.id, onboardingId));
+    }
+
+    return onboarding;
+  });
 
   return result;
 }
 
 export async function deleteInvestorOnboarding(onboardingId: string) {
-  return await db
-    .delete(InvestorOnboardingTable)
-    .where(eq(InvestorOnboardingTable.userId, onboardingId))
-    .returning();
+  return await db.transaction(async (tx) => {
+    // Get current onboarding status before deleting
+    const [currentOnboarding] = await tx
+      .select({ status: InvestorOnboardingTable.status })
+      .from(InvestorOnboardingTable)
+      .where(eq(InvestorOnboardingTable.userId, onboardingId));
+
+    // Delete the onboarding record
+    const [deletedOnboarding] = await tx
+      .delete(InvestorOnboardingTable)
+      .where(eq(InvestorOnboardingTable.userId, onboardingId))
+      .returning();
+
+    // If status was rejected, update user's isOnboarded to false
+    if (currentOnboarding?.status === 'rejected') {
+      await tx
+        .update(UsersTable)
+        .set({
+          isOnboarded: false,
+          updatedAt: new Date(),
+        })
+        .where(eq(UsersTable.id, onboardingId));
+    }
+
+    return deletedOnboarding;
+  });
 }

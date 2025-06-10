@@ -82,7 +82,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   // Track initialization per user
   const isInitialized = useRef(false);
   const hasSetInitialTheme = useRef(false);
-  const themeApplicationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const themeApplicationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastProcessedUserThemeId = useRef<string | null>(null);
   const currentUserId = useRef<string | null>(null);
 
@@ -96,9 +96,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
 
   const {
-    data: allThemesData,
+
     isLoading: isAllThemesLoading,
-    refetch: refetchAllThemes,
   } = useThemes();
   const applyThemeMutation = useApplyTheme();
 

@@ -180,12 +180,23 @@ export function DocumentUploadStepEntity() {
     // For reusable file input + preview row
     function FileInputBlock({ label, desc, ul, inputId, accept, fileKey }) {
         const isPending = user?.onboardingStatus?.status === 'pending';
+        const isRejected = user?.onboardingStatus?.status === 'rejected';
 
         return (
             <div className="border border-[#979797] rounded-lg p-6 space-y-4 shadow-sm">
                 <h3 className="font-medium text-gray-900 mb-2">{label}</h3>
                 <p className="text-sm text-gray-600 mb-3">{desc}</p>
                 <ul className="text-sm text-gray-600 list-disc list-inside mb-4 space-y-2">{ul}</ul>
+
+                {isRejected && (
+                    <div className="p-4 mb-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-800">
+                            <strong>Action Required:</strong> Please upload new documents to resubmit your application.
+
+                        </p>
+                    </div>
+                )}
+
                 <div className="flex flex-col gap-2">
                     <input
                         type="file"
@@ -200,11 +211,14 @@ export function DocumentUploadStepEntity() {
                     {/* Show existing documents if any */}
                     {existingDocuments.length > 0 && (
                         <div className="space-y-1 mb-4">
-                            <p className="text-sm font-medium text-gray-700 mb-2">Existing Documents:</p>
+                            <p className="text-sm font-medium text-gray-700 mb-2">
+                                {isRejected ? 'Previously Submitted Documents:' : 'Existing Documents:'}
+                            </p>
                             {existingDocuments.map((doc, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex items-center border border-[#2FB5B4] rounded px-2 py-1 bg-[#2FB5B410]"
+                                    className={`flex items-center border rounded px-2 py-1 ${isRejected ? 'border-red-200 bg-red-50' : 'border-[#2FB5B4] bg-[#2FB5B410]'
+                                        }`}
                                 >
                                     <span className="flex-1 truncate">{doc.filename}</span>
                                     <button
@@ -221,46 +235,34 @@ export function DocumentUploadStepEntity() {
                                     >
                                         <Eye size={16} />
                                     </button>
-                                    {!isPending && (
-                                        <button
-                                            type="button"
-                                            title="Replace"
-                                            onClick={() => {
-                                                setExistingDocuments([]);
-                                                document.getElementById(inputId)?.click();
-                                            }}
-                                            className="text-orange-500 hover:text-orange-700 p-1"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    )}
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    {/* Show file input if no existing documents or new files selected */}
-                    {(!existingDocuments.length || selectedFiles[fileKey]?.length > 0) && (
-                        <label
-                            htmlFor={inputId}
-                            className={`
-                                flex items-center justify-between border border-gray-400 rounded-lg px-4 py-3 
-                                ${isPending ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-                                bg-white text-gray-800
-                                transition-colors hover:border-[#2FB5B4]
-                                ${(selectedFiles[fileKey]?.length) ? 'border-[#2FB5B4]' : ''}
-                            `}
-                        >
-                            <span>
-                                {selectedFiles[fileKey]?.length
-                                    ? `${selectedFiles[fileKey].length} file(s) selected`
+                    {/* Always show file input in rejected state */}
+                    <label
+                        htmlFor={inputId}
+                        className={`
+                            flex items-center justify-between border border-gray-400 rounded-lg px-4 py-3 
+                            ${isPending ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                            bg-white text-gray-800
+                            transition-colors hover:border-[#2FB5B4]
+                            ${selectedFiles[fileKey]?.length ? 'border-[#2FB5B4]' : ''}
+                            ${isRejected && !selectedFiles[fileKey]?.length ? 'border-red-400' : ''}
+                        `}
+                    >
+                        <span>
+                            {selectedFiles[fileKey]?.length
+                                ? `${selectedFiles[fileKey].length} file(s) selected`
+                                : isRejected
+                                    ? "Upload new documents"
                                     : "Choose File  No file chosen"}
-                            </span>
-                            <span className="text-xs text-gray-500 ml-3">
-                                (PDF, JPG, PNG up to 10MB each)
-                            </span>
-                        </label>
-                    )}
+                        </span>
+                        <span className="text-xs text-gray-500 ml-3">
+                            (PDF, JPG, PNG up to 10MB each)
+                        </span>
+                    </label>
 
                     {/* List of newly selected files */}
                     {selectedFiles[fileKey]?.length > 0 && (
@@ -362,10 +364,15 @@ export function DocumentUploadStepEntity() {
                         </button>
                         <button
                             onClick={handleSubmit}
-                            disabled={isStarting || isUpdating || user?.onboardingStatus?.status === 'pending'}
+                            disabled={
+                                isStarting ||
+                                isUpdating ||
+                                user?.onboardingStatus?.status === 'pending' ||
+                                (user?.onboardingStatus?.status === 'rejected' && !selectedFiles.kyc?.length)
+                            }
                             className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
                         >
-                            {user?.onboardingStatus?.status === 'rejected' ? 'Update' : 'Submit'}
+                            {user?.onboardingStatus?.status === 'rejected' ? 'Resubmit' : 'Submit'}
                         </button>
                     </div>
                 </div>

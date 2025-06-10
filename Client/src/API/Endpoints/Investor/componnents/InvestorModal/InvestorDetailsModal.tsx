@@ -12,6 +12,53 @@ interface InvestorDetailsModalProps {
     onReject?: (rejectedNote: string) => Promise<void> | void
     onApprove?: () => Promise<void> | void
 }
+const highNetWorthOptions = [
+    {
+        value: "a",
+        label: (
+            <>
+                (a) Any body corporate which has, or which is a member of the same group as an undertaking which has, a called-up share capital or net assets of not less than £500,000 if the body corporate has more than 20 members or is a subsidiary undertaking of an undertaking which has more than 20 members
+            </>
+        ),
+        showDetails: true,
+    },
+    {
+        value: "b",
+        label: (
+            <>
+                (b)Any body corporate which has, or which is a member of the same group as an undertaking which has, a called-up share capital or net assets of not less than £5,000,000
+            </>
+        ),
+        showDetails: true,
+    },
+    {
+        value: "c",
+        label: (
+            <>
+                (c)Any unincorporated association or partnership which has net assets of not less than £5 million
+            </>
+        ),
+        showDetails: true,
+    },
+    {
+        value: "d",
+        label: (
+            <>
+                (d)The trustee of a high value trust
+            </>
+        ),
+        showDetails: true,
+    },
+    {
+        value: "e",
+        label: (
+            <>
+                (e)any person to whom the communication may otherwise lawfully be made.
+            </>
+        ),
+        showDetails: false,
+    },
+];
 
 export function InvestorDetailsModal({ investorId, isOpen, onClose, onApprove, onReject }: InvestorDetailsModalProps) {
     const { data, isLoading, error } = useInvestorDetails(investorId, { enabled: isOpen })
@@ -131,7 +178,7 @@ export function InvestorDetailsModal({ investorId, isOpen, onClose, onApprove, o
                                         </svg>
                                     </div>
                                     <span className="text-sm text-gray-900">
-                                        {formData?.highNetWorthQualification?.incomeQualified === "yes" ? "Yes" : "No"}
+                                        {formData?.highNetWorthQualification?.incomeQualified === "true" ? "Yes" : "No"}
                                         {formData?.highNetWorthQualification?.incomeAmount &&
                                             ` - $${formData?.highNetWorthQualification?.incomeAmount?.toLocaleString()}`}
                                     </span>
@@ -150,7 +197,7 @@ export function InvestorDetailsModal({ investorId, isOpen, onClose, onApprove, o
                                         </svg>
                                     </div>
                                     <span className="text-sm text-gray-900">
-                                        {formData?.highNetWorthQualification?.netAssetsQualified === "yes" ? "Yes" : "No"}
+                                        {formData?.highNetWorthQualification?.netAssetsQualified === "true" ? "Yes" : "No"}
                                         {formData?.highNetWorthQualification?.netAssetsAmount &&
                                             ` - $${formData?.highNetWorthQualification?.netAssetsAmount.toLocaleString()}`}
                                     </span>
@@ -215,23 +262,59 @@ export function InvestorDetailsModal({ investorId, isOpen, onClose, onApprove, o
                     )}
 
                 {/* Entity Classification */}
-                {formData?.investorType === "entity" && (
-                    <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Entity Classification</h4>
+                {formData?.investorType === "entity" && formData?.entityDetails && (
+                    <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">
+                            Entity Classification
+                        </h4>
+
+                        {/* Entity Type Display */}
                         <div className="flex items-center space-x-2">
                             <div className="w-4 h-4 bg-teal-600 rounded-full flex items-center justify-center">
                                 <div className="w-2 h-2 bg-white rounded-full"></div>
                             </div>
                             <span className="text-sm text-gray-900">
-                                {formData?.entityClassification === "investment_professional"
+                                {formData?.entityDetails?.entityType === "investment_professional"
                                     ? "Investment Professional"
-                                    : formData?.entityClassification === "high_net_worth_company"
+                                    : formData?.entityDetails?.entityType === "high_net_worth_company"
                                         ? "High Net Worth Company"
                                         : "Other"}
                             </span>
                         </div>
+
+                        {/* Optional Subtype for High Net Worth Company */}
+                        {formData?.entityDetails?.entityType === "high_net_worth_company" &&
+                            formData?.entityDetails?.highNetWorthCompanySubType && (
+                                <div className="text-sm text-gray-700">
+                                    <span className="font-medium">Subtype: </span>
+                                    {
+                                        highNetWorthOptions.find(
+                                            (opt) =>
+                                                opt.value === formData.entityDetails.highNetWorthCompanySubType
+                                        )?.label ?? "Unknown"
+                                    }
+                                </div>
+                            )}
+
+                        {/* Entity Name */}
+                        {formData?.entityDetails?.entityName && (
+                            <div className="text-sm text-gray-700">
+                                <span className="font-medium">Entity Name: </span>
+                                {formData?.entityDetails?.entityName}
+                            </div>
+                        )}
+
+                        {/* Reference Number */}
+                        {formData?.entityDetails?.referenceNumber && (
+                            <div className="text-sm text-gray-700">
+                                <span className="font-medium">Reference Number: </span>
+                                {formData?.entityDetails?.referenceNumber}
+                            </div>
+                        )}
                     </div>
                 )}
+
+
             </div>
         </div>
     )

@@ -8,7 +8,7 @@ import { RotateCw } from "lucide-react";
 import { formatDateToDDMMYYYY } from "../../utils/dateUtils";
 import { InvestorDetailsModal } from "../../API/Endpoints/Investor/componnents/InvestorModal/InvestorDetailsModal";
 import toast from "react-hot-toast";
-import { set } from "react-hook-form";
+
 
 
 interface Investor {

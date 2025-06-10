@@ -171,19 +171,29 @@ export function DocumentUploadStep() {
     function FileInputBlock({ label, desc, ul, inputId, accept, fileKey }) {
         const hasExistingDocument = existingDocuments[fileKey]?.url;
         const isPending = user?.onboardingStatus?.status === 'pending';
+        const isRejected = user?.onboardingStatus?.status === 'rejected';
 
         return (
             <div className="border border-[#979797] rounded-lg p-6 space-y-4 shadow-sm">
                 <h3 className="font-medium text-gray-900 mb-2">{label}</h3>
                 <p className="text-sm text-gray-600 mb-3">{desc}</p>
                 <ul className="text-sm text-gray-600 list-disc list-inside mb-4 space-y-2">{ul}</ul>
-                {/* File input */}
-                {fileKey == "kyc" && (
 
-                    <p className="text-sm text-gray-600 mb-3">The documents must be certified by a professional person or someone well-respected in
-                        your community (such as a bank official, solicitor, accountant or public notary).</p>
-
+                {isRejected && (
+                    <div className="p-4 mb-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-800">
+                            <strong>Action Required:</strong> Please upload a new document to resubmit your application.
+                        </p>
+                    </div>
                 )}
+
+                {fileKey === "kyc" && (
+                    <p className="text-sm text-gray-600 mb-3">
+                        The documents must be certified by a professional person or someone well-respected in
+                        your community (such as a bank official, solicitor, accountant or public notary).
+                    </p>
+                )}
+
                 <div className="flex flex-col gap-2">
                     <input
                         type="file"
@@ -199,9 +209,10 @@ export function DocumentUploadStep() {
 
                     {/* Show existing document if available */}
                     {hasExistingDocument && !selectedFiles[fileKey] && (
-                        <div className="flex items-center justify-between border border-[#2FB5B4] rounded-lg px-4 py-3 bg-white">
+                        <div className={`flex items-center justify-between border rounded-lg px-4 py-3 bg-white ${isRejected ? 'border-red-200 bg-red-50' : 'border-[#2FB5B4]'
+                            }`}>
                             <span className="truncate">
-                                {existingDocuments[fileKey]?.filename}
+                                {isRejected ? 'Previously Submitted: ' : ''}{existingDocuments[fileKey]?.filename}
                             </span>
                             <div className="flex items-center gap-2 ml-2">
                                 <button
@@ -218,36 +229,28 @@ export function DocumentUploadStep() {
                                 >
                                     <Eye size={20} />
                                 </button>
-                                {!isPending && (
-                                    <button
-                                        type="button"
-                                        title="Replace Document"
-                                        onClick={() => document.getElementById(inputId)?.click()}
-                                        className="text-orange-500 hover:text-orange-700 p-1"
-                                    >
-                                        <Trash2 size={20} />
-                                    </button>
-                                )}
                             </div>
                         </div>
                     )}
 
-                    {/* Only show file input if not pending and either no existing document or new file selected */}
-                    {(!isPending && (!hasExistingDocument || selectedFiles[fileKey])) && (
+                    {/* Always show file input in rejected state or when no existing document */}
+                    {(!isPending && (isRejected || !hasExistingDocument || selectedFiles[fileKey])) && (
                         <label
                             htmlFor={inputId}
                             className={`
-                                flex items-center justify-between border border-gray-400 rounded-lg px-4 py-3 cursor-pointer
+                                flex items-center justify-between border rounded-lg px-4 py-3 cursor-pointer
                                 bg-white text-gray-800
                                 transition-colors hover:border-[#2FB5B4]
                                 ${selectedFiles[fileKey] ? 'border-[#2FB5B4]' : ''}
-                                ${isPending ? 'cursor-not-allowed opacity-50' : ''}
+                                ${isRejected && !selectedFiles[fileKey] ? 'border-red-400' : 'border-gray-400'}
                             `}
                         >
                             <span>
                                 {selectedFiles[fileKey]
                                     ? selectedFiles[fileKey].name
-                                    : "Choose File  No file chosen"}
+                                    : isRejected
+                                        ? "Upload new document"
+                                        : "Choose File  No file chosen"}
                             </span>
                             <div className="flex items-center gap-2 ml-2">
                                 {selectedFiles[fileKey] && (
@@ -326,7 +329,8 @@ export function DocumentUploadStep() {
                     {user?.onboardingStatus?.status === 'rejected' && (
                         <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                             <p className="text-sm text-red-800">
-                                <strong>Update Required:</strong> Please review and update your documents based on the feedback provided.
+                                <strong>Update Required:</strong> Your previous submission was rejected. Please reupload both documents (ID Document and Proof of Address) to submit again.
+
                             </p>
                         </div>
                     )}
@@ -378,8 +382,8 @@ export function DocumentUploadStep() {
                         <button
                             onClick={handleSubmit}
                             disabled={
-                                !selectedFiles.kyc ||
-                                !selectedFiles.address ||
+                                (!selectedFiles.kyc && (!existingDocuments.kyc || user?.onboardingStatus?.status === 'rejected')) ||
+                                (!selectedFiles.address && (!existingDocuments.address || user?.onboardingStatus?.status === 'rejected')) ||
                                 isUploading ||
                                 isStarting ||
                                 isUpdating ||

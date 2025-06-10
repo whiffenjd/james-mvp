@@ -5,6 +5,7 @@ import { useOnboarding } from '../../Context/OnboardingContext';
 import { jurisdictionSchema } from '../schema';
 import { StepHeader } from '../StepHeader';
 import { useEffect } from 'react';
+import { useAuth } from '../../Context/AuthContext';
 
 // Step 1: Jurisdiction Selection
 export function JurisdictionStep() {
@@ -13,6 +14,9 @@ export function JurisdictionStep() {
         resolver: zodResolver(jurisdictionSchema),
         defaultValues: { jurisdiction: state.formData.jurisdiction || '' }
     });
+    const { user } = useAuth();
+    const isPending = user?.onboardingStatus?.status === 'pending';
+
 
     useEffect(() => {
         if (state.formData.jurisdiction) {
@@ -39,6 +43,7 @@ export function JurisdictionStep() {
                     </label>
                     <select
                         {...register('jurisdiction')}
+                        disabled={isPending}
                         className="w-[80vw] p-3 border outline-none border-gray-300 rounded-lg "
                     >
                         <option value="" className="hover:!bg-[#2FB5B4]">Select your jurisdiction</option>

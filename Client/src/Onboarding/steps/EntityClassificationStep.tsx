@@ -4,6 +4,7 @@ import { useOnboarding } from "../../Context/OnboardingContext";
 import { useState } from "react";
 import clsx from "clsx";
 import { entityDetailsSchema } from "../schema";
+import { useAuth } from "../../Context/AuthContext";
 
 const highNetWorthOptions = [
     {
@@ -67,6 +68,10 @@ export function EntityClassificationStep() {
         mode: "onChange" // Enable real-time validation
     });
 
+    const { user } = useAuth();
+    const isPending = user?.onboardingStatus?.status === 'pending';
+
+
     const entityType = watch("entityType");
     const subType = watch("highNetWorthCompanySubType");
 
@@ -121,6 +126,7 @@ export function EntityClassificationStep() {
                         value="investment_professional"
                         {...register("entityType")}
                         className="mr-3"
+                        disabled={isPending}
                     />
                     <span className="font-semibold">Investment Professional</span>
                     <ul className="tertiary-heading mt-2 ml-6 list-disc">
@@ -137,6 +143,7 @@ export function EntityClassificationStep() {
                                     <input
                                         {...register("entityName")}
                                         placeholder="Entity Name"
+                                        disabled={isPending}
                                         className={clsx(
                                             "mb-1 w-full bg-transparent p-2 outline-none rounded-lg border",
                                             errors.entityName ? "border-red-500" : "border-[#2C2C2E]"
@@ -156,6 +163,7 @@ export function EntityClassificationStep() {
                                             "w-full p-2 bg-transparent outline-none rounded-lg border",
                                             errors.referenceNumber ? "border-red-500" : "border-[#2C2C2E]"
                                         )}
+                                        disabled={isPending}
                                     />
                                     {errors.referenceNumber && (
                                         <p className="text-red-500 text-sm">{errors.referenceNumber.message}</p>
@@ -176,6 +184,7 @@ export function EntityClassificationStep() {
                         value="high_net_worth_company"
                         {...register("entityType")}
                         className="mr-3"
+                        disabled={isPending}
                     />
                     <span className="font-semibold">High Net Worth Companies/Unincorporated Associations</span>
                     <div className="mt-4">
@@ -215,6 +224,7 @@ export function EntityClassificationStep() {
                                         value={opt.value}
                                         {...register("highNetWorthCompanySubType")}
                                         className="mt-1"
+                                        disabled={isPending}
                                     />
                                     <span>{opt.label}</span>
                                 </label>
@@ -232,6 +242,7 @@ export function EntityClassificationStep() {
                                                     "mb-1 w-full bg-transparent p-2 outline-none rounded border",
                                                     errors.entityName ? "border-red-500" : "border-[#2C2C2E]"
                                                 )}
+                                                disabled={isPending}
                                             />
                                             {errors.entityName && (
                                                 <p className="text-red-500 text-sm">{errors.entityName.message}</p>
@@ -245,6 +256,7 @@ export function EntityClassificationStep() {
                                                     "w-full bg-transparent p-2 outline-none rounded border",
                                                     errors.referenceNumber ? "border-red-500" : "border-[#2C2C2E]"
                                                 )}
+                                                disabled={isPending}
                                             />
                                             {errors.referenceNumber && (
                                                 <p className="text-red-500 text-sm">{errors.referenceNumber.message}</p>

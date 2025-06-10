@@ -111,16 +111,14 @@ export const InvestorRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }
   }
 
-  // Check onboarding status and redirect if needed
   if (
-    !user.onboardingStatus?.status ||
-    user.onboardingStatus.status !== "approved"
+    user?.isOnboarded !== true
   ) {
-    // Allow access to onboarding route
-    if (!location.pathname.includes('/investor/onboarding')) {
+    if (!location.pathname.includes("/investor/onboarding")) {
       return <Navigate to="/investor/onboarding" replace />;
     }
   }
+
 
   return children ? <>{children}</> : <Outlet />;
 };

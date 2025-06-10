@@ -457,3 +457,51 @@ export const getOnboardingInfo = async (req: AuthenticatedRequest, res: Response
     });
   }
 };
+
+/**
+ * @swagger
+ * /onboarding/investor/proceed:
+ *   post:
+ *     summary: Complete onboarding and mark user as onboarded
+ *     tags: [Investor Onboarding]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User onboarding completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ *       401:
+ *         description: User not authenticated
+ *       500:
+ *         description: Server error
+ */
+export const proceedOnboarding = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated',
+        data: null,
+      });
+    }
+
+    await onboardingService.proceedOnboarding(userId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Onboarding completed successfully',
+      data: null,
+    });
+  } catch (error) {
+    console.error('Proceed onboarding error:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'An unexpected error occurred',
+      data: null,
+    });
+  }
+};

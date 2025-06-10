@@ -13,6 +13,8 @@ import { SelfCertifiedSophisticatedStep } from "./SelfCertifiedSophisticatedStep
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Loader2, LogOut, RotateCcw } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { OnboardingComplete } from "./OnboardingComplete";
 
 
 const OnboardingStatus = ({
@@ -89,9 +91,9 @@ const syncOnboardingState = async (onboardingInfo, user, dispatch, updateFormDat
 
 export function OnboardingSteps() {
     const { state, dispatch, updateFormData } = useOnboarding();
-    const { user, logout } = useAuth();
+    const { user, logout, updateOnboardingStatus } = useAuth();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-
+    const nav = useNavigate();
     // Only fetch onboarding info if user has onboarding status
     const { data: onboardingInfo, isLoading: isLoadingOnboarding, refetch: refetchOnboarding } = useOnboardingInfo({
         enabled: !!user?.onboardingStatus // Only run query if onboardingStatus exists
@@ -117,7 +119,10 @@ export function OnboardingSteps() {
                     const investorType = onboardingInfo.data?.formData?.investorType;
                     const lastStep = investorType === 'individual' ? 5 : 4;
                     dispatch({ type: 'SET_STEP', payload: lastStep });
-
+                    if (onboardingInfo?.data?.status === 'approved' && user?.onboardingStatus?.status !== 'approved') {
+                        updateOnboardingStatus('approved');
+                        return;
+                    }
                     // Show status messages with null checks
                     if (user.onboardingStatus && user.onboardingStatus.status === 'rejected') {
                         toast.error("Your previous submission was rejected.");
@@ -131,7 +136,9 @@ export function OnboardingSteps() {
 
             updateStates();
         }
-    }, [user?.onboardingStatus, onboardingInfo?.data?.formData]); // Updated dependency array
+    }, [user?.onboardingStatus, onboardingInfo?.data?.formData]);
+
+
 
     const handleLogout = () => {
         logout(setIsLoggingOut);
@@ -140,14 +147,13 @@ export function OnboardingSteps() {
     // Show loading state only if we're actually fetching data
     if (user?.onboardingStatus && isLoadingOnboarding) {
         return (
-            <div className="w-screen h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <Loader2 className="animate-spin h-8 w-8 mb-4 text-teal-600" />
-                    <p className="text-gray-600">Loading your onboarding information...</p>
-                </div>
+            <div className="w-screen h-screen flex flex-col items-center justify-center">
+                <Loader2 className="animate-spin h-8 w-8 mb-4 text-teal-600" />
+                <p className="text-gray-600">Loading your onboarding information...</p>
             </div>
         );
     }
+
 
     // Helper to get total steps based on investor type
     const getTotalSteps = () => state.formData.investorType === 'individual' ? 5 : 4;
@@ -155,6 +161,11 @@ export function OnboardingSteps() {
     const renderCurrentStep = () => {
         const totalSteps = getTotalSteps();
         // If there's existing onboarding data, show status at the last step
+        if (user?.onboardingStatus?.status === "approved" && !user?.isOnboarded) {
+            return (
+                <OnboardingComplete />
+            )
+        }
         if (
             user?.onboardingStatus &&
             state.currentStep === totalSteps
@@ -163,7 +174,7 @@ export function OnboardingSteps() {
                 <>
                     <OnboardingStatus
                         status={user.onboardingStatus.status}
-                        rejectionNote={user.onboardingStatus.rejectionNote ?? undefined}
+                        rejectionNote={onboardingInfo?.data?.rejectionNote ?? undefined}
                     />
                     {/* Still show the document upload step below the status */}
                     {state.formData.investorType === 'individual'
@@ -173,6 +184,7 @@ export function OnboardingSteps() {
                 </>
             );
         }
+
 
         switch (state.currentStep) {
             case 1:

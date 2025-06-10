@@ -22,6 +22,7 @@ interface OnboardingInfoResponse {
   status: string;
   createdAt: string;
   updatedAt: string;
+  rejectionNote?: string;
   documents?: Array<{
     id: string;
     type: string;
@@ -148,3 +149,11 @@ export const prepareDocumentUpload = (files: { [key: string]: File }) => {
 
   return formData;
 };
+
+export const useProceedOnboarding = () =>
+  useMutation<ApiResponse, Error>({
+    mutationFn: async () => {
+      const res = await axiosPrivate.post("/onboarding/investor/proceed");
+      return res.data;
+    },
+  });

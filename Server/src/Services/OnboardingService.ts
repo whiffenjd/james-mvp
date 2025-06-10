@@ -6,6 +6,7 @@ import {
   UpdateOnboardingRequest,
   OnboardingStatusResponse,
 } from '../dtos/OnboardingDTOs';
+import { UsersTable } from '../db/schema';
 
 export const startOnboarding = async (userId: string, payload: CreateOnboardingRequest) => {
   // Insert onboarding row (if not exists), otherwise throw/conflict
@@ -83,4 +84,22 @@ export const getOnboardingInfo = async (userId: string) => {
   return {
     ...onboarding,
   };
+};
+
+export const proceedOnboarding = async (userId: string) => {
+  // Update user's onboarding status
+  const [updated] = await db
+    .update(UsersTable)
+    .set({
+      isOnboarded: true,
+      updatedAt: new Date(),
+    })
+    .where(eq(UsersTable.id, userId))
+    .returning();
+
+  if (!updated) {
+    throw new Error('User not found');
+  }
+
+  return updated;
 };

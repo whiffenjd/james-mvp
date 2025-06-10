@@ -3,6 +3,7 @@ import { useOnboarding } from "../../Context/OnboardingContext";
 import { investorTypeSchema } from "../schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { StepHeader } from "../StepHeader";
+import { useAuth } from "../../Context/AuthContext";
 
 // Step 2: Investor Type Selection
 export function InvestorTypeStep() {
@@ -11,6 +12,8 @@ export function InvestorTypeStep() {
         resolver: zodResolver(investorTypeSchema),
         defaultValues: { investorType: state.formData.investorType || '' }
     });
+    const { user } = useAuth();
+    const isPending = user?.onboardingStatus?.status === 'pending';
 
     const onSubmit = (data: any) => {
         updateFormData(data);
@@ -38,6 +41,7 @@ export function InvestorTypeStep() {
                                 {...register('investorType')}
                                 type="radio"
                                 value="individual"
+                                disabled={isPending}
                                 className="mr-3 h-4 w-4 text-teal-600 focus:ring-teal-500"
                             />
                             <div>
@@ -51,6 +55,7 @@ export function InvestorTypeStep() {
                                 {...register('investorType')}
                                 type="radio"
                                 value="entity"
+                                disabled={isPending}
                                 className="mr-3 h-4 w-4 text-teal-600 focus:ring-teal-500"
                             />
                             <div>

@@ -96,7 +96,7 @@ export const useInvestorDetails = (
       return res.data;
     },
     enabled: options?.enabled ?? !!investorId,
-    staleTime: 60 * 1000,
+    // staleTime: 60 * 1000,
   });
 
 // Update Onboarding Status

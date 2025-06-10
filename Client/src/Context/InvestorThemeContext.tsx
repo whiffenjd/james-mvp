@@ -83,7 +83,10 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
 
   // Determine which theme ID to fetch
   const selectedThemeId =
-    user?.selectedTheme || selectedThemeResponse?.data?.selectedThemeId;
+    user?.selectedTheme ||
+    (selectedThemeResponse && "data" in selectedThemeResponse
+      ? (selectedThemeResponse as { data?: { selectedThemeId?: string } }).data?.selectedThemeId
+      : undefined);
 
   // Fetch specific theme by ID
   const {

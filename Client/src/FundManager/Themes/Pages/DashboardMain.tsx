@@ -5,7 +5,7 @@ import {
   dashboardAssetsApi,
   themesApi,
 } from "../../../API/Endpoints/FundManager/Themes&Asset";
-import type { CreateThemeData } from "../../Types/DashboardSettings";
+import type { CreateThemeData, DashboardAsset } from "../../Types/DashboardSettings";
 import { useAuth } from "../../../Context/AuthContext";
 import type { Theme } from "../../Types/DashboardSettings";
 import AssetsSection from "../Components/AssetsSection";

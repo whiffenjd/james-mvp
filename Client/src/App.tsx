@@ -123,8 +123,6 @@ function App() {
           {/* Error and fallback routes */}
           <Route path="/unauthorized" element={<Unauthorized />} />
 
-
-
           {/* Redirect root to login or appropriate dashboard based on auth state */}
           <Route
             path="/"

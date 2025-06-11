@@ -93,7 +93,13 @@ export class ThemeService {
           error: 'Failed to update theme selection',
         };
       }
-
+      await db
+        .update(UsersTable)
+        .set({
+          selectedTheme: themeId,
+          updatedAt: new Date(),
+        })
+        .where(eq(UsersTable.referral, userId));
       // Fetch the full theme object using the selectedTheme id
       let theme: Theme | undefined = undefined;
       if (updatedUser[0].selectedTheme) {

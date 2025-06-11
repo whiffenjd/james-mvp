@@ -12,6 +12,7 @@ export const UsersTable = pgTable(
     isActive: boolean('is_active').notNull().default(false),
     selectedTheme: uuid('selected_theme_id'),
     metadata: jsonb('metadata').default({}),
+    referral: varchar('referral', { length: 255 }).default(''),
     isOnboarded: boolean('is_onboarded').notNull().default(false),
     lastLoginAt: timestamp('last_login_at'),
     createdAt: timestamp('created_at').defaultNow(),

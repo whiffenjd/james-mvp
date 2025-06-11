@@ -29,6 +29,13 @@
       "when": 1749536910520,
       "tag": "0003_dry_reavers",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1749625113120,
+      "tag": "0004_superb_serpent_society",
+      "breakpoints": true
     }
   ]
 }

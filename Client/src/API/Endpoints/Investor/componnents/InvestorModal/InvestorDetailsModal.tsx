@@ -330,30 +330,50 @@ export function InvestorDetailsModal({ investorId, isOpen, onClose, onApprove, o
             <div className="ml-11">
                 <h4 className="text-sm font-medium text-gray-700 mb-4">Uploaded Documents</h4>
                 <div className="space-y-3">
-                    {/* Individual Documents */}
-                    {formData?.investorType === "individual" && (
-                        <>
-                            {formData?.kycDocumentUrl && (
-                                <DocumentPreview url={formData?.kycDocumentUrl} title="ID Document (Certified)" type="1.7 MB" />
-                            )}
-                            {formData?.proofOfAddressUrl && (
-                                <DocumentPreview url={formData?.proofOfAddressUrl} title="Proof of Address (Certified)" type="1.2 MB" />
-                            )}
-                        </>
-                    )}
-
-                    {/* Entity Documents */}
-                    {formData?.investorType === "entity" && formData?.entityDocuments && (
-                        <>
-                            {formData?.entityDocuments?.map((doc: any, index: number) => (
-                                <DocumentPreview
-                                    key={index}
-                                    url={doc.url}
-                                    title={doc?.fileName || `${doc?.type} Document`}
-                                    type={doc.type}
-                                />
-                            ))}
-                        </>
+                    {formData?.investorType === "individual" ? (
+                        !formData?.kycDocumentUrl && !formData?.proofOfAddressUrl ? (
+                            <div className="text-sm text-gray-500 italic bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                No documents have been uploaded
+                            </div>
+                        ) : (
+                            <>
+                                {formData?.kycDocumentUrl && (
+                                    <DocumentPreview
+                                        url={formData.kycDocumentUrl}
+                                        title="ID Document (Certified)"
+                                        type="1.7 MB"
+                                    />
+                                )}
+                                {formData?.proofOfAddressUrl && (
+                                    <DocumentPreview
+                                        url={formData.proofOfAddressUrl}
+                                        title="Proof of Address (Certified)"
+                                        type="1.2 MB"
+                                    />
+                                )}
+                            </>
+                        )
+                    ) : formData?.investorType === "entity" ? (
+                        !formData?.entityDocuments?.length ? (
+                            <div className="text-sm text-gray-500 italic bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                No entity documents have been uploaded
+                            </div>
+                        ) : (
+                            <>
+                                {formData.entityDocuments.map((doc: any, index: number) => (
+                                    <DocumentPreview
+                                        key={index}
+                                        url={doc.url}
+                                        title={doc?.fileName || `${doc?.type} Document`}
+                                        type={doc.type}
+                                    />
+                                ))}
+                            </>
+                        )
+                    ) : (
+                        <div className="text-sm text-gray-500 italic bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            No documents available
+                        </div>
                     )}
                 </div>
             </div>

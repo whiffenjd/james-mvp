@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useOnboarding } from "../../Context/OnboardingContext";
 import { individualInvestorTypeSchema } from "../schema";
 import { StepHeader } from '../StepHeader';
+import { useAuth } from '../../Context/AuthContext';
 
 
 // Step 3: Individual Investor Type Selection
@@ -16,6 +17,8 @@ export function IndividualInvestorTypeStep() {
         resolver: zodResolver(individualInvestorTypeSchema),
         defaultValues: { individualInvestorType: state.formData.individualInvestorType || '' as IndividualInvestorTypeForm["individualInvestorType"] }
     });
+    const { user } = useAuth();
+    const isPending = user?.onboardingStatus?.status === 'pending';
 
     const onSubmit = (data: any) => {
         updateFormData(data);
@@ -42,6 +45,8 @@ export function IndividualInvestorTypeStep() {
                             <input
                                 {...register('individualInvestorType')}
                                 type="radio"
+                                disabled={isPending}
+
                                 value="high_net_worth"
                                 className="mt-1 mr-3 h-4 w-4 text-teal-600 focus:ring-teal-500"
                             />
@@ -54,6 +59,8 @@ export function IndividualInvestorTypeStep() {
                             <input
                                 {...register('individualInvestorType')}
                                 type="radio"
+                                disabled={isPending}
+
                                 value="self_certified_sophisticated_investor"
                                 className="mt-1 mr-3 h-4 w-4 text-teal-600 focus:ring-teal-500"
                             />

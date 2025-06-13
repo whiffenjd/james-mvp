@@ -56,33 +56,66 @@ function InvestorsPage() {
 
     // Define columns
     const columns: TableColumn<Investor>[] = [
-        { key: "name", header: "Investor Name", sortable: false },
-        { key: "email", header: "Email Address", sortable: false },
+        {
+            key: "name",
+            header: "Investor Name",
+            sortable: false,
+            width: "20vh",
+            align: "left",
+            render: (value: string) => (
+                <div className="truncate" title={value}>
+                    {value}
+                </div>
+            )
+        },
+        {
+            key: "email",
+            header: "Email Address",
+            sortable: false,
+            width: "35vh",
+            align: "left",
+            render: (value: string) => (
+                <div className="truncate" title={value}>
+                    {value}
+                </div>
+            )
+        },
         {
             key: "lastLoginAt",
             header: "Last Activity",
             sortable: false,
-            render: (value: string) => (
-                <span>{formatDateToDDMMYYYY(value)}</span>
-            ),
+            width: "20vh",
+            align: "left",
+            render: (value: string) => {
+                const formattedDate = formatDateToDDMMYYYY(value);
+                return (
+                    <div className="truncate" title={formattedDate}>
+                        {formattedDate}
+                    </div>
+                );
+            }
         },
         {
             key: "status",
             header: "Status",
+            width: "15vh",
+            align: "left",
             render: (value: "pending" | "approved" | "rejected") => (
-                <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full
-            ${value === "approved"
-                            ? "bg-green-100 text-green-800"
-                            : value === "pending"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-700"
-                        }`}
-                >
-                    {value === "approved" ? "Onboarded" : value === "pending" ? "In Progress" : "Rejected"}
-                </span>
-            ),
-        },
+                <div className="truncate">
+                    <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                        ${value === "approved"
+                                ? "bg-green-100 text-green-800"
+                                : value === "pending"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-red-100 text-red-700"
+                            }`}
+                    >
+                        {value === "approved" ? "Onboarded" : value === "pending" ? "In Progress" : "Rejected"}
+                    </span>
+                </div>
+            )
+        }
     ];
 
     // Actions (example)
@@ -211,7 +244,7 @@ function InvestorsPage() {
                         title={canRefetch ? "Refetch investors list" : "Please wait before refetching"}
                     >
                         <RotateCw className={`w-5 h-5 ${isFetching ? "animate-spin" : ""}`} />
-                        {isFetching ? "Refreshing..." : justRefetched ? "Refetched!" : "Refetch"}
+                        {isFetching ? "Refreshing..." : justRefetched ? "Refetched!" : "Referesh"}
                     </button>
                 </div>
 

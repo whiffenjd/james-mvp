@@ -15,24 +15,32 @@ export function TableRow<T>({ row, columns, actions, index }: TableRowProps<T>) 
 
     return (
         <div
-            className="grid gap-4 px-6 py-4 items-center"
-            style={{ gridTemplateColumns: `repeat(${columns.length + (actions && actions.length > 0 ? 1 : 0)}, 1fr)` }}
+            className="grid gap-4 px-6 py-4 items-center "
+            style={{
+                gridTemplateColumns: columns.map(col => col.width || '1fr').join(' ')
+                    + (actions && actions.length > 0 ? ' auto' : '')
+            }}
         >
             {columns.map((column, colIndex) => {
-                const value = getNestedValue(row, column.key as string)
+                const value = getNestedValue(row, column.key as string);
 
                 return (
                     <div
                         key={colIndex}
                         className={`
-              text-sm text-slate-900
-              ${column.align === "center" ? "text-center" : ""}
-              ${column.align === "right" ? "text-right" : ""}
-            `}
+                        text-sm text-slate-900 overflow-hidden
+                        ${column.align === "center" ? "text-center" : ""}
+                        ${column.align === "right" ? "text-right" : "text-left"}
+                    `}
+                        style={{ width: column.width }}
                     >
-                        {column.render ? column.render(value, row, index) : value}
+                        {column.render ? column.render(value, row, index) : (
+                            <div className="truncate" title={value}>
+                                {value}
+                            </div>
+                        )}
                     </div>
-                )
+                );
             })}
             {actions && actions.length > 0 && (
                 <div className="text-sm">

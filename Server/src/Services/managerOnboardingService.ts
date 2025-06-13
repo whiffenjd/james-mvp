@@ -129,16 +129,13 @@ export async function deleteInvestorOnboarding(onboardingId: string) {
       .where(eq(InvestorOnboardingTable.userId, onboardingId))
       .returning();
 
-    // If status was rejected, update user's isOnboarded to false
-    if (currentOnboarding?.status === 'rejected') {
-      await tx
-        .update(UsersTable)
-        .set({
-          isOnboarded: false,
-          updatedAt: new Date(),
-        })
-        .where(eq(UsersTable.id, onboardingId));
-    }
+    await tx
+      .update(UsersTable)
+      .set({
+        isOnboarded: false,
+        updatedAt: new Date(),
+      })
+      .where(eq(UsersTable.id, onboardingId));
 
     return deletedOnboarding;
   });

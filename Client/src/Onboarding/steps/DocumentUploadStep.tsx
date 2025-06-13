@@ -85,80 +85,109 @@ export function DocumentUploadStep() {
     };
 
     const handleSubmit = async () => {
-        if (!selectedFiles.kyc || !selectedFiles.address) return;
-
         try {
-            // Prepare and upload files - order matters here
-            const formData = new FormData();
-            formData.append('documents', selectedFiles.kyc);
-            formData.append('documents', selectedFiles.address);
+            let documentUrls = {
+                kycDocumentUrl: '',
+                proofOfAddressUrl: ''
+            };
 
-            const uploadResponse = await toast.promise(
-                uploadDocuments(formData),
-                {
-                    loading: 'Uploading documents...',
-                    success: 'Documents uploaded successfully',
-                    error: 'Failed to upload documents'
+            // Only upload if files are selected
+            if (selectedFiles.kyc || selectedFiles.address) {
+                const formData = new FormData();
+
+                // Only append files that are selected
+                if (selectedFiles.kyc) {
+                    formData.append('documents', selectedFiles.kyc);
                 }
-            );
+                if (selectedFiles.address) {
+                    formData.append('documents', selectedFiles.address);
+                }
 
-            if (uploadResponse.success) {
-                setUploadedFiles(uploadResponse.data.map(doc => ({
-                    key: doc.key,
-                    url: doc.url
-                })));
+                const uploadResponse = await toast.promise(
+                    uploadDocuments(formData),
+                    {
+                        loading: 'Uploading documents...',
+                        success: 'Documents uploaded successfully',
+                        error: 'Failed to upload documents'
+                    }
+                );
 
-                // Create document URLs
-                const documentUrls = {
-                    kycDocumentUrl: uploadResponse.data[0]?.url,
-                    proofOfAddressUrl: uploadResponse.data[1]?.url
-                };
+                if (uploadResponse.success) {
+                    setUploadedFiles(uploadResponse.data.map(doc => ({
+                        key: doc.key,
+                        url: doc.url
+                    })));
 
-                // Wait for form data update to complete
-                await new Promise<void>(resolve => {
-                    updateFormData(documentUrls);
-                    // Give time for state to update
-                    setTimeout(resolve, 100);
-                });
-
-                // Submit onboarding with updated form data
-                try {
-                    const updatedFormData = {
-                        ...state.formData,
-                        ...documentUrls
-                    };
-
-                    const onboardingPromise = user?.onboardingStatus?.status === 'rejected'
-                        ? updateOnboarding({ formData: updatedFormData })
-                        : startOnboarding({ formData: updatedFormData });
-
-                    const response = await toast.promise(onboardingPromise, {
-                        loading: 'Submitting onboarding information...',
-                        success: 'Onboarding submitted successfully',
-                        error: 'Failed to submit onboarding'
-                    });
-
-                    // Update onboarding status to pending
-                    updateOnboardingStatus('pending');
-
-                    // Reset files
-                    setUploadedFiles([]);
-                    setSelectedFiles({});
-
-                    // Clear form data and reset to initial state
-                    dispatch({ type: 'RESET_FORM' });
-
-                    // Load new onboarding data
-                    if (response.data?.formData) {
-                        await new Promise<void>(resolve => {
-                            updateFormData(response.data.formData);
-                            setTimeout(resolve, 100);
-                        });
+                    // Map uploaded files to correct URLs
+                    const uploadedDocs = uploadResponse.data;
+                    if (selectedFiles.kyc && selectedFiles.address) {
+                        documentUrls = {
+                            kycDocumentUrl: uploadedDocs[0]?.url || '',
+                            proofOfAddressUrl: uploadedDocs[1]?.url || ''
+                        };
+                    } else if (selectedFiles.kyc) {
+                        documentUrls.kycDocumentUrl = uploadedDocs[0]?.url || '';
+                    } else if (selectedFiles.address) {
+                        documentUrls.proofOfAddressUrl = uploadedDocs[0]?.url || '';
                     }
 
+                    // Set existing documents immediately after successful upload
+                    setExistingDocuments({
+                        kyc: documentUrls.kycDocumentUrl ? {
+                            url: documentUrls.kycDocumentUrl,
+                            filename: documentUrls.kycDocumentUrl.split('/').pop() || 'KYC Document'
+                        } : undefined,
+                        address: documentUrls.proofOfAddressUrl ? {
+                            url: documentUrls.proofOfAddressUrl,
+                            filename: documentUrls.proofOfAddressUrl.split('/').pop() || 'Proof of Address'
+                        } : undefined
+                    });
+                }
+            }
 
-                } catch (error) {
-                    // Clean up uploaded files on failure
+            // Wait for form data update to complete
+            await new Promise<void>(resolve => {
+                updateFormData(documentUrls);
+                setTimeout(resolve, 100);
+            });
+
+            // Submit onboarding with updated form data
+            try {
+                const updatedFormData = {
+                    ...state.formData,
+                    ...documentUrls
+                };
+
+                const onboardingPromise = user?.onboardingStatus?.status === 'rejected'
+                    ? updateOnboarding({ formData: updatedFormData })
+                    : startOnboarding({ formData: updatedFormData });
+
+                const response = await toast.promise(onboardingPromise, {
+                    loading: 'Submitting onboarding information...',
+                    success: 'Onboarding submitted successfully',
+                    error: 'Failed to submit onboarding'
+                });
+
+                // Update onboarding status to pending
+                updateOnboardingStatus('pending');
+
+                // Reset files
+                setUploadedFiles([]);
+                setSelectedFiles({});
+
+                // Clear form data and reset to initial state
+                dispatch({ type: 'RESET_FORM' });
+
+                // Load new onboarding data
+                if (response.data?.formData) {
+                    await new Promise<void>(resolve => {
+                        updateFormData(response.data.formData);
+                        setTimeout(resolve, 100);
+                    });
+                }
+            } catch (error) {
+                // Clean up uploaded files on failure
+                if (uploadedFiles.length > 0) {
                     await Promise.all(
                         uploadedFiles.map(file =>
                             deleteDocument(file.key).catch(err =>
@@ -166,8 +195,8 @@ export function DocumentUploadStep() {
                             )
                         )
                     );
-                    throw error;
                 }
+                throw error;
             }
         } catch (error) {
             console.error('Error in submission:', error);
@@ -179,7 +208,6 @@ export function DocumentUploadStep() {
     function FileInputBlock({ label, desc, ul, inputId, accept, fileKey }: FileInputBlockProps) {
         const hasExistingDocument = existingDocuments[fileKey]?.url;
         const isPending = user?.onboardingStatus?.status === 'pending';
-        const isRejected = user?.onboardingStatus?.status === 'rejected';
 
         return (
             <div className="border border-[#979797] rounded-lg p-6 space-y-4 shadow-sm">
@@ -187,40 +215,34 @@ export function DocumentUploadStep() {
                 <p className="text-sm text-gray-600 mb-3">{desc}</p>
                 <ul className="text-sm text-gray-600 list-disc list-inside mb-4 space-y-2">{ul}</ul>
 
-                {isRejected && (
-                    <div className="p-4 mb-4 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-sm text-red-800">
-                            <strong>Action Required:</strong> Please upload a new document to resubmit your application.
+                {isPending && (
+                    <div className="p-4 mb-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-sm text-yellow-800">
+                            <strong>Under Review:</strong> Your document is being reviewed.
                         </p>
                     </div>
                 )}
 
-                {fileKey === "kyc" && (
-                    <p className="text-sm text-gray-600 mb-3">
-                        The documents must be certified by a professional person or someone well-respected in
-                        your community (such as a bank official, solicitor, accountant or public notary).
-                    </p>
-                )}
-
                 <div className="flex flex-col gap-2">
-                    <input
-                        type="file"
-                        accept={accept}
-                        id={inputId}
-                        onChange={e => {
-                            const file = e.target.files?.[0] || null;
-                            handleFileSelect(fileKey, file);
-                        }}
-                        className="hidden"
-                        disabled={isPending}
-                    />
+                    {/* Only show file input when not pending */}
+                    {!isPending && (
+                        <input
+                            type="file"
+                            accept={accept}
+                            id={inputId}
+                            onChange={e => {
+                                const file = e.target.files?.[0] || null;
+                                handleFileSelect(fileKey, file);
+                            }}
+                            className="hidden"
+                        />
+                    )}
 
                     {/* Show existing document if available */}
-                    {hasExistingDocument && !selectedFiles[fileKey] && (
-                        <div className={`flex items-center justify-between border rounded-lg px-4 py-3 bg-white ${isRejected ? 'border-red-200 bg-red-50' : 'border-[#2FB5B4]'
-                            }`}>
+                    {hasExistingDocument && (!selectedFiles[fileKey] || isPending) && (
+                        <div className="flex items-center justify-between border rounded-lg px-4 py-3 bg-white border-[#2FB5B4]">
                             <span className="truncate">
-                                {isRejected ? 'Previously Submitted: ' : ''}{existingDocuments[fileKey]?.filename}
+                                {existingDocuments[fileKey]?.filename}
                             </span>
                             <div className="flex items-center gap-2 ml-2">
                                 <button
@@ -241,23 +263,22 @@ export function DocumentUploadStep() {
                         </div>
                     )}
 
-                    {/* Always show file input in rejected state or when no existing document */}
-                    {(!isPending && (isRejected || !hasExistingDocument || selectedFiles[fileKey])) && (
+                    {/* Show file input label only when not pending */}
+                    {!isPending && (
                         <label
                             htmlFor={inputId}
                             className={`
                                 flex items-center justify-between border rounded-lg px-4 py-3 cursor-pointer
                                 bg-white text-gray-800
                                 transition-colors hover:border-[#2FB5B4]
-                                ${selectedFiles[fileKey] ? 'border-[#2FB5B4]' : ''}
-                                ${isRejected && !selectedFiles[fileKey] ? 'border-red-400' : 'border-gray-400'}
+                                ${selectedFiles[fileKey] ? 'border-[#2FB5B4]' : 'border-gray-400'}
                             `}
                         >
                             <span>
                                 {selectedFiles[fileKey]
                                     ? selectedFiles[fileKey].name
-                                    : isRejected
-                                        ? "Upload new document"
+                                    : hasExistingDocument
+                                        ? "Reupload document"
                                         : "Choose File  No file chosen"}
                             </span>
                             <div className="flex items-center gap-2 ml-2">
@@ -290,10 +311,6 @@ export function DocumentUploadStep() {
                             </div>
                         </label>
                     )}
-
-                    <span className="text-xs text-gray-500 mt-1">
-                        PDF, JPG, PNG up to 10MB
-                    </span>
                 </div>
             </div>
         );
@@ -390,12 +407,10 @@ export function DocumentUploadStep() {
                         <button
                             onClick={handleSubmit}
                             disabled={
-                                (!selectedFiles.kyc && (!existingDocuments.kyc || user?.onboardingStatus?.status === 'rejected')) ||
-                                (!selectedFiles.address && (!existingDocuments.address || user?.onboardingStatus?.status === 'rejected')) ||
                                 isUploading ||
                                 isStarting ||
                                 isUpdating ||
-                                user?.onboardingStatus?.status === 'pending'
+                                user?.onboardingStatus?.status === 'pending' // Only disable during pending state
                             }
                             className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >

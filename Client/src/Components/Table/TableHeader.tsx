@@ -13,26 +13,34 @@ export function TableHeader<T>({ columns, hasActions, sortKey, sortDirection, on
     return (
         <div className="bg-theme-card border rounded-md border-theme-sidebar-accent">
             <div
-                className="grid gap-4 px-6 py-4"
-                style={{ gridTemplateColumns: `repeat(${columns.length + (hasActions ? 1 : 0)}, 1fr)` }}
+                className="grid gap-4 px-6 py-4 items-center"
+                style={{
+                    gridTemplateColumns: columns.map(col => col.width || '1fr').join(' ')
+                        + (hasActions ? ' auto' : '')
+                }}
             >
                 {columns.map((column, index) => (
                     <div
                         key={index}
                         className={`
-              text-left text-sm font-semibold text-theme-sidebar-accent uppercase tracking-wider
-              ${column.align === "center" ? "text-center" : ""}
-              ${column.align === "right" ? "text-right" : ""}
-              ${column.sortable ? "cursor-pointer  select-none" : ""}
-            `}
+                            text-sm font-semibold text-theme-sidebar-accent uppercase tracking-wider overflow-hidden
+                            ${column.align === "center" ? "text-center" : ""}
+                            ${column.align === "right" ? "text-right" : "text-left"}
+                            ${column.sortable ? "cursor-pointer select-none" : ""}
+                        `}
+                        style={{ width: column.width }}
                         onClick={() => column.sortable && onSort(column.key as string)}
                     >
                         <div className="flex items-center gap-2">
-                            {column.header}
+                            <span className="truncate" title={column.header}>
+                                {column.header}
+                            </span>
                             {column.sortable && (
-                                <div className="flex flex-col">
+                                <div className="flex flex-col flex-shrink-0">
                                     <svg
-                                        className={`w-3 h-3 ${sortKey === column.key && sortDirection === "asc" ? "text-slate-900" : "text-slate-400"
+                                        className={`w-3 h-3 ${sortKey === column.key && sortDirection === "asc"
+                                            ? "text-slate-900"
+                                            : "text-slate-400"
                                             }`}
                                         fill="currentColor"
                                         viewBox="0 0 20 20"
@@ -45,7 +53,9 @@ export function TableHeader<T>({ columns, hasActions, sortKey, sortDirection, on
                     </div>
                 ))}
                 {hasActions && (
-                    <div className="text-left text-sm font-semibold text-theme-sidebar-accent uppercase tracking-wider">Actions</div>
+                    <div className="text-sm font-semibold text-theme-sidebar-accent uppercase tracking-wider">
+                        Actions
+                    </div>
                 )}
             </div>
         </div>

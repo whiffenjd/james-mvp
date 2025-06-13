@@ -67,8 +67,9 @@ export function OnboardingSteps() {
     const { user, logout, updateOnboardingStatus } = useAuth();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     // Only fetch onboarding info if user has onboarding status
-    const { data: onboardingInfo, isLoading: isLoadingOnboarding } = useOnboardingInfo({
+    const { data: onboardingInfo, isLoading: isLoadingOnboarding, refetch } = useOnboardingInfo({
         enabled: !!user?.onboardingStatus // Only run query if onboardingStatus exists
+
     });
 
     // Effect to handle existing onboarding data
@@ -127,6 +128,7 @@ export function OnboardingSteps() {
     }
 
 
+
     // Helper to get total steps based on investor type
     const getTotalSteps = () => state.formData.investorType === 'individual' ? 5 : 4;
 
@@ -146,7 +148,7 @@ export function OnboardingSteps() {
                 <>
                     <OnboardingStatus
                         status={user.onboardingStatus.status}
-                        rejectionNote={onboardingInfo?.data?.rejectionNote ?? undefined}
+                        rejectionNote={user?.onboardingStatus?.rejectionNote ?? undefined}
                     />
                     {/* Still show the document upload step below the status */}
                     {state.formData.investorType === 'individual'
@@ -232,7 +234,7 @@ export function OnboardingSteps() {
                                 </div>
                                 <div className="flex items-center space-x-4 text-sm text-gray-700">
                                     {/* Resync Button */}
-                                    {user?.onboardingStatus && (
+                                    {/* {user?.onboardingStatus && (
                                         <button
                                             // onClick={async () => {
                                             //     await refetchOnboarding();
@@ -251,7 +253,7 @@ export function OnboardingSteps() {
                                             )}
 
                                         </button>
-                                    )}
+                                    )} */}
                                     <span className="font-medium">Need Help?</span>
                                     <span className="underline cursor-pointer">LogIn</span>
                                 </div>

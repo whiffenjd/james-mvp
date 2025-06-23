@@ -1,6 +1,6 @@
 import { desc, eq, lt, or } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
-import { InvestorOnboardingTable, OtpTable, UsersTable } from '../db/schema';
+import { InvestorOnboardingTable, OtpTable, themes, UsersTable } from '../db/schema';
 import { db } from '../db/DbConnection';
 import { transporter } from '../configs/Nodemailer';
 import { signToken } from './jwtService';
@@ -12,7 +12,12 @@ import { otpTemplate } from '../Utils/OtpEmailVerifyTemplate';
 import { deleteUserTokenByType } from '../Utils/DeleteTokenByType';
 import { Role, User } from '../Types/User';
 
-export const registerInvestor = async (name: string, email: string, password: string) => {
+export const registerInvestor = async (
+  name: string,
+  email: string,
+  password: string,
+  referralId: string,
+) => {
   // Step 1: Check if user already exists
   const existingUser = await db
     .select()
@@ -23,8 +28,22 @@ export const registerInvestor = async (name: string, email: string, password: st
   if (existingUser.length > 0) {
     throw new Error('An account with this email already exists.');
   }
+  console.log('referralID', referralId);
+  // Step 2: If referralId is provided, fetch their theme
+  let selectedThemeId: string | null = null;
+  if (referralId) {
+    const referralTheme = await db
+      .select()
+      .from(themes)
+      .where(eq(themes.userId, referralId))
+      .limit(1);
 
-  // Step 2: Continue with registration
+    if (referralTheme.length > 0) {
+      selectedThemeId = referralTheme[0].id;
+    }
+  }
+
+  // Step 3: Continue with registration
   const hashedPassword = await bcrypt.hash(password, 10);
   const otp = generateOTP();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
@@ -44,7 +63,9 @@ export const registerInvestor = async (name: string, email: string, password: st
     password: hashedPassword,
     role: 'investor',
     isEmailVerified: false,
+    referral: referralId,
     isActive: true,
+    selectedTheme: selectedThemeId, // <-- Set the selected theme id here
   });
 
   deleteCache('allUsers');

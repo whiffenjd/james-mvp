@@ -1,11 +1,8 @@
 // src/routes/user.routes.ts
-import { Router } from "express";
-import { verifyToken } from "../Middlewares/VerifyToken";
-import express from "express";
-import {
-  getAllUsersController,
-  getUserProfile,
-} from "../Controllers/UserProfileControllers";
+import { Router } from 'express';
+import { verifyToken } from '../Middlewares/VerifyToken';
+import express from 'express';
+import { getAllUsersController, getUserProfile } from '../Controllers/UserProfileControllers';
 const UserRouter = Router();
 
 function asyncHandler(fn: express.RequestHandler): express.RequestHandler {
@@ -99,9 +96,9 @@ function asyncHandler(fn: express.RequestHandler): express.RequestHandler {
  *         description: Server error
  */
 UserRouter.get(
-  "/Userprofile",
+  '/Userprofile',
   asyncHandler(verifyToken as express.RequestHandler),
-  getUserProfile as unknown as express.RequestHandler
+  getUserProfile as unknown as express.RequestHandler,
 );
 
 /**
@@ -195,9 +192,9 @@ UserRouter.get(
  *         description: Server error
  */
 UserRouter.get(
-  "/getAllUsers",
+  '/getAllUsers',
   asyncHandler(verifyToken as express.RequestHandler),
-  getAllUsersController as unknown as express.RequestHandler
+  getAllUsersController as unknown as express.RequestHandler,
 );
 
 export default UserRouter;

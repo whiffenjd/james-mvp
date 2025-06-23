@@ -1,7 +1,7 @@
 import { Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useInvestorSignup } from "../../API/Endpoints/Investor/InvestorSignupApis";
 
 const Signup = () => {
@@ -16,7 +16,8 @@ const Signup = () => {
   const navigate = useNavigate();
   const signupMutation = useInvestorSignup();
   const logoimg = null;
-
+  const { fundManagerId } = useParams<{ fundManagerId?: string }>();
+  console.log("fundManagerId", fundManagerId);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -54,6 +55,7 @@ const Signup = () => {
       name,
       email,
       password,
+      referralId: fundManagerId ? fundManagerId : null, // <-- include this
     };
 
     signupMutation.mutate(signupData, {

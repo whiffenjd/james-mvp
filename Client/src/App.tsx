@@ -33,6 +33,8 @@ import {
 import InvestorThemeContainer from "./FundManager/Themes/Components/InvestorThemeContainer";
 import InvestorsPage from "./FundManager/InvestorsPage/Investors";
 
+import FundTestComponent from "./Auth/FundCreationTest";
+
 function RedirectBasedOnRole() {
   const { user } = useAuth();
   switch (user?.role) {
@@ -56,7 +58,8 @@ function App() {
           {/* Public routes - accessible when not logged in */}
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+
+            <Route path="/signup/:fundManagerId?" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<SetNewPassword />} />
             <Route path="/verify-email" element={<EmailVerification />} />
@@ -84,7 +87,7 @@ function App() {
               element={
                 <ThemeProvider>
                   <ThemeLoader>
-                    <ThemeContainer >
+                    <ThemeContainer>
                       <FundManagerLayout />
                     </ThemeContainer>
                   </ThemeLoader>
@@ -94,6 +97,7 @@ function App() {
               <Route index element={<FundManagerDashboard />} />
               <Route path="investors" element={<InvestorsPage />} />
               <Route path="settings" element={<DashboardSettings />} />
+              <Route path="funds" element={<FundTestComponent />} />
 
               {/* Add more fund manager routes here */}
             </Route>
@@ -101,13 +105,16 @@ function App() {
 
           {/* Investor routes - NO THEMING */}
           <Route element={<InvestorRoute />}>
-            <Route path="/investor/onboarding" element={<InvestorOnboarding />} />
+            <Route
+              path="/investor/onboarding"
+              element={<InvestorOnboarding />}
+            />
             <Route
               path="/investor/dashboard"
               element={
                 <InvestorThemeProvider>
                   <ThemeLoaderInvestor>
-                    <InvestorThemeContainer >
+                    <InvestorThemeContainer>
                       <InvestorLayout />
                     </InvestorThemeContainer>
                   </ThemeLoaderInvestor>
@@ -118,7 +125,6 @@ function App() {
               {/* Add more investor routes here */}
             </Route>
           </Route>
-
 
           {/* Error and fallback routes */}
           <Route path="/unauthorized" element={<Unauthorized />} />

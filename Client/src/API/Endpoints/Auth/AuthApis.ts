@@ -1,5 +1,5 @@
 // src/api/auth.ts
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosPublic from "../../AxiosInstances/PublicAxiosInstance";
 import axiosPrivate from "../../AxiosInstances/PrivateAxiosInstance";
 
@@ -55,4 +55,17 @@ export const useResetPassword = () =>
       const res = await axiosPublic.post("/auth/user/resetPassword", data);
       return res.data;
     },
+  });
+export const useGetUserProfile = () =>
+  useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      const res = await axiosPrivate.get("/profile/user/Userprofile");
+      return res.data.data; // Assuming your API returns { success: true, data: user }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    retry: 2,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });

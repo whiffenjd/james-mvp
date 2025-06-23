@@ -13,6 +13,7 @@ import DashboardAssetRouter from './Routes/DashboardAssetsRoutes';
 import managerOnboardingRouter from './Routes/managerOnboardingRouter';
 import DashboardThemeRouter from './Routes/DashboardThemeRoutes';
 import documentUploadRouter from './Routes/documentUploadRouter';
+import FundRouter from './Routes/FundsManagerRoutes';
 
 dotenv.config();
 export const app = express();
@@ -40,7 +41,7 @@ app.use('/auth/otp', OtpRouter);
 app.use('/profile/user', UserRouter);
 app.use('/onboarding/investor', investorOnboardingRouter);
 app.use('/list', managerOnboardingRouter);
-
+app.use('/fund', FundRouter);
 app.use('/dashboard/assets', DashboardAssetRouter);
 app.use('/dashboard/theme', DashboardThemeRouter);
 app.use('/api/documents', documentUploadRouter);

@@ -1,4 +1,4 @@
-// contexts/ThemeContext.tsx
+// contexts/InvestorThemeContext.tsx - Fixed version with proper default theme fallback
 import React, {
   createContext,
   useContext,
@@ -15,6 +15,7 @@ import {
   useSelectedTheme,
 } from "../FundManager/hooks/Theme&AssetsHooks";
 import type { Theme } from "./ThemeContext";
+import { defaultTheme } from "./ThemeContext"; // Import the default theme
 
 interface ThemeContextType {
   // Current applied theme
@@ -53,11 +54,11 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
 }) => {
   const { user, isAuthenticated } = useAuth();
 
-  // Local state for managing theme operations
-  const [currentTheme, setCurrentTheme] = useState<Theme | null>(null);
+  // Local state for managing theme operations - Initialize with default theme
+  const [currentTheme, setCurrentTheme] = useState<Theme | null>(defaultTheme);
   const [themeError, setThemeError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-
+  console.log("prooo", user);
   // Only fetch data when user is authenticated and is an investor
   const shouldFetchThemes = isAuthenticated && userType === "investor";
 
@@ -85,7 +86,8 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
   const selectedThemeId =
     user?.selectedTheme ||
     (selectedThemeResponse && "data" in selectedThemeResponse
-      ? (selectedThemeResponse as { data?: { selectedThemeId?: string } }).data?.selectedThemeId
+      ? (selectedThemeResponse as { data?: { selectedThemeId?: string } }).data
+          ?.selectedThemeId
       : undefined);
 
   // Fetch specific theme by ID
@@ -98,7 +100,7 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
     selectedThemeId || "",
     shouldFetchThemes && !!selectedThemeId
   );
-
+  console.log("selectedThemeResponse:", currentThemeResponse);
   // Apply theme mutation
   const applyThemeMutation = useApplyTheme();
 
@@ -114,7 +116,7 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
   useEffect(() => {
     if (!shouldFetchThemes) {
       setIsInitialized(false);
-      setCurrentTheme(null);
+      setCurrentTheme(defaultTheme); // Use default theme instead of null
       return;
     }
 
@@ -140,12 +142,18 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
       }
     }
 
-    if (!selectedThemeId && isInitialized) {
-      setCurrentTheme(null);
+    // ✅ FIXED: When no selectedThemeId, use default theme instead of null
+    if (!selectedThemeId && !isAnyLoading) {
+      console.log("No selected theme ID found, applying default theme");
+      setCurrentTheme(defaultTheme);
       setThemeError(null);
+      setIsInitialized(true);
+      return;
     }
 
     if (!isAnyLoading && !isInitialized) {
+      // ✅ FIXED: Still set default theme when no specific theme is found
+      setCurrentTheme(defaultTheme);
       setIsInitialized(true);
     }
   }, [
@@ -189,6 +197,12 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
 
       try {
         setThemeError(null);
+
+        // ✅ FIXED: Handle default theme application
+        if (themeId === "default") {
+          setCurrentTheme(defaultTheme);
+          return;
+        }
 
         // Find the theme in our themes list
         const themeToApply = themes.find((theme) => theme.id === themeId);
@@ -305,34 +319,28 @@ export const ThemeLoaderInvestor: React.FC<{ children: ReactNode }> = ({
   return <>{children}</>;
 };
 
-// CSS Variables Injector Component
+// ✅ FIXED: Updated CSS Variables Injector Component to handle default theme properly
 export const ThemeCSSInjector: React.FC = () => {
   const { currentTheme } = useThemeContext();
 
   useEffect(() => {
-    if (!currentTheme) {
-      // Remove custom theme variables if no theme is applied
-      const root = document.documentElement;
-      root.style.removeProperty("--dashboard-background");
-      root.style.removeProperty("--card-background");
-      root.style.removeProperty("--primary-text");
-      root.style.removeProperty("--secondary-text");
-      root.style.removeProperty("--sidebar-accent-text");
-      return;
-    }
+    // Always apply a theme (currentTheme should never be null now)
+    const themeToApply = currentTheme || defaultTheme;
+
+    console.log("Applying theme:", themeToApply);
 
     // Apply theme CSS variables
     const root = document.documentElement;
     root.style.setProperty(
       "--dashboard-background",
-      currentTheme.dashboardBackground
+      themeToApply.dashboardBackground
     );
-    root.style.setProperty("--card-background", currentTheme.cardBackground);
-    root.style.setProperty("--primary-text", currentTheme.primaryText);
-    root.style.setProperty("--secondary-text", currentTheme.secondaryText);
+    root.style.setProperty("--card-background", themeToApply.cardBackground);
+    root.style.setProperty("--primary-text", themeToApply.primaryText);
+    root.style.setProperty("--secondary-text", themeToApply.secondaryText);
     root.style.setProperty(
       "--sidebar-accent-text",
-      currentTheme.sidebarAccentText
+      themeToApply.sidebarAccentText
     );
   }, [currentTheme]);
 

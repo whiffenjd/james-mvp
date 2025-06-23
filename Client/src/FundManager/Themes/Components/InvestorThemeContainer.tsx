@@ -46,15 +46,13 @@ const InvestorThemeContainer: React.FC<ThemeContainerProps> = ({
 
   const themeStyles = currentTheme
     ? ({
-      "--dashboard-bg": currentTheme.dashboardBackground,
-      "--card-bg": currentTheme.cardBackground,
-      "--primary-text": currentTheme.primaryText,
-      "--secondary-text": currentTheme.secondaryText,
-      "--sidebar-accent": currentTheme.sidebarAccentText,
-    } as React.CSSProperties)
+        "--dashboard-bg": currentTheme.dashboardBackground,
+        "--card-bg": currentTheme.cardBackground,
+        "--primary-text": currentTheme.primaryText,
+        "--secondary-text": currentTheme.secondaryText,
+        "--sidebar-accent": currentTheme.sidebarAccentText,
+      } as React.CSSProperties)
     : {};
-
-
 
   return (
     <div

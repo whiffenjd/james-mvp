@@ -120,7 +120,7 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
   );
 
   return (
-    <div className="w-full max-w-[302px] min-h-[calc(100vh-96px)] overflow-hidden">
+    <div className="w-full max-w-[302px] min-h-[calc(100vh-96px)] overflow-hidden ">
       <div className="bg-theme-card p-6 flex flex-col h-full rounded-[40px]">
         <div className="flex items-center mt-6 mb-10 gap-3">
           <div className="flex-shrink-0">

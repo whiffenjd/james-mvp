@@ -45,15 +45,20 @@ const FundManagerLayout = () => {
       id: "investors",
       icon: <CircleDollarSign size={22} />,
       label: "Investors",
-      path: "/fundmanager/dashboard/investors", // This matches your nested route
+      path: "investors", // This matches your nested route
+    },
+    {
+      id: "Funds",
+      icon: <CircleDollarSign size={22} />,
+      label: "Funds and Reporting",
+      path: "funds", // This matches your nested route
     },
     {
       id: "settings",
       icon: <Settings size={22} />,
       label: "Settings",
-      path: "/fundmanager/dashboard/settings", // This matches your nested route
+      path: "settings", // This matches your nested route
     },
-
   ];
 
   return (

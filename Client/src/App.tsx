@@ -32,6 +32,8 @@ import {
 } from "./Context/InvestorThemeContext";
 import InvestorThemeContainer from "./FundManager/Themes/Components/InvestorThemeContainer";
 import InvestorsPage from "./FundManager/InvestorsPage/Investors";
+import FundsAndReporting from "./FundManager/Funds and Reporting/FundsAndReporting";
+import Project from "./FundManager/Funds and Reporting/project";
 
 function RedirectBasedOnRole() {
   const { user } = useAuth();
@@ -84,7 +86,7 @@ function App() {
               element={
                 <ThemeProvider>
                   <ThemeLoader>
-                    <ThemeContainer >
+                    <ThemeContainer>
                       <FundManagerLayout />
                     </ThemeContainer>
                   </ThemeLoader>
@@ -93,6 +95,9 @@ function App() {
             >
               <Route index element={<FundManagerDashboard />} />
               <Route path="investors" element={<InvestorsPage />} />
+              <Route path="funds" element={<FundsAndReporting />} />
+              <Route path="project" element={<Project />} />
+
               <Route path="settings" element={<DashboardSettings />} />
 
               {/* Add more fund manager routes here */}
@@ -101,13 +106,16 @@ function App() {
 
           {/* Investor routes - NO THEMING */}
           <Route element={<InvestorRoute />}>
-            <Route path="/investor/onboarding" element={<InvestorOnboarding />} />
+            <Route
+              path="/investor/onboarding"
+              element={<InvestorOnboarding />}
+            />
             <Route
               path="/investor/dashboard"
               element={
                 <InvestorThemeProvider>
                   <ThemeLoaderInvestor>
-                    <InvestorThemeContainer >
+                    <InvestorThemeContainer>
                       <InvestorLayout />
                     </InvestorThemeContainer>
                   </ThemeLoaderInvestor>
@@ -118,7 +126,6 @@ function App() {
               {/* Add more investor routes here */}
             </Route>
           </Route>
-
 
           {/* Error and fallback routes */}
           <Route path="/unauthorized" element={<Unauthorized />} />

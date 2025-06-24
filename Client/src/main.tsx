@@ -12,15 +12,13 @@ import { Toaster } from "react-hot-toast";
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <QueryClientProvider client={queryClient}>
-          <App />
-          <Toaster position="top-right" />
-          <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
-      </PersistGate>
-    </Provider>
-  </React.StrictMode>
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+        <Toaster position="top-right" />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </PersistGate>
+  </Provider>
 );

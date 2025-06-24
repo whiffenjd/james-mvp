@@ -28,10 +28,11 @@ const Sidebar: React.FC<SidebarProps> = ({ menuItems }) => {
           {menuItems.map((item) => (
             <button
               key={item.id}
-              className={`flex items-center w-full px-4 py-4 rounded-[10px] transition-colors  text-sm font-poppins font-normal ${activeItem === item.label
+              className={`flex items-center w-full px-4 py-4 rounded-[10px] transition-colors  text-sm font-poppins font-normal ${
+                activeItem === item.label
                   ? "bg-primary text-white"
                   : "text-primary hover:bg-teal-100"
-                }`}
+              }`}
               onClick={() => setActiveItem(item.label)}
             >
               <span className="mr-3 text-current ">{item.icon}</span>

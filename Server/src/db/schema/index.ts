@@ -4,3 +4,4 @@ export * from './UserTokens';
 export * from './Themes';
 export * from './DashboardAssets';
 export * from './onboarding';
+export * from './Funds';

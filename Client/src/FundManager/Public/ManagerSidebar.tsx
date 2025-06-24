@@ -186,7 +186,7 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                   key={`${projectName}-${user?.id}`} // Force re-render when project name or user changes
                   className="text-theme-primary font-semibold text-sm leading-tight truncate"
                 >
-                  {projectName || "Project Name"}
+                  {projectName}
                 </h3>
               )}
             </div>

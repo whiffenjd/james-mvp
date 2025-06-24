@@ -10,10 +10,10 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
 import toast from "react-hot-toast";
-import { useLogout } from "../API/Endpoints/Auth/AuthApis";
+import { useGetUserProfile, useLogout } from "../API/Endpoints/Auth/AuthApis";
 import { QueryClient } from "@tanstack/react-query";
 import { themeResetService } from "../FundManager/Themes/Components/ThemeResetService";
-import { onboardingResetService } from '../Onboarding/services/OnboardingResetService';
+import { onboardingResetService } from "../Onboarding/services/OnboardingResetService";
 
 // Types for our auth data
 export interface User {
@@ -46,9 +46,11 @@ interface AuthContextType {
   logoutAuto: () => void;
   getToken: () => string | null;
   updateUser: (userData: Partial<User>) => void;
-  updateOnboardingStatus: (status: "pending" | "approved" | "rejected", rejectionNote?: string) => void;
+  updateOnboardingStatus: (
+    status: "pending" | "approved" | "rejected",
+    rejectionNote?: string
+  ) => void;
   updateOnboardedStatus: (isOnboarded: boolean) => void; // Add this line
-
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -69,6 +71,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   //   []
   // );
 
+  // 2. Fetch latest user profile from backend when token is present
+  const { data: freshUser, isSuccess } = useGetUserProfile();
+  console.log("freshUser", freshUser);
+  useEffect(() => {
+    if (isSuccess && freshUser) {
+      setUser(freshUser);
+      Cookies.set("authUser", JSON.stringify(freshUser), {
+        expires: COOKIE_EXPIRATION_DAYS,
+      });
+    }
+  }, [isSuccess, freshUser]);
+
   // Check for existing auth data on load - SYNCHRONOUSLY
   useEffect(() => {
     const storedToken = Cookies.get("authToken");
@@ -77,12 +91,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     if (storedToken && storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-
         setToken(storedToken);
         setUser(parsedUser);
         setIsAuthInitialized(true);
       } catch (error) {
-        // If parsing fails, clear the cookies
         Cookies.remove("authToken");
         Cookies.remove("authUser");
         setIsAuthInitialized(true);
@@ -204,24 +216,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       Cookies.set("authUser", JSON.stringify(updatedUser), {
         expires: COOKIE_EXPIRATION_DAYS,
       });
-
     }
   };
 
   const updateOnboardingStatus = useCallback(
-    (
-      status: "pending" | "approved" | "rejected",
-      rejectionNote?: string
-    ) => {
+    (status: "pending" | "approved" | "rejected", rejectionNote?: string) => {
       setUser((prev) =>
         prev
           ? {
-            ...prev,
-            onboardingStatus: {
-              status,
-              rejectionNote,
-            },
-          }
+              ...prev,
+              onboardingStatus: {
+                status,
+                rejectionNote,
+              },
+            }
           : null
       );
     },
@@ -229,10 +237,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   const updateOnboardedStatus = useCallback((isOnboarded: boolean) => {
-    setUser(prev => prev ? {
-      ...prev,
-      isOnboarded
-    } : null);
+    setUser((prev) =>
+      prev
+        ? {
+            ...prev,
+            isOnboarded,
+          }
+        : null
+    );
 
     // Also update the cookie
     const storedUser = Cookies.get("authUser");
@@ -240,7 +252,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       const parsedUser = JSON.parse(storedUser);
       const updatedUser = {
         ...parsedUser,
-        isOnboarded
+        isOnboarded,
       };
       Cookies.set("authUser", JSON.stringify(updatedUser), {
         expires: COOKIE_EXPIRATION_DAYS,
@@ -259,7 +271,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     getToken,
     updateUser,
     updateOnboardingStatus,
-    updateOnboardedStatus
+    updateOnboardedStatus,
   };
 
   return (

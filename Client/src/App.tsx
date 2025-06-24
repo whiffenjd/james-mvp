@@ -35,6 +35,8 @@ import InvestorsPage from "./FundManager/InvestorsPage/Investors";
 import FundsAndReporting from "./FundManager/Funds and Reporting/FundsAndReporting";
 import Project from "./FundManager/Funds and Reporting/project";
 
+import FundTestComponent from "./Auth/FundCreationTest";
+
 function RedirectBasedOnRole() {
   const { user } = useAuth();
   switch (user?.role) {
@@ -58,7 +60,8 @@ function App() {
           {/* Public routes - accessible when not logged in */}
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+
+            <Route path="/signup/:fundManagerId?" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<SetNewPassword />} />
             <Route path="/verify-email" element={<EmailVerification />} />
@@ -99,6 +102,7 @@ function App() {
               <Route path="project" element={<Project />} />
 
               <Route path="settings" element={<DashboardSettings />} />
+              <Route path="funds" element={<FundTestComponent />} />
 
               {/* Add more fund manager routes here */}
             </Route>

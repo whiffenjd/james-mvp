@@ -10,6 +10,8 @@ import {
   Cross,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useInvestors } from "../../FundManager/hooks/useInvestors";
+import { useCreateFund } from "../../API/Endpoints/Funds/funds";
 
 // Type definitions
 interface FormData {
@@ -43,10 +45,10 @@ interface InvestorOption {
   name: string;
 }
 
-interface SubmitData extends FormData {
-  documents: Document[];
-  investors: Investor[];
-}
+// interface SubmitData extends FormData {
+//   documents: Document[];
+//   investors: Investor[];
+// }
 
 interface FundModalProps {
   isOpen?: boolean;
@@ -59,7 +61,7 @@ interface FundModalProps {
 const FundModal: React.FC<FundModalProps> = ({
   isOpen = true,
   onClose = () => {},
-  onSubmit = () => {},
+  // onSubmit = () => {},
   initialData = null,
   mode = "create",
 }) => {
@@ -76,13 +78,12 @@ const FundModal: React.FC<FundModalProps> = ({
     fundDescription: initialData?.fundDescription || "",
   });
 
+  const createFundMutation = useCreateFund();
+
   const [documents, setDocuments] = useState<Document[]>([]);
 
   const [investors, setInvestors] = useState<Investor[]>([]);
-  const [investorOptions, setInvestorOptions] = useState<InvestorOption[]>([
-    { name: "Ethan", id: "1234" },
-    { name: "Ian", id: "4321" },
-  ]);
+  const [investorOptions, setInvestorOptions] = useState<InvestorOption[]>([]);
   const [isCreateInvestorOpen, setIsCreateInvestorOpen] =
     useState<boolean>(false);
   const [investor, setInvestor] = useState({});
@@ -90,6 +91,22 @@ const FundModal: React.FC<FundModalProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState([]);
   const [previewFile, setPreviewFile] = useState<File | null>(null);
+  const {
+    investors: investorsData,
+    loading: investorsLoading,
+    error: investorsError,
+  } = useInvestors();
+
+  useEffect(() => {
+    if (investorsData) {
+      const options = investorsData?.data?.map((investor) => ({
+        id: investor.id,
+        name: investor.name,
+      }));
+      setInvestorOptions(options);
+      console.log("Investor options updated:", options);
+    }
+  }, [investorsData]);
 
   const handleReset = () => {
     setFormData({
@@ -131,6 +148,9 @@ const FundModal: React.FC<FundModalProps> = ({
         fundLifetime: initialData?.fundLifetime || "",
         fundDescription: initialData?.fundDescription || "",
       });
+      console.log("Initial data for edit mode:", initialData);
+      // setDocuments(initialData?.documents || []);
+      // setInvestors(initialData?.investors || []);
     }
   }, [isOpen]);
 
@@ -198,53 +218,70 @@ const FundModal: React.FC<FundModalProps> = ({
     }));
   };
 
-  const handleSubmit = (): void => {
-    const {
-      name,
-      fundSize,
-      fundType,
-      targetGeographies,
-      targetSectors,
-      targetMOIC,
-      targetIRR,
-      minimumInvestment,
-      fundLifetime,
-      fundDescription,
-    } = formData;
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
 
-    if (
-      !name ||
-      !fundSize ||
-      !fundType ||
-      !targetGeographies ||
-      !targetSectors ||
-      !targetMOIC ||
-      !targetIRR ||
-      !minimumInvestment ||
-      !fundLifetime ||
-      !fundDescription
-    ) {
-      toast.error("Please fill all the fields.");
-      return;
-    }
+    // Validate required fields
+    const requiredFields: Array<keyof FormData> = [
+      "name",
+      "fundSize",
+      "fundType",
+      "targetGeographies",
+      "targetSectors",
+      "targetMOIC",
+      "targetIRR",
+      "minimumInvestment",
+      "fundLifetime",
+      "fundDescription",
+    ];
 
+    requiredFields.forEach((field) => {
+      if (!formData[field]) {
+        errors[field] = "This field is required";
+        toast.error(`${field} is required`);
+      }
+    });
+
+    // Validate documents
     if (documents.length === 0) {
-      toast.error("Please upload at least one document.");
-      return;
+      toast.error("At least one document is required");
+      return false;
     }
 
+    // Validate investors
     if (investors.length === 0) {
-      toast.error("Please add at least one investor.");
-      return;
+      toast.error("At least one investor is required");
+      return false;
     }
 
-    const submitData: SubmitData = {
-      ...formData,
-      documents,
-      investors,
-    };
+    // Validate investor documents
+    for (const investor of investors) {
+      if (!investor.files || investor.files.length === 0) {
+        toast.error(`Document required for investor ${investor.name}`);
+        return false;
+      }
+    }
 
-    onSubmit(submitData);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    try {
+      await createFundMutation.mutateAsync({
+        ...formData,
+        documents,
+        investors,
+      });
+
+      // Reset form and close modal on success
+      handleReset();
+      onClose();
+    } catch (error) {
+      toast.error(error.message || "Failed to create fund");
+      // Error handling is already done in useCreateFund
+    }
   };
 
   if (!isOpen) return null;
@@ -298,7 +335,7 @@ const FundModal: React.FC<FundModalProps> = ({
               </div>
               <div>
                 <input
-                  type="text"
+                  type="number"
                   placeholder="Fund Size"
                   value={formData.fundSize}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -342,7 +379,7 @@ const FundModal: React.FC<FundModalProps> = ({
               </div>
               <div>
                 <input
-                  type="text"
+                  type="number"
                   placeholder="Target MOIC"
                   value={formData.targetMOIC}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -353,7 +390,7 @@ const FundModal: React.FC<FundModalProps> = ({
               </div>
               <div>
                 <input
-                  type="text"
+                  type="number"
                   placeholder="Target IRR"
                   value={formData.targetIRR}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -364,7 +401,7 @@ const FundModal: React.FC<FundModalProps> = ({
               </div>
               <div>
                 <input
-                  type="text"
+                  type="number"
                   placeholder="Minimum Investment"
                   value={formData.minimumInvestment}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>

@@ -99,10 +99,10 @@ function App() {
               <Route index element={<FundManagerDashboard />} />
               <Route path="investors" element={<InvestorsPage />} />
               <Route path="funds" element={<FundsAndReporting />} />
-              <Route path="project" element={<Project />} />
+              <Route path="project/:id" element={<Project />} />
 
               <Route path="settings" element={<DashboardSettings />} />
-              <Route path="funds" element={<FundTestComponent />} />
+              {/* <Route path="funds" element={<FundTestComponent />} /> */}
 
               {/* Add more fund manager routes here */}
             </Route>

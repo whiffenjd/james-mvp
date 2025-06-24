@@ -1,7 +1,9 @@
 import { PenLine } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FundModal from "../../../Components/Modal/FundModal";
 import Tabs from "../../../Components/Tabs/Tabs";
+import { useSearchParams } from "react-router-dom";
+import { useAppSelector } from "../../../Redux/hooks";
 
 type Props = {};
 
@@ -19,12 +21,27 @@ const sampleEditData: Partial<FormData> = {
 };
 
 const Project = (props: Props) => {
-  const [activeTab, setActiveTab] = useState("overview");
-
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const defaultTab = "overview";
+  const tabFromUrl = searchParams.get("tab") || defaultTab;
+  const [activeTab, setActiveTab] = useState(tabFromUrl);
+  const fund = useAppSelector((state) => state.funds.currentFund);
+
+  console.log("Current Fund Data://", fund);
+
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
+    setSearchParams({ tab: tabId });
   };
+
+  useEffect(() => {
+    const tabInUrl = searchParams.get("tab");
+    if (tabInUrl && tabInUrl !== activeTab) {
+      setActiveTab(tabInUrl);
+    }
+  }, [searchParams]);
+
   const handleClose = (): void => {
     setIsModalOpen(false);
   };
@@ -53,7 +70,7 @@ const Project = (props: Props) => {
         onClose={handleClose}
         onSubmit={handleSubmit}
         mode={"edit"}
-        initialData={sampleEditData}
+        initialData={fund?.result || {}}
       />
     </div>
   );

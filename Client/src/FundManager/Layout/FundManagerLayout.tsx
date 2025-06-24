@@ -59,12 +59,6 @@ const FundManagerLayout = () => {
       label: "Settings",
       path: "settings", // This matches your nested route
     },
-    {
-      id: "funds",
-      icon: <Settings size={22} />,
-      label: "funds",
-      path: "/fundmanager/dashboard/funds", // This matches your nested route
-    },
   ];
 
   return (

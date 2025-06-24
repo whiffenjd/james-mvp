@@ -30,6 +30,47 @@ FundRouter.get(
  *       scheme: bearer
  *       bearerFormat: JWT
  *   schemas:
+ *     FundManagerInvestor:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           example: 1a2b3c4d-5e6f-7g8h-9i0j-abc123xyz456
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: investor@example.com
+ *         name:
+ *           type: string
+ *           example: Miyabi Nagumo
+ *         role:
+ *           type: string
+ *           example: investor
+ *         isEmailVerified:
+ *           type: boolean
+ *           example: true
+ *     FundSummary:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           example: 1a2b3c4d-5e6f-7g8h-9i0j-abc123xyz456
+ *         name:
+ *           type: string
+ *           example: Growth Equity Fund
+ *         fundType:
+ *           type: string
+ *           example: Private Equity
+ *         fundDescription:
+ *           type: string
+ *           example: A fund focused on late-stage growth companies.
+ *         investorCount:
+ *           type: integer
+ *           example: 5
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           example: 2025-06-23T11:38:33.814Z
  *     FundInvestor:
  *       type: object
  *       properties:
@@ -172,21 +213,62 @@ FundRouter.get(
  *                 format: binary
  *                 description: Document for investor at index 2
  *     responses:
- *       201:
+ *       '201':
  *         description: Fund created successfully
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/FundResponse'
- *       500:
- *         description: Server error
+ *       '400':
+ *         description: Bad Request - Invalid input data
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               missing_data:
+ *                 summary: Missing fund data
+ *                 value:
+ *                   success: false
+ *                   error: "Missing fund data in request body."
+ *                   statusCode: 400
+ *               invalid_json:
+ *                 summary: Invalid JSON format
+ *                 value:
+ *                   success: false
+ *                   error: "Invalid JSON format in request body."
+ *                   statusCode: 400
+ *               invalid_investors:
+ *                 summary: Invalid investors array
+ *                 value:
+ *                   success: false
+ *                   error: "Investors must be provided as an array."
+ *                   statusCode: 400
+ *               missing_investor_id:
+ *                 summary: Missing investor ID
+ *                 value:
+ *                   success: false
+ *                   error: "Investor at index 0 is missing 'investorId'"
+ *                   statusCode: 400
+ *       '500':
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               general_error:
+ *                 summary: General server error
+ *                 value:
+ *                   success: false
+ *                   error: "An unknown error occurred during fund creation."
+ *                   statusCode: 500
+ *               specific_error:
+ *                 summary: Specific error message
+ *                 value:
+ *                   success: false
+ *                   error: "Failed to create fund: Database connection failed"
+ *                   statusCode: 500
  */
 
 /**
@@ -212,19 +294,31 @@ FundRouter.get(
  * @swagger
  * /fund/getAllFundsSpecificData:
  *   get:
- *     summary: Get all funds with specific data
+ *     summary: Get all funds with specific summary data
  *     tags: [Fund]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of funds with specific data
+ *         description: List of fund summaries
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Fund'
+ *                 $ref: '#/components/schemas/FundSummary'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
  */
 
 /**
@@ -258,6 +352,7 @@ FundRouter.get(
  *               properties:
  *                 error:
  *                   type: string
+ *                   example: Fund not found
  */
 
 /**
@@ -367,30 +462,70 @@ FundRouter.get(
  *                 format: binary
  *                 description: New document for investor at index 2 (optional)
  *     responses:
- *       201:
+ *       '200':
  *         description: Fund updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/FundResponse'
- *       404:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               success: true
+ *               message: "Fund updated successfully"
+ *               statusCode: 200
+ *       '400':
+ *         description: Bad Request - Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               missing_fund_id:
+ *                 summary: Missing fund ID
+ *                 value:
+ *                   success: false
+ *                   error: "Missing fund ID in URL path."
+ *                   statusCode: 400
+ *               invalid_json:
+ *                 summary: Invalid JSON format
+ *                 value:
+ *                   success: false
+ *                   error: "Invalid JSON format in request body."
+ *                   statusCode: 400
+ *               missing_investor_id:
+ *                 summary: Missing investor ID
+ *                 value:
+ *                   success: false
+ *                   error: "Investor at index 1 is missing 'investorId'"
+ *                   statusCode: 400
+ *       '404':
  *         description: Fund not found
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *       500:
- *         description: Server error
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               success: false
+ *               error: "Fund not found."
+ *               statusCode: 404
+ *       '500':
+ *         description: Internal Server Error
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               general_error:
+ *                 summary: General server error
+ *                 value:
+ *                   success: false
+ *                   error: "An unknown error occurred during fund update."
+ *                   statusCode: 500
+ *               specific_error:
+ *                 summary: Specific error message
+ *                 value:
+ *                   success: false
+ *                   error: "Failed to update fund: Database connection failed"
+ *                   statusCode: 500
  */
 
 /**
@@ -428,6 +563,7 @@ FundRouter.get(
  *               properties:
  *                 error:
  *                   type: string
+ *                   example: Fund not found
  *       500:
  *         description: Server error
  *         content:
@@ -437,6 +573,7 @@ FundRouter.get(
  *               properties:
  *                 error:
  *                   type: string
+ *                   example: Internal server error
  */
 
 /**
@@ -449,12 +586,25 @@ FundRouter.get(
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of investors
+ *         description: List of investors referred by the fund manager
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/FundInvestor'
+ *                 $ref: '#/components/schemas/FundManagerInvestor'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
  */
+
 export default FundRouter;

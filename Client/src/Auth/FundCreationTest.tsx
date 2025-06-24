@@ -100,19 +100,19 @@ const api = axios.create({
 const investorAPI = {
   getAllInvestors: async (): Promise<Investor[]> => {
     const response = await api.get("/fund/investors");
-    return response.data;
+    return response.data.data;
   },
 };
 
 const fundAPI = {
   getAllFunds: async (): Promise<Fund[]> => {
     const response = await api.get("/fund/getAllFunds");
-    return response.data;
+    return response.data.data;
   },
 
   getFundById: async (id: string): Promise<Fund> => {
     const response = await api.get(`/fund/getFundById/${id}`);
-    return response.data;
+    return response.data.result;
   },
 
   createFund: async (

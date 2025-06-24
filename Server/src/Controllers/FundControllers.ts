@@ -1,176 +1,139 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import FundService from '../Services/FundServices';
-import { stat } from 'fs';
+import { FundCreationUpdateHelper } from '../Utils/FundCreationUpdatehelper';
 
 export default class FundController {
   // Backend Controller Fix
-  static async createFund(req: Request, res: Response) {
+  static async createFund(req: Request, res: Response): Promise<Response> {
     try {
-      const files = req.files as Express.MulterS3.File[];
-      const body = JSON.parse(req.body.data);
+      // Extract and validate request data
+      const { parsedBody, validationError } = FundCreationUpdateHelper.parseRequestBody(
+        req.body?.data,
+      );
 
-      // Separate fund documents from investor documents based on fieldname
-      const fundDocuments: any[] = [];
-      const investorDocumentMap: { [key: string]: string } = {};
-
-      if (files && files.length > 0) {
-        files.forEach((file) => {
-          if (file.fieldname === 'fundDocuments') {
-            // This is a fund document
-            fundDocuments.push({
-              fileUrl: file.location,
-              uploadedAt: new Date().toISOString(),
-            });
-          } else if (file.fieldname.startsWith('investorDocument_')) {
-            // This is an investor document
-            const investorIndex = file.fieldname.replace('investorDocument_', '');
-            investorDocumentMap[investorIndex] = file.location;
-          }
-        });
+      if (validationError) {
+        return FundCreationUpdateHelper.sendErrorResponse(res, validationError, 400);
       }
 
-      // Update investors with their document URLs
-      const updatedInvestors = body.investors.map((investor: any, index: number) => ({
-        ...investor,
-        documentUrl: investorDocumentMap[index.toString()] || '',
-      }));
+      // Validate investors array
+      const investorsValidationError = FundCreationUpdateHelper.validateInvestors(
+        parsedBody.investors,
+      );
+      if (investorsValidationError) {
+        return FundCreationUpdateHelper.sendErrorResponse(res, investorsValidationError, 400);
+      }
 
-      const fundData = {
-        ...body,
-        documents: fundDocuments,
-        investors: updatedInvestors,
-      };
+      // Process uploaded files
+      const { fundDocuments, investorDocumentMap } = FundCreationUpdateHelper.processUploadedFiles(
+        req.files as Express.MulterS3.File[],
+      );
 
+      // Build fund data
+      const fundData = FundCreationUpdateHelper.buildFundData(
+        parsedBody,
+        fundDocuments,
+        investorDocumentMap,
+      );
+
+      // Create fund
       await FundService.create(fundData);
-      res.status(201).json({ message: 'Fund created successfully', statusCode: 201 });
+
+      return FundCreationUpdateHelper.sendSuccessResponse(res, 'Fund created successfully', 201);
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(500).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'An unknown error occurred.' });
-      }
+      console.error('FundController.createFund Error:', error);
+      return FundCreationUpdateHelper.sendErrorResponse(
+        res,
+        error instanceof Error ? error.message : 'An unknown error occurred during fund creation.',
+        500,
+      );
     }
   }
-  // Backend Fix - Updated updateFund method
-  static async updateFund(req: Request, res: Response) {
+
+  static async updateFund(req: Request, res: Response): Promise<Response> {
     try {
-      const files = req.files as Express.MulterS3.File[];
-      const body = req.body.data ? JSON.parse(req.body.data) : req.body;
+      // Validate fund ID
+      const fundId = req.params?.id;
+      if (!fundId) {
+        return FundCreationUpdateHelper.sendErrorResponse(res, 'Missing fund ID in URL path.', 400);
+      }
 
-      // Get existing fund data first
-      const existingFund = await FundService.findById(req.params.id);
+      // Check if fund exists
+      const existingFund = await FundService.findById(fundId);
       if (!existingFund) {
-        return res.status(404).json({ error: 'Fund not found' });
+        return FundCreationUpdateHelper.sendErrorResponse(res, 'Fund not found.', 404);
       }
 
-      // Separate fund documents from investor documents based on fieldname
-      const newFundDocuments: any[] = [];
-      const investorDocumentMap: { [key: string]: string } = {};
-
-      if (files && files.length > 0) {
-        files.forEach((file) => {
-          if (file.fieldname === 'fundDocuments') {
-            // This is a fund document
-            newFundDocuments.push({
-              fileUrl: file.location,
-              uploadedAt: new Date().toISOString(),
-            });
-          } else if (file.fieldname.startsWith('investorDocument_')) {
-            // This is an investor document
-            const investorIndex = file.fieldname.replace('investorDocument_', '');
-            investorDocumentMap[investorIndex] = file.location;
-          }
-        });
+      // Parse request body
+      const { parsedBody, validationError } = FundCreationUpdateHelper.parseRequestBody(
+        req.body?.data || req.body,
+      );
+      if (validationError) {
+        return FundCreationUpdateHelper.sendErrorResponse(res, validationError, 400);
       }
 
-      // Prepare updated data
-      let updatedData = { ...body };
+      // Process uploaded files
+      const { fundDocuments, investorDocumentMap } = FundCreationUpdateHelper.processUploadedFiles(
+        req.files as Express.MulterS3.File[],
+      );
 
-      // Merge existing documents with new ones
-      const existingDocuments = existingFund.documents || [];
-      const allDocuments = [...existingDocuments, ...newFundDocuments];
-      updatedData.documents = allDocuments;
+      // Build update data
+      const updateData = FundCreationUpdateHelper.buildUpdateData(
+        parsedBody,
+        existingFund,
+        fundDocuments,
+        investorDocumentMap,
+      );
 
-      // Handle investors - merge existing with new/updated ones
-      if (body.investors && Array.isArray(body.investors)) {
-        // Get existing investors that are not being updated
-        const existingInvestors = existingFund.investors || [];
-        const updatedInvestorIds = body.investors.map((inv: any) => inv.investorId);
+      // Update fund
+      await FundService.update(fundId, updateData);
 
-        // Keep existing investors that are not in the update request
-        const unchangedInvestors = existingInvestors.filter(
-          (existingInv: any) => !updatedInvestorIds.includes(existingInv.investorId),
-        );
-
-        // Process the investors from the update request
-        const updatedInvestors = body.investors.map((investor: any, index: number) => {
-          // Check if this investor already exists
-          const existingInvestor = existingInvestors.find(
-            (existing: any) => existing.investorId === investor.investorId,
-          );
-
-          return {
-            ...investor,
-            // Use new document URL if provided, otherwise keep existing one
-            documentUrl:
-              investorDocumentMap[index.toString()] ||
-              existingInvestor?.documentUrl ||
-              investor.documentUrl ||
-              '',
-          };
-        });
-
-        // Combine unchanged existing investors with updated/new investors
-        updatedData.investors = [...unchangedInvestors, ...updatedInvestors];
-      }
-
-      // Remove temporary fields that shouldn't be stored
-      delete updatedData.existingDocuments;
-      delete updatedData.existingInvestors;
-
-      const result = await FundService.update(req.params.id, updatedData);
-      res.status(201).json({ message: 'Fund updated successfully', statusCode: 201 });
+      return FundCreationUpdateHelper.sendSuccessResponse(res, 'Fund updated successfully', 200);
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(500).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'An unknown error occurred.' });
-      }
+      console.error('FundController.updateFund Error:', error);
+      return FundCreationUpdateHelper.sendErrorResponse(
+        res,
+        error instanceof Error ? error.message : 'An unknown error occurred during fund update.',
+        500,
+      );
     }
   }
 
   static async getAllFunds(req: Request, res: Response) {
     const result = await FundService.getAll();
-    res.json(result);
+    res.json({ data: result, success: true, message: 'All Funds fetched successfully' });
   }
   static async getAllFundsSpecificData(req: Request, res: Response) {
     const result = await FundService.getSpecific();
-    res.json(result);
+    res.json({ data: result, success: true, message: 'Fund fetched successfully' });
   }
   static async getFundById(req: Request, res: Response) {
     const fundManagerId = req.params?.id;
     const result = await FundService.getById(fundManagerId || '');
-    res.json(result);
+    res.json({ result, success: true, message: 'Fund info fetched successfully' });
   }
 
   static async getManagerFunds(req: Request, res: Response) {
     const result = await FundService.getByManagerId(req.params.managerId);
-    res.json(result);
+    res.json({ data: result, success: true, message: 'Funds fetched successfully' });
   }
   static async getInvestorsByManager(req: Request, res: Response) {
     try {
       const fundManagerId = req.user?.id;
       if (!fundManagerId) {
-        return res.status(400).json({ message: 'Unauthorized' });
+        return res.status(400).json({ message: 'Unauthorized', success: false });
       }
 
       const investors = await FundService.getInvestorsByFundManager(fundManagerId);
-      res.status(200).json(investors);
+      res.status(200).json({ data: investors, success: true });
     } catch (error) {
       if (error instanceof Error) {
-        res.status(500).json({ message: 'Failed to fetch investors', error: error.message });
+        res
+          .status(500)
+          .json({ message: 'Failed to fetch investors', error: error.message, success: false });
       } else {
-        res.status(500).json({ message: 'Failed to fetch investors', error: 'Unknown error' });
+        res
+          .status(500)
+          .json({ message: 'Failed to fetch investors', error: 'Unknown error', success: false });
       }
     }
   }
@@ -178,10 +141,10 @@ export default class FundController {
   static async deleteFund(req: Request, res: Response) {
     try {
       const result = await FundService.delete(req.params.id);
-      res.json(result);
+      res.json({ data: result, message: 'Fund deleted successfully', success: true });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Failed to delete fund' });
+      res.status(500).json({ message: 'Failed to delete fund', success: false });
     }
   }
 }

@@ -1,14 +1,25 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db/DbConnection';
-import { FundCreateRequest } from '../Types/FundTypes';
+
 import { funds } from '../db/schema/Funds';
 import { UsersTable } from '../db/schema';
 import deleteS3Keys, { extractKeyFromUrl } from './DeleteS3Keys';
+import { FundCreateRequest } from '../Utils/FundCreationUpdatehelper';
 
 export default class FundService {
   static async create(data: FundCreateRequest) {
-    const [inserted] = await db.insert(funds).values(data).returning();
-    return inserted;
+    try {
+      const [insertedFund] = await db.insert(funds).values(data).returning();
+
+      return insertedFund;
+    } catch (error) {
+      console.error('FundService.create Error:', error);
+      throw new Error(
+        error instanceof Error
+          ? `Failed to create fund: ${error.message}`
+          : 'Unknown error occurred while creating fund',
+      );
+    }
   }
 
   static async getAll() {
@@ -39,8 +50,32 @@ export default class FundService {
   }
 
   static async update(id: string, data: Partial<FundCreateRequest>) {
-    const [updated] = await db.update(funds).set(data).where(eq(funds.id, id)).returning();
-    return updated;
+    try {
+      const [updatedFund] = await db.update(funds).set(data).where(eq(funds.id, id)).returning();
+
+      return updatedFund;
+    } catch (error) {
+      console.error('FundService.update Error:', error);
+      throw new Error(
+        error instanceof Error
+          ? `Failed to update fund: ${error.message}`
+          : 'Unknown error occurred while updating fund',
+      );
+    }
+  }
+  static async findByIdFund(id: string) {
+    try {
+      const [fund] = await db.select().from(funds).where(eq(funds.id, id)).limit(1);
+
+      return fund || null;
+    } catch (error) {
+      console.error('FundService.findById Error:', error);
+      throw new Error(
+        error instanceof Error
+          ? `Failed to find fund: ${error.message}`
+          : 'Unknown error occurred while finding fund',
+      );
+    }
   }
   static async findById(id: string) {
     const result = await db.select().from(funds).where(eq(funds.id, id)).limit(1);

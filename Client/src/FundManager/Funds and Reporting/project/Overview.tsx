@@ -77,72 +77,86 @@ const Overview = () => {
       <div className="lg:col-span-2">
         <div className="bg-white rounded-lg p-6 mb-6">
           <div className="flex justify-between items-start mb-6">
-            <h2 className="text-lg font-medium text-gray-900">
+            <h2 className="text-base lg:text-lg font-semibold  text-theme-primary-text">
               {projectData.projectName}
             </h2>
-            <span className="text-sm text-gray-500">{projectData.date}</span>
+            <span className="text-sm text-theme-secondary-text  font-semibold font-poppins ">
+              {projectData.date}
+            </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="bg-gray-100 border rounded-lg p-4">
-              <div className="text-sm font-medium text-gray-600 mb-1">
+              <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Fund Type
               </div>
-              <div className="text-gray-900">{projectData.fundType}</div>
+              <div className="text-theme-secondary-text">
+                {projectData.fundType}
+              </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
-              <div className="text-sm font-medium text-gray-600 mb-1">
+              <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Fund Size
               </div>
-              <div className="text-gray-900">{projectData.fundSize}</div>
+              <div className="text-theme-secondary-text">
+                {projectData.fundSize}
+              </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
-              <div className="text-sm font-medium text-gray-600 mb-1">
+              <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Target Geographies
               </div>
-              <div className="text-gray-900">
+              <div className="text-theme-secondary-text">
                 {projectData.targetGeographies}
               </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
-              <div className="text-sm font-medium text-gray-600 mb-1">
+              <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Target Sectors
               </div>
-              <div className="text-gray-900">{projectData.targetSectors}</div>
+              <div className="text-theme-secondary-text">
+                {projectData.targetSectors}
+              </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
-              <div className="text-sm font-medium text-gray-600 mb-1">
+              <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Target MOIC
               </div>
-              <div className="text-gray-900">{projectData.targetMOIC}</div>
+              <div className="text-theme-secondary-text">
+                {projectData.targetMOIC}
+              </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
-              <div className="text-sm font-medium text-gray-600 mb-1">
+              <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Target IRR
               </div>
-              <div className="text-gray-900">{projectData.targetIRR}</div>
+              <div className="text-theme-secondary-text">
+                {projectData.targetIRR}
+              </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
-              <div className="text-sm font-medium text-gray-600 mb-1">
+              <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Minimum Investment
               </div>
-              <div className="text-gray-900">
+              <div className="text-theme-secondary-text">
                 {projectData.minimumInvestment}
               </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
-              <div className="text-sm font-medium text-gray-600 mb-1">
+              <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Fund Lifetime
               </div>
-              <div className="text-gray-900">{projectData.fundLifetime}</div>
+              <div className="text-theme-secondary-text">
+                {projectData.fundLifetime}
+              </div>
             </div>
           </div>
 
           <div className="mb-6">
-            <div className="text-sm font-medium text-gray-600 mb-2">
+            <div className="text-sm font-medium text-theme-primary-text mb-2">
               Fund Description
             </div>
-            <div className="text-gray-900 text-sm leading-relaxed bg-gray-100 border p-4 rounded-lg">
+            <div className="text-theme-secondary-text text-sm leading-relaxed bg-gray-100 border p-4 rounded-lg">
               {projectData.fundDescription}
             </div>
           </div>
@@ -157,7 +171,9 @@ const Overview = () => {
                 <div className="w-12 h-12 bg-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Users className="w-6 h-6 text-white" />
                 </div>
-                <div className="text-sm text-gray-600 mb-1">All Investors</div>
+                <div className="text-sm text-theme-primary-text mb-1">
+                  All Investors
+                </div>
                 <div className="text-2xl font-bold text-gray-900">
                   {fundingData.allInvestors}
                 </div>
@@ -166,7 +182,7 @@ const Overview = () => {
                 <div className="w-12 h-12 bg-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
-                <div className="text-sm text-gray-600 mb-1">
+                <div className="text-sm text-theme-primary-text mb-1">
                   Total Funds Needed
                 </div>
                 <div className="text-2xl font-bold text-gray-900">
@@ -187,7 +203,7 @@ const Overview = () => {
                     </div>
                   </div>
                 </div>
-                <div className="text-sm text-gray-600 mb-1">
+                <div className="text-sm text-theme-primary-text mb-1">
                   Funds Collected
                 </div>
                 <div className="text-2xl font-bold text-gray-900">

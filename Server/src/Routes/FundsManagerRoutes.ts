@@ -5,13 +5,40 @@ import { verifyToken } from '../Middlewares/VerifyToken';
 import express from 'express';
 const FundRouter = Router();
 
-FundRouter.post('/createFund', verifyToken, uploadMultipleDocs, FundController.createFund);
+FundRouter.post(
+  '/createFund',
+  verifyToken,
+  uploadMultipleDocs,
+  FundController.createFund as unknown as express.RequestHandler,
+);
 FundRouter.get('/getAllFunds', verifyToken, FundController.getAllFunds);
-FundRouter.get('/getAllFundsSpecificData', verifyToken, FundController.getAllFundsSpecificData);
+FundRouter.get(
+  '/getAllFundsSpecificData',
+  verifyToken,
+  FundController.getAllFundsSpecificData as unknown as express.RequestHandler,
+);
 FundRouter.get('/getFundById/:id', verifyToken, FundController.getFundById);
-FundRouter.get('/manager/:managerId', verifyToken, FundController.getManagerFunds);
-FundRouter.patch('/updateFund/:id', verifyToken, uploadMultipleDocs, FundController.updateFund);
-FundRouter.delete('/deleteFund/:id', verifyToken, FundController.deleteFund);
+FundRouter.get(
+  '/manager/:managerId',
+  verifyToken,
+  FundController.getManagerFunds as unknown as express.RequestHandler,
+);
+FundRouter.get(
+  '/getAllInvestorFunds',
+  verifyToken,
+  FundController.getInvestorAllFunds as unknown as express.RequestHandler,
+);
+FundRouter.patch(
+  '/updateFund/:id',
+  verifyToken,
+  uploadMultipleDocs,
+  FundController.updateFund as unknown as express.RequestHandler,
+);
+FundRouter.delete(
+  '/deleteFund/:id',
+  verifyToken,
+  FundController.deleteFund as unknown as express.RequestHandler,
+);
 FundRouter.get(
   '/investors',
   verifyToken,
@@ -106,7 +133,7 @@ FundRouter.get(
  *         name:
  *           type: string
  *         fundSize:
- *           type: string
+ *           type: number
  *         fundType:
  *           type: string
  *         targetGeographies:
@@ -114,11 +141,11 @@ FundRouter.get(
  *         targetSectors:
  *           type: string
  *         targetMOIC:
- *           type: string
+ *           type: number
  *         targetIRR:
- *           type: string
+ *           type: number
  *         minimumInvestment:
- *           type: string
+ *           type: number
  *         fundLifetime:
  *           type: string
  *         fundDescription:
@@ -167,13 +194,13 @@ FundRouter.get(
  *                   ```json
  *                   {
  *                     "name": "Sint consequatur no",
- *                     "fundSize": "Aliquid libero assum",
+ *                     "fundSize": 43,
  *                     "fundType": "Ducimus sunt ipsa",
  *                     "targetGeographies": "Sed aut in perferend",
  *                     "targetSectors": "Quaerat eius est ill",
- *                     "targetMOIC": "Tenetur et labore to",
- *                     "targetIRR": "Natus voluptatem mol",
- *                     "minimumInvestment": "Deserunt et quasi ve",
+ *                     "targetMOIC": 234234,
+ *                     "targetIRR": 2342343,
+ *                     "minimumInvestment": 5000,
  *                     "fundLifetime": "Nemo ea quidem eos e",
  *                     "fundDescription": "Dolor dolores error ",
  *                     "investors": [
@@ -417,9 +444,9 @@ FundRouter.get(
  *                     "fundType": "Private Equity",
  *                     "targetGeographies": "North America, Europe",
  *                     "targetSectors": "Healthcare, Tech",
- *                     "targetMOIC": "2.0x",
- *                     "targetIRR": "18%",
- *                     "minimumInvestment": "50000",
+ *                     "targetMOIC": 2456,
+ *                     "targetIRR": 1845,
+ *                     "minimumInvestment": 50000,
  *                     "fundLifetime": "7 years",
  *                     "fundDescription": "Updated fund description",
  *                     "existingDocuments": [

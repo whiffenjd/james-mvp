@@ -18,6 +18,7 @@
 //   }>;
 // }
 interface FundDocument {
+  fileName: string;
   fileUrl: string;
   uploadedAt: string;
 }

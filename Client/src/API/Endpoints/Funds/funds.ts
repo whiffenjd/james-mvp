@@ -94,6 +94,93 @@ interface FundDetail {
   documents: FundDocument[];
 }
 
+
+
+interface UpdateFundParams {
+  id: string;
+  data: {
+    name: string;
+    fundSize: string;
+    fundType: string;
+    targetGeographies: string;
+    targetSectors: string;
+    targetMOIC: string;
+    targetIRR: string;
+    minimumInvestment: string;
+    fundLifetime: string;
+    fundDescription: string;
+    existingDocuments: string[];
+    investors: FundInvestor[];
+  };
+  fundDocuments?: File[];
+  investorDocuments?: Record<number, File>;
+}
+
+export const useUpdateFund = () => {
+  return useMutation({
+    mutationFn: async (params: UpdateFundParams) => {
+      const formData = new FormData();
+      
+      // Stringify and append the data object exactly as backend expects
+      formData.append('data', JSON.stringify({
+        name: params.data.name,
+        fundSize: params.data.fundSize,
+        fundType: params.data.fundType,
+        targetGeographies: params.data.targetGeographies,
+        targetSectors: params.data.targetSectors,
+        targetMOIC: params.data.targetMOIC,
+        targetIRR: params.data.targetIRR,
+        minimumInvestment: params.data.minimumInvestment,
+        fundLifetime: params.data.fundLifetime,
+        fundDescription: params.data.fundDescription,
+        existingDocuments: params.data.existingDocuments,
+        investors: params.data.investors.map(investor => ({
+          investorId: investor.investorId,
+          name: investor.name,
+          amount: investor.amount,
+          documentUrl: investor.documentUrl,
+          addedAt: investor.addedAt
+        }))
+      }));
+
+      // Handle fund documents - single field with multiple files
+      if (params.fundDocuments) {
+        params.fundDocuments.forEach(file => {
+          formData.append('fundDocuments', file);
+        });
+      }
+
+      // Handle investor documents - indexed fields
+      if (params.investorDocuments) {
+        Object.entries(params.investorDocuments).forEach(([index, file]) => {
+          formData.append(`investorDocument_${index}`, file);
+        });
+      }
+
+      const response = await axiosPrivate.patch(
+        `/fund/updateFund/${params.id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Fund updated successfully!');
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.error || 
+                         error.message || 
+                         'Failed to update fund';
+      toast.error(errorMessage);
+    }
+  });
+};
+
 export const useCreateFund = () => {
   return useMutation({
     mutationFn: async (payload: CreateFundPayload) => {

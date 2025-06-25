@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useInvestors } from "../../FundManager/hooks/useInvestors";
-import { useCreateFund } from "../../API/Endpoints/Funds/funds";
+import { useCreateFund, useUpdateFund } from "../../API/Endpoints/Funds/funds";
+import { set } from "react-hook-form";
 
 // Type definitions
 interface FormData {
@@ -45,11 +46,6 @@ interface InvestorOption {
   name: string;
 }
 
-// interface SubmitData extends FormData {
-//   documents: Document[];
-//   investors: Investor[];
-// }
-
 interface FundModalProps {
   isOpen?: boolean;
   onClose?: () => void;
@@ -79,6 +75,7 @@ const FundModal: React.FC<FundModalProps> = ({
   });
 
   const createFundMutation = useCreateFund();
+  const UpdateFund = useUpdateFund();
 
   const [documents, setDocuments] = useState<Document[]>([]);
 
@@ -91,6 +88,8 @@ const FundModal: React.FC<FundModalProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState([]);
   const [previewFile, setPreviewFile] = useState<File | null>(null);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+
   const {
     investors: investorsData,
     loading: investorsLoading,
@@ -148,7 +147,36 @@ const FundModal: React.FC<FundModalProps> = ({
         fundLifetime: initialData?.fundLifetime || "",
         fundDescription: initialData?.fundDescription || "",
       });
-      console.log("Initial data for edit mode:", initialData);
+      // console.log("Initial data for edit mode:", initialData);
+
+      if (initialData?.investors) {
+        const mappedInvestors = initialData.investors.map((inv) => ({
+          id: inv.investorId,
+          name: inv.name,
+          amount: inv.amount,
+          files: [
+            {
+              id: 0,
+              name: inv.documentUrl.split("/").pop() || `Document ${index}`,
+              size: "N/A", // Size not available for S3 links
+              uploaded: true,
+              url: inv.documentUrl,
+            },
+          ],
+        }));
+        setInvestors(mappedInvestors);
+      }
+      if (initialData?.documents) {
+        const mappedDocuments = initialData.documents.map((doc, index) => ({
+          id: index,
+          name: doc.fileUrl.split("/").pop() || `Document ${index}`,
+          size: "N/A", // Size not available for S3 links
+          uploaded: true,
+          url: doc.fileUrl,
+        }));
+        setDocuments(mappedDocuments);
+      }
+
       // setDocuments(initialData?.documents || []);
       // setInvestors(initialData?.investors || []);
     }
@@ -197,6 +225,7 @@ const FundModal: React.FC<FundModalProps> = ({
   const handleEditInvestor = (id: string): void => {
     const selected = investors.find((inv) => inv.id === id);
     if (selected) {
+      console.log("Editing investor:", selected);
       setInvestor({ id: selected.id, name: selected.name });
       setAmount(selected.amount);
       setFiles(selected.files);
@@ -283,6 +312,156 @@ const FundModal: React.FC<FundModalProps> = ({
       // Error handling is already done in useCreateFund
     }
   };
+
+  // const handleUpdate = async (id: string) => {
+  //   if (!validateForm()) return;
+
+  //   try {
+  //     // Prepare the data object
+  //     const updateData = {
+  //       name: formData.name,
+  //       fundSize: formData.fundSize,
+  //       fundType: formData.fundType,
+  //       targetGeographies: formData.targetGeographies,
+  //       targetSectors: formData.targetSectors,
+  //       targetMOIC: formData.targetMOIC,
+  //       targetIRR: formData.targetIRR,
+  //       minimumInvestment: formData.minimumInvestment,
+  //       fundLifetime: formData.fundLifetime,
+  //       fundDescription: formData.fundDescription,
+  //       existingDocuments: documents
+  //         .filter((doc) => doc.url) // Only include existing S3 links in edit mode
+  //         .map((doc) => doc.url),
+  //       investors: investors.map((investor) => ({
+  //         investorId: investor.id,
+  //         name: investor.name,
+  //         amount: investor.amount,
+  //         documentUrl: investor.files?.[0]?.name || "", // Assuming files[0] contains the URL in edit mode
+  //         addedAt: new Date().toISOString(),
+  //       })),
+  //     };
+
+  //     // Prepare FormData for multipart request
+  //     const formDataToSend = new FormData();
+  //     formDataToSend.append("data", JSON.stringify(updateData));
+
+  //     // Add new documents if any
+  //     documents
+  //       .filter((doc) => doc.file) // Only include new files in create mode
+  //       .forEach((doc) => {
+  //         if (doc.file) {
+  //           formDataToSend.append("fundDocuments", doc.file);
+  //         }
+  //       });
+
+  //     // Add investor documents
+  //     investors.forEach((investor, index) => {
+  //       if (
+  //         investor.files &&
+  //         investor.files.length > 0 &&
+  //         investor.files[0] instanceof File
+  //       ) {
+  //         formDataToSend.append(`investorDocument_${index}`, investor.files[0]);
+  //       }
+  //     });
+
+  //     // For now, just console.log the data structure
+  //     console.log("Data to be sent:", {
+  //       id,
+  //       data: updateData,
+  //       fundDocuments: documents
+  //         .filter((doc) => doc.file)
+  //         .map((doc) => doc.file?.name),
+  //       investorDocuments: investors.map((inv, idx) => ({
+  //         index: idx,
+  //         document: inv.files?.[0]?.name,
+  //       })),
+  //     });
+  //     try {
+  //       await useUpdateFund.mutateAsync({
+  //         ...formData,
+  //         documents,
+  //         investors,
+  //       });
+
+  //       // Reset form and close modal on success
+  //       handleReset();
+  //       onClose();
+  //     } catch (error) {
+  //       toast.error(error.message || "Failed to create fund");
+  //       // Error handling is already done in useCreateFund
+  //     }
+
+  //     toast.success("Fund updated successfully (console logged)");
+  //     // onClose();
+  //   } catch (error) {
+  //     toast.error(error.message || "Failed to update fund");
+  //   }
+  // };
+
+  const handleUpdate = async (id: string) => {
+    if (!validateForm()) return;
+
+    try {
+      // Build structured data
+      const updateData = {
+        name: formData.name,
+        fundSize: formData.fundSize,
+        fundType: formData.fundType,
+        targetGeographies: formData.targetGeographies,
+        targetSectors: formData.targetSectors,
+        targetMOIC: formData.targetMOIC,
+        targetIRR: formData.targetIRR,
+        minimumInvestment: formData.minimumInvestment,
+        fundLifetime: formData.fundLifetime,
+        fundDescription: formData.fundDescription,
+        existingDocuments: documents
+          .filter((doc) => doc.url)
+          .map((doc) => doc.url),
+        investors: investors.map((investor) => ({
+          investorId: investor.id,
+          name: investor.name,
+          amount: investor.amount,
+          documentUrl:
+            investor.files?.[0] instanceof File
+              ? investor.files[0].name
+              : investor.files?.[0]?.url || "",
+          addedAt: new Date().toISOString(),
+        })),
+      };
+
+      // Prepare files
+      const fundDocuments = documents
+        .filter((doc) => doc.file)
+        .map((doc) => doc.file);
+
+      const investorDocuments: { [index: number]: File } = {};
+      investors.forEach((investor, index) => {
+        if (
+          investor.files &&
+          investor.files.length > 0 &&
+          investor.files[0] instanceof File
+        ) {
+          investorDocuments[index] = investor.files[0];
+        }
+      });
+
+      // 🔥 Actually call the mutation
+      await UpdateFund.mutateAsync({
+        id,
+        data: updateData,
+        fundDocuments,
+        investorDocuments,
+      });
+
+      handleReset();
+      onClose();
+    } catch (error) {
+      toast.error(error.message || "Failed to update fund");
+    }
+  };
+
+  console.log("Form previewSrc:", previewSrc);
 
   if (!isOpen) return null;
 
@@ -565,12 +744,25 @@ const FundModal: React.FC<FundModalProps> = ({
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => setPreviewFile(doc.file)}
-                          className="px-3 py-0.5 text-xs bg-theme-sidebar-accent rounded-[10px] text-white cursor-pointer"
-                        >
-                          View
-                        </button>
+                        {mode === "edit" ? (
+                          <button
+                            onClick={() => {
+                              console.log("Previewing document:", doc);
+                              setPreviewSrc(doc.url);
+                              setPreviewFile(doc.file);
+                            }}
+                            className="px-3 py-0.5 text-xs bg-theme-sidebar-accent rounded-[10px] text-white cursor-pointer"
+                          >
+                            EView
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setPreviewFile(doc.file)}
+                            className="px-3 py-0.5 text-xs bg-theme-sidebar-accent rounded-[10px] text-white cursor-pointer"
+                          >
+                            View
+                          </button>
+                        )}
                         <button
                           onClick={() =>
                             setDocuments((prev) =>
@@ -712,12 +904,25 @@ const FundModal: React.FC<FundModalProps> = ({
                             : files[0].name}
                         </span>
                         <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => setPreviewFile(files[0])}
-                            className="px-3 py-0.5 text-xs bg-theme-sidebar-accent rounded-[10px] text-white cursor-pointer"
-                          >
-                            View
-                          </button>
+                          {mode === "edit" ? (
+                            <button
+                              onClick={() => {
+                                setPreviewFile(files[0]);
+                                setPreviewSrc(files[0].url);
+                              }}
+                              className="px-3 py-0.5 text-xs bg-theme-sidebar-accent rounded-[10px] text-white cursor-pointer"
+                            >
+                              eView
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setPreviewFile(files[0])}
+                              className="px-3 py-0.5 text-xs bg-theme-sidebar-accent rounded-[10px] text-white cursor-pointer"
+                            >
+                              View
+                            </button>
+                          )}
+
                           <button
                             onClick={() => setFiles([])}
                             className="text-xs text-red-500 hover:underline"
@@ -794,18 +999,32 @@ const FundModal: React.FC<FundModalProps> = ({
 
           {/* Submit Button */}
           <div className="flex justify-end">
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-theme-sidebar-accent text-white py-3 rounded-[10px] transition-colors font-medium"
-            >
-              {mode === "create" ? "Submit" : "Update"}
-            </button>
+            {mode === "edit" ? (
+              <button
+                onClick={handleUpdate}
+                disabled={mode === "create"}
+                className="w-full bg-theme-sidebar-accent text-white py-3 rounded-[10px] transition-colors font-medium"
+              >
+                Update
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={mode === "edit"}
+                className="w-full bg-theme-sidebar-accent text-white py-3 rounded-[10px] transition-colors font-medium"
+              >
+                Submit
+              </button>
+            )}
           </div>
         </div>
       </div>
-      {previewFile && (
+      {(previewFile || previewSrc) && (
         <div
-          onClick={() => setPreviewFile(null)}
+          onClick={() => {
+            setPreviewFile(null);
+            setPreviewSrc(null);
+          }}
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]"
         >
           <div
@@ -815,32 +1034,46 @@ const FundModal: React.FC<FundModalProps> = ({
             className="bg-white rounded-[40px] w-[70%] max-w-2xl max-h-[70vh] relative p-8 py-8  font-poppins"
           >
             <button
-              onClick={() => setPreviewFile(null)}
+              onClick={() => {
+                setPreviewFile(null);
+                setPreviewSrc(null);
+              }}
               className="p-1 hover:bg-gray-100 rounded absolute right-5 top-5"
             >
               <X className="w-6 h-6 text-theme-primary-text" />
             </button>
 
             <h2 className="text-lg font-semibold mb-4 text-theme-primary-text">
-              Preview: {previewFile.name}
+              Preview: {previewFile?.name || "Document"}
             </h2>
-
-            {previewFile.type.startsWith("image/") ? (
-              <img
-                src={URL.createObjectURL(previewFile)}
-                alt="Preview"
-                className="max-w-full max-h-[70vh] h-full object-contain"
-              />
-            ) : previewFile.type === "application/pdf" ? (
-              <iframe
-                src={URL.createObjectURL(previewFile)}
-                className="w-full h-[60vh] border rounded"
-                title="PDF Preview"
-              />
+            {mode === "edit" ? (
+              <div className="flex-1 p-4 h-full">
+                <iframe
+                  src={previewSrc}
+                  className="w-full h-[60vh] border-0 rounded"
+                  title="Fundraising Document"
+                />
+              </div>
             ) : (
-              <p className="text-sm text-gray-700">
-                Cannot preview this file type. Please download to view.
-              </p>
+              <>
+                {previewFile.type.startsWith("image/") ? (
+                  <img
+                    src={URL.createObjectURL(previewFile)}
+                    alt="Preview"
+                    className="max-w-full max-h-[70vh] h-full object-contain"
+                  />
+                ) : previewFile.type === "application/pdf" ? (
+                  <iframe
+                    src={URL.createObjectURL(previewFile)}
+                    className="w-full h-[60vh] border rounded"
+                    title="PDF Preview"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-700">
+                    Cannot preview this file type. Please download to view.
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>

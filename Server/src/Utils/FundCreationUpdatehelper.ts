@@ -18,6 +18,7 @@ export interface Investor {
 }
 
 export interface FundCreateRequest {
+  fundManagerId: string;
   name: string;
   fundSize: number;
   fundType: string;

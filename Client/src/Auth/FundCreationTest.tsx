@@ -259,7 +259,7 @@ const FundTestComponent: React.FC = () => {
   useEffect(() => {
     if (selectedFund) {
       // Always keep the form data in sync with selected fund
-      console.log("Selected fund loaded00:", selectedFund);
+
       setUpdateFormData({
         name: selectedFund.name,
         fundSize: selectedFund.fundSize,
@@ -272,7 +272,7 @@ const FundTestComponent: React.FC = () => {
         fundLifetime: selectedFund.fundLifetime,
         fundDescription: selectedFund.fundDescription || "",
       });
-      console.log("Selected fund loaded11:", updateFormData);
+
       const existingInvestorForms =
         selectedFund?.investors?.map((investor) => ({
           investorId: investor.investorId,
@@ -283,16 +283,13 @@ const FundTestComponent: React.FC = () => {
           isExisting: true,
           existingDocumentUrl: investor.documentUrl,
         })) || [];
-      console.log("Selected fund loaded22:", updateFormData);
+
       setUpdateInvestorForms(existingInvestorForms);
     }
   }, [selectedFund]); // Only depend on selectedFund, not showUpdateForm
 
-  useEffect(() => {
-    console.log("Update form data:", updateFormData);
-  }, [updateFormData]); // Only depend on selectedFund, not showUpdateForm
+  useEffect(() => {}, [updateFormData]); // Only depend on selectedFund, not showUpdateForm
   const handleEditFund = (fundId: string) => {
-    console.log("Editing fund with ID:", fundId);
     setSelectedFundId(fundId);
     setShowUpdateForm(true);
   };

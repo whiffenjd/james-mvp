@@ -56,7 +56,6 @@ export class S3DocumentCleanupHelper {
       }
 
       // Add debug logs
-      console.log(`Deleting from bucket: ${bucketName}, key: ${s3Key}`);
 
       const deleteParams = {
         Bucket: bucketName,
@@ -64,7 +63,7 @@ export class S3DocumentCleanupHelper {
       };
 
       await s3.deleteObject(deleteParams).promise();
-      console.log(`Successfully deleted from S3: ${s3Key}`);
+
       return true;
     } catch (error) {
       console.error(`Failed to delete from S3: ${s3Url}`, error);

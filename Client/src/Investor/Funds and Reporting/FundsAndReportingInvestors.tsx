@@ -24,12 +24,12 @@ const FundsAndReportingInvestors: React.FC = () => {
   const { isLoading, error, refreshInvestorFunds } = useInvestorFunds();
   const funds = useAppSelector((state) => state.investorFunds.funds);
 
-  // const funds = useAppSelector((state) => state.funds.allFunds);
+  console.log("Funds from Redux:", funds);
 
   useEffect(() => {
     console.log("Funds data:", funds);
-    if (funds && funds?.data?.length > 0) {
-      setFundsData(funds?.data);
+    if (funds && funds?.length > 0) {
+      setFundsData(funds);
     }
     console.log("fundsData:", fundsData);
   }, [isLoading, funds, user]);
@@ -47,9 +47,9 @@ const FundsAndReportingInvestors: React.FC = () => {
     fundDescription: "Focused on growth-stage tech companies",
   };
 
-  // if (isLoading) {
-  //   return <BasicLoader />;
-  // }
+  if (isLoading) {
+    return <BasicLoader />;
+  }
   return (
     <div className="min-h-screen p-4 md:p-6">
       {/* Header Section */}

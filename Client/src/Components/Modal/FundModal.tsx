@@ -89,6 +89,7 @@ const FundModal: React.FC<FundModalProps> = ({
   const [files, setFiles] = useState([]);
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const [creating, setCreating] = useState<boolean>(false);
 
   const {
     investors: investorsData,
@@ -299,6 +300,7 @@ const FundModal: React.FC<FundModalProps> = ({
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
+    setCreating(true);
 
     try {
       await createFundMutation.mutateAsync({
@@ -310,8 +312,11 @@ const FundModal: React.FC<FundModalProps> = ({
       // Reset form and close modal on success
       handleReset();
       onClose();
+      setCreating(true);
     } catch (error) {
       toast.error(error.message || "Failed to create fund");
+      setCreating(false);
+
       // Error handling is already done in useCreateFund
     }
   };
@@ -404,6 +409,7 @@ const FundModal: React.FC<FundModalProps> = ({
 
   const handleUpdate = async (id: string) => {
     if (!validateForm()) return;
+    setCreating(true);
 
     try {
       // Build structured data
@@ -464,8 +470,10 @@ const FundModal: React.FC<FundModalProps> = ({
 
       handleReset();
       onClose();
+      setCreating(false);
     } catch (error) {
       toast.error(error.message || "Failed to update fund");
+      setCreating(false);
     }
   };
 
@@ -1010,18 +1018,18 @@ const FundModal: React.FC<FundModalProps> = ({
             {mode === "edit" ? (
               <button
                 onClick={handleUpdate}
-                disabled={mode === "create"}
+                disabled={mode === "create" || creating}
                 className="w-full bg-theme-sidebar-accent text-white py-3 rounded-[10px] transition-colors font-medium"
               >
-                Update
+                {creating ? "updating..." : "Update"}
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
-                disabled={mode === "edit"}
+                disabled={mode === "edit" || creating}
                 className="w-full bg-theme-sidebar-accent text-white py-3 rounded-[10px] transition-colors font-medium"
               >
-                Submit
+                {creating ? "submitting..." : "Submit"}
               </button>
             )}
           </div>

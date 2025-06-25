@@ -33,11 +33,6 @@ const appReducer = combineReducers({
 export const rootReducer = (state: any, action: any) => {
   // Reset the entire state when either PURGE or RESET_STATE is dispatched
   if (action.type === PURGE || action.type === RESET_STATE) {
-    // You can optionally preserve some state if needed
-    // const stateToPreserve = { someSlice: state.someSlice };
-    // return appReducer({ ...stateToPreserve }, action);
-
-    // Complete reset:
     return appReducer(undefined, action);
   }
 

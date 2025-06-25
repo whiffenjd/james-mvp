@@ -136,7 +136,7 @@ export const useGetInvestorFunds = () => {
   return useQuery<InvestorFundSummary[]>({
     queryKey: ['investorFunds'],
     queryFn: async () => {
-      const response = await axiosPrivate.get<InvestorFundsResponse>('/fund/investor/funds');
+      const response = await axiosPrivate.get<InvestorFundsResponse>('/fund/getAllInvestorFunds');
       if (!response.data.success) {
         throw new Error(response.data.message || 'Failed to fetch investor funds');
       }

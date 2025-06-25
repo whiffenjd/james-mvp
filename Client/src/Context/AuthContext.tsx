@@ -16,7 +16,6 @@ import { themeResetService } from "../FundManager/Themes/Components/ThemeResetSe
 import { onboardingResetService } from "../Onboarding/services/OnboardingResetService";
 import { useDispatch } from "react-redux";
 import { RESET_STATE } from "../Redux/rootReducers";
-import { persistor } from "../../Store";
 import { resetFunds } from "../Redux/features/Funds/fundsSlice";
 
 // Types for our auth data
@@ -158,14 +157,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     Cookies.remove("authToken");
     Cookies.remove("authUser");
 
+    dispatch(resetFunds());
     dispatch({ type: RESET_STATE });
 
     // 5. Purge persisted store
-    await persistor.purge();
+    // await persistor.purge();
 
     // Clear query cache
     queryClient.clear();
-  }, [queryClient]);
+  }, [queryClient, dispatch]);
   const dashboardAssetsQueryKey = ["dashboardAssets"];
   const logoutAuto = useCallback(() => {
     performLogoutCleanup();

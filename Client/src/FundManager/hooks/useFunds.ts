@@ -38,11 +38,10 @@ export const useFunds = () => {
 
   useEffect(()=>{
     if(!user?.id){
-      dispatch(resetFunds()); // Clear funds if user is not authenticated
+      dispatch(resetFunds()); 
+      // Clear funds if user is not authenticated
     }
-      
-
-  })
+  },[user?.id, dispatch])
 
   return {
     isLoading: isLoading || isFetching,

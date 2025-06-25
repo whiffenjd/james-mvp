@@ -37,6 +37,7 @@ import Project from "./FundManager/Funds and Reporting/project";
 
 import FundTestComponent from "./Auth/FundCreationTest";
 import FundsAndReportingInvestors from "./Investor/Funds and Reporting/FundsAndReportingInvestors";
+import InvestorsProject from "./Investor/Funds and Reporting/project";
 
 function RedirectBasedOnRole() {
   const { user } = useAuth();
@@ -129,6 +130,7 @@ function App() {
             >
               <Route index element={<InvestorDashboard />} />
               <Route path="funds" element={<FundsAndReportingInvestors />} />
+              <Route path="project/:id" element={<InvestorsProject />} />
 
               {/* Add more investor routes here */}
             </Route>

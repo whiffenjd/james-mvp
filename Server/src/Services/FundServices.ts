@@ -104,8 +104,9 @@ export default class FundService {
     const documents = Array.isArray(fund.documents) ? fund.documents : [];
     const investors = Array.isArray(fund.investors) ? fund.investors : [];
 
+    // Extract URLs correctly
     const documentUrls = documents.map((doc) => doc.fileUrl);
-    const investorDocUrls = investors.map((inv) => inv.documentUrl);
+    const investorDocUrls = investors.flatMap((inv) => inv.documentUrl);
 
     // 3. Extract keys from URLs
     const allKeys = [...documentUrls, ...investorDocUrls].filter(Boolean).map(extractKeyFromUrl);

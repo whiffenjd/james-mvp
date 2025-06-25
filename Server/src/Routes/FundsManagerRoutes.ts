@@ -648,7 +648,7 @@ FundRouter.get(
  */
 /**
  * @swagger
- * /fund/investor/funds:
+ * /fund/getAllInvestorFunds:
  *   get:
  *     summary: Get all funds for a specific investor
  *     tags: [Fund]

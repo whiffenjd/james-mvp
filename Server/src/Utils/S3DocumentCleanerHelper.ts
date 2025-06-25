@@ -13,20 +13,34 @@ export class S3DocumentCleanupHelper {
       const url = new URL(s3Url);
 
       if (url.hostname.includes('.s3.')) {
-        // Format 1 & 3: bucket-name.s3.region.amazonaws.com/key
-        return url.pathname.substring(1); // Remove leading '/'
+        // Decode URL components to handle spaces (%20) etc.
+        return decodeURIComponent(url.pathname.substring(1));
       } else if (url.hostname.startsWith('s3.')) {
-        // Format 2: s3.region.amazonaws.com/bucket-name/key
         const pathParts = url.pathname.substring(1).split('/');
         if (pathParts.length > 1) {
-          return pathParts.slice(1).join('/'); // Remove bucket name, keep the rest
+          return decodeURIComponent(pathParts.slice(1).join('/'));
         }
       }
-
       return null;
     } catch (error) {
       console.error('Error extracting S3 key from URL:', s3Url, error);
       return null;
+    }
+  }
+
+  /**
+   * Check if a URL is a valid S3 URL
+   */
+  static isValidS3Url(url: string): boolean {
+    if (!url || url.trim() === '') {
+      return false;
+    }
+
+    try {
+      const urlObj = new URL(url);
+      return urlObj.hostname.includes('.s3.') || urlObj.hostname.startsWith('s3.');
+    } catch {
+      return false;
     }
   }
 
@@ -40,6 +54,9 @@ export class S3DocumentCleanupHelper {
         console.error('Could not extract S3 key from URL:', s3Url);
         return false;
       }
+
+      // Add debug logs
+      console.log(`Deleting from bucket: ${bucketName}, key: ${s3Key}`);
 
       const deleteParams = {
         Bucket: bucketName,
@@ -70,11 +87,15 @@ export class S3DocumentCleanupHelper {
     existingDocuments: FundDocument[],
     updatedDocuments: FundDocument[],
   ): string[] {
-    const updatedUrls = new Set(updatedDocuments.map((doc) => doc.fileUrl));
+    // Create a set of URLs that will remain in the database
+    const updatedUrls = new Set(
+      updatedDocuments.map((doc) => doc.fileUrl).filter((url) => this.isValidS3Url(url)),
+    );
+
+    // Find existing S3 URLs that are not in the updated list
     return existingDocuments
-      .filter((doc) => !updatedUrls.has(doc.fileUrl))
       .map((doc) => doc.fileUrl)
-      .filter((url) => url && url.trim() !== '');
+      .filter((url) => this.isValidS3Url(url) && !updatedUrls.has(url));
   }
 
   /**
@@ -96,23 +117,24 @@ export class S3DocumentCleanupHelper {
 
     // Check each existing investor
     existingInvestors.forEach((existingInvestor) => {
-      if (!existingInvestor.investorId || !existingInvestor.documentUrl) {
-        return; // Skip if no ID or document
+      if (!existingInvestor.investorId || !this.isValidS3Url(existingInvestor.documentUrl || '')) {
+        return; // Skip if no ID or not a valid S3 URL
       }
 
       const updatedInvestor = updatedInvestorMap.get(existingInvestor.investorId);
 
       if (!updatedInvestor) {
-        // Investor was completely removed
-        if (existingInvestor.documentUrl.trim() !== '') {
-          documentsToDelete.push(existingInvestor.documentUrl);
+        // Investor was completely removed - delete their document
+        documentsToDelete.push(existingInvestor.documentUrl!);
+      } else {
+        // Check if the document URL changed or was removed
+        const existingDocUrl = existingInvestor.documentUrl || '';
+        const updatedDocUrl = updatedInvestor.documentUrl || '';
+
+        // If existing had a valid S3 URL but updated doesn't have the same valid S3 URL
+        if (this.isValidS3Url(existingDocUrl) && existingDocUrl !== updatedDocUrl) {
+          documentsToDelete.push(existingDocUrl);
         }
-      } else if (
-        existingInvestor.documentUrl !== updatedInvestor.documentUrl &&
-        existingInvestor.documentUrl.trim() !== ''
-      ) {
-        // Investor's document was changed or removed
-        documentsToDelete.push(existingInvestor.documentUrl);
       }
     });
 
@@ -129,21 +151,129 @@ export class S3DocumentCleanupHelper {
   ): Promise<void> {
     try {
       const documentsToDelete: string[] = [];
+      const normalizeDoc = (doc: any): FundDocument => {
+        if (typeof doc === 'string') {
+          const urlParts = doc.split('/');
+          const fileName = urlParts[urlParts.length - 1].split('?')[0];
+          return {
+            fileName: decodeURIComponent(fileName),
+            fileUrl: doc,
+            uploadedAt: new Date().toISOString(),
+          };
+        }
+        return {
+          fileName: doc.fileName || 'Unknown',
+          fileUrl: doc.fileUrl || doc.url || '',
+          uploadedAt: doc.uploadedAt || new Date().toISOString(),
+        };
+      };
 
-      // Check fund documents
-      if (existingFund.documents && updateData.existingDocuments) {
-        const fundDocsToDelete = this.getDocumentsToDelete(
-          existingFund.documents,
-          updateData.existingDocuments,
-        );
-        documentsToDelete.push(...fundDocsToDelete);
+      // Prepare the final documents that will be in the database after update
+      let finalFundDocuments: FundDocument[] = [];
+      if (updateData.existingDocuments && Array.isArray(updateData.existingDocuments)) {
+        updateData.existingDocuments.forEach((doc: any) => {
+          finalFundDocuments.push(normalizeDoc(doc));
+        });
+      } else {
+        // Keep all existing docs if none specified
+        (existingFund.documents || []).forEach((doc: any) => {
+          finalFundDocuments.push(normalizeDoc(doc));
+        });
       }
 
-      // Check investor documents
-      if (existingFund.investors && updateData.investors) {
+      // Add new documents
+      (updateData.documents || []).forEach((doc: any) => {
+        finalFundDocuments.push(normalizeDoc(doc));
+      });
+
+      // Normalize existing fund documents for comparison
+      const existingDocsNormalized: FundDocument[] = [];
+      (existingFund.documents || []).forEach((doc: any) => {
+        existingDocsNormalized.push(normalizeDoc(doc));
+      });
+
+      // Compare normalized documents
+      const updatedUrls = new Set(
+        finalFundDocuments.map((doc) => doc.fileUrl).filter((url) => this.isValidS3Url(url)),
+      );
+
+      existingDocsNormalized.forEach((doc) => {
+        if (this.isValidS3Url(doc.fileUrl) && !updatedUrls.has(doc.fileUrl)) {
+          documentsToDelete.push(doc.fileUrl);
+        }
+      });
+      if (updateData.existingDocuments && Array.isArray(updateData.existingDocuments)) {
+        // Frontend specified which existing documents to keep
+        finalFundDocuments = updateData.existingDocuments.map((doc: any) => {
+          if (typeof doc === 'string') {
+            return {
+              fileName: 'Unknown File',
+              fileUrl: doc,
+              uploadedAt: new Date().toISOString(),
+            };
+          }
+          return doc;
+        });
+      } else {
+        // No existing documents specified, keep all existing
+        finalFundDocuments = existingFund.documents || [];
+      }
+      const updatedInvestorMap = new Map<string, any>();
+      (updateData.investors || []).forEach((inv: any) => {
+        if (inv.investorId) {
+          updatedInvestorMap.set(inv.investorId, inv);
+        }
+      });
+
+      // Check each existing investor
+      (existingFund.investors || []).forEach((existingInvestor: any) => {
+        if (!existingInvestor.investorId) return;
+
+        const updatedInvestor = updatedInvestorMap.get(existingInvestor.investorId);
+        const existingDocUrl = existingInvestor.documentUrl || '';
+
+        // 1. Investor was completely removed
+        if (!updatedInvestor) {
+          if (this.isValidS3Url(existingDocUrl)) {
+            documentsToDelete.push(existingDocUrl);
+          }
+        }
+        // 2. Investor exists but document changed
+        else {
+          const updatedDocUrl = updatedInvestor.documentUrl || '';
+
+          // Only delete if URL changed and it's a valid S3 URL
+          if (existingDocUrl !== updatedDocUrl && this.isValidS3Url(existingDocUrl)) {
+            documentsToDelete.push(existingDocUrl);
+          }
+        }
+      });
+
+      // Prepare final investors that will be in the database after update
+      let finalInvestors: Investor[] = [];
+
+      if (updateData.investors && Array.isArray(updateData.investors)) {
+        // Process the investors that are being updated
+        const existingInvestors = existingFund.investors || [];
+        const updatedInvestorIds = updateData.investors.map((inv: any) => inv.investorId);
+
+        // Keep existing investors not included in the update
+        const unchangedInvestors = existingInvestors.filter(
+          (existing: any) => !updatedInvestorIds.includes(existing.investorId),
+        );
+
+        // Add the updated investors
+        finalInvestors = [...unchangedInvestors, ...updateData.investors];
+      } else {
+        // No investors in update, keep existing
+        finalInvestors = existingFund.investors || [];
+      }
+
+      // Check investor documents for cleanup
+      if (existingFund.investors && Array.isArray(existingFund.investors)) {
         const investorDocsToDelete = this.getInvestorDocumentsToDelete(
           existingFund.investors,
-          updateData.investors,
+          finalInvestors,
         );
         documentsToDelete.push(...investorDocsToDelete);
       }

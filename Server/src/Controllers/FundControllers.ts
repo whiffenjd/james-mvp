@@ -94,7 +94,8 @@ export default class FundController {
       if (validationError) {
         return FundCreationUpdateHelper.sendErrorResponse(res, validationError, 400);
       }
-
+      console.log('parsedBody', parsedBody);
+      console.log('existingFund', req.files);
       // Process uploaded files
       const { fundDocuments, investorDocumentMap } = FundCreationUpdateHelper.processUploadedFiles(
         req.files as Express.MulterS3.File[],
@@ -127,7 +128,7 @@ export default class FundController {
           investorDocumentMap,
         );
       }
-
+      console.log('updateData', updateData);
       // Update fund in database
       await FundService.update(fundId, updateData);
 

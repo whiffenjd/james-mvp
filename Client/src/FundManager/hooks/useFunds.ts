@@ -2,11 +2,13 @@
 
 import { useEffect } from "react";
 import { useGetAllFundsQuery } from "../../API/Endpoints/Funds/funds";
-import { setAllFunds, setError, setLoading } from "../../Redux/features/Funds/fundsSlice";
+import { resetFunds, setAllFunds, setError, setLoading } from "../../Redux/features/Funds/fundsSlice";
 import { useAppDispatch } from "../../Redux/hooks";
+import { useAuth } from "../../Context/AuthContext";
 
 export const useFunds = () => {
   const dispatch = useAppDispatch();
+  const {user}=useAuth();
   
   const { 
     data: funds, 
@@ -29,10 +31,18 @@ export const useFunds = () => {
 
   // Update Redux store when data loads
   useEffect(() => {
-    if (funds) {
+    if (funds && user?.id) {
       dispatch(setAllFunds(funds));
     }
-  }, [funds, dispatch]);
+  }, [funds, user?.id, dispatch]);
+
+  useEffect(()=>{
+    if(!user?.id){
+      dispatch(resetFunds()); // Clear funds if user is not authenticated
+    }
+      
+
+  })
 
   return {
     isLoading: isLoading || isFetching,

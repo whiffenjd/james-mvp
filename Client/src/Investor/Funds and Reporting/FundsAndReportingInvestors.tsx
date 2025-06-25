@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { PiCoins, PiCoinsBold } from "react-icons/pi";
-import FundModal from "../../Components/Modal/FundModal";
 import { useNavigate } from "react-router-dom";
-import { useFunds } from "../hooks/useFunds";
-import { useAppSelector } from "../../Redux/hooks";
 import BasicLoader from "../../Components/Loader/BasicLoader";
 import { useAuth } from "../../Context/AuthContext";
+import { useInvestorFunds } from "../../FundManager/hooks/useInvestorFunds";
+import { useAppSelector } from "../../Redux/hooks";
 
 interface FundCard {
   id: number;
@@ -16,17 +15,16 @@ interface FundCard {
   dateCreated: string;
 }
 
-const FundsAndReporting: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [mode, setMode] = useState<"create" | "edit">("create");
+const FundsAndReportingInvestors: React.FC = () => {
   const [fundsData, setFundsData] = useState<Partial<FormData[]>>([]);
   const navigate = useNavigate();
-  const { isLoading, error } = useFunds();
   const { user } = useAuth();
 
   console.log("User data:", user);
+  const { isLoading, error, refreshInvestorFunds } = useInvestorFunds();
+  const funds = useAppSelector((state) => state.investorFunds.funds);
 
-  const funds = useAppSelector((state) => state.funds.allFunds);
+  // const funds = useAppSelector((state) => state.funds.allFunds);
 
   useEffect(() => {
     console.log("Funds data:", funds);
@@ -35,16 +33,6 @@ const FundsAndReporting: React.FC = () => {
     }
     console.log("fundsData:", fundsData);
   }, [isLoading, funds, user]);
-
-  const handleSubmit = (data: SubmitData): void => {
-    console.log("Form submitted:", data);
-    setIsModalOpen(false);
-  };
-
-  const handleClose = (): void => {
-    setIsModalOpen(false);
-    setMode("create");
-  };
 
   const sampleEditData: Partial<FormData> = {
     name: "Growth Fund Alpha",
@@ -59,9 +47,9 @@ const FundsAndReporting: React.FC = () => {
     fundDescription: "Focused on growth-stage tech companies",
   };
 
-  if (isLoading) {
-    return <BasicLoader />;
-  }
+  // if (isLoading) {
+  //   return <BasicLoader />;
+  // }
   return (
     <div className="min-h-screen p-4 md:p-6">
       {/* Header Section */}
@@ -69,13 +57,13 @@ const FundsAndReporting: React.FC = () => {
         <h1 className="text-xl font-semibold text-gray-800 mb-4 sm:mb-0 font-poppins">
           Fund Creation
         </h1>
-        <button
+        {/* <button
           onClick={() => setIsModalOpen(true)}
           className="bg-theme-sidebar-accent text-white px-8 py-2 rounded-[10px] text-sm font-normal transition-colors duration-200 flex items-center gap-2"
         >
           <span className="text-lg">+</span>
           Create Fund
-        </button>
+        </button> */}
       </div>
 
       {/* Content Section - Fund Cards Grid */}
@@ -174,15 +162,8 @@ const FundsAndReporting: React.FC = () => {
           </div>
         )}
       </div>
-      <FundModal
-        isOpen={isModalOpen}
-        onClose={handleClose}
-        onSubmit={handleSubmit}
-        mode={mode}
-        initialData={mode === "edit" ? sampleEditData : null}
-      />
     </div>
   );
 };
 
-export default FundsAndReporting;
+export default FundsAndReportingInvestors;

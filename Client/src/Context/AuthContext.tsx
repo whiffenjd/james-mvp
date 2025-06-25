@@ -14,6 +14,10 @@ import { useGetUserProfile, useLogout } from "../API/Endpoints/Auth/AuthApis";
 import { QueryClient } from "@tanstack/react-query";
 import { themeResetService } from "../FundManager/Themes/Components/ThemeResetService";
 import { onboardingResetService } from "../Onboarding/services/OnboardingResetService";
+import { useDispatch } from "react-redux";
+import { RESET_STATE } from "../Redux/rootReducers";
+import { persistor } from "../../Store";
+import { resetFunds } from "../Redux/features/Funds/fundsSlice";
 
 // Types for our auth data
 export interface User {
@@ -66,6 +70,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isAuthInitialized, setIsAuthInitialized] = useState(false);
   const navigate = useNavigate();
   const logoutMutation = useLogout();
+  const dispatch = useDispatch();
   // const getUserThemeKey = useCallback(
   //   (userId: string) => `theme_${userId}`,
   //   []
@@ -138,7 +143,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }, 0);
   };
 
-  const performLogoutCleanup = useCallback(() => {
+  const performLogoutCleanup = useCallback(async () => {
     // Reset theme states BEFORE clearing auth
     themeResetService.performCompleteReset();
 
@@ -152,6 +157,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     // Clear cookies
     Cookies.remove("authToken");
     Cookies.remove("authUser");
+
+    dispatch({ type: RESET_STATE });
+
+    // 5. Purge persisted store
+    await persistor.purge();
 
     // Clear query cache
     queryClient.clear();

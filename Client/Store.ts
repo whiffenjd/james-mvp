@@ -1,10 +1,11 @@
 // store.ts
 import { configureStore } from "@reduxjs/toolkit";
 import type { ThunkAction } from "@reduxjs/toolkit";
-import rootReducer from "./src/Redux/rootReducers";
+// import rootReducer from "./src/Redux/rootReducers";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // Default storage (localStorage for web)
 import type { Action } from "redux";
+import { rootReducer } from "./src/Redux/rootReducers";
 
 const persistConfig = {
   key: "root", // Key to store the data in localStorage

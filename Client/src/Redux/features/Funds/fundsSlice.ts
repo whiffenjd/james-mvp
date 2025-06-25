@@ -1,5 +1,7 @@
 // src/Redux/features/Funds/fundsSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { PURGE } from 'redux-persist';
+import { RESET_STATE } from '../../rootReducers';
 
 interface FundSummary {
   id: string;
@@ -70,8 +72,17 @@ const fundsSlice = createSlice({
     },
     clearCurrentFund: (state) => {
       state.currentFund = null;
-    }
-  }
+    },
+    resetFunds: () => initialState,
+    
+
+   
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(PURGE, () => initialState)
+      .addCase(RESET_STATE, () => initialState);
+  },
 });
 
 export const { 
@@ -79,7 +90,8 @@ export const {
   setCurrentFund, 
   setLoading, 
   setError,
-  clearCurrentFund 
+  clearCurrentFund ,
+  resetFunds
 } = fundsSlice.actions;
 
 export default fundsSlice.reducer;

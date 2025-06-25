@@ -116,6 +116,39 @@ interface UpdateFundParams {
   investorDocuments?: Record<number, File>;
 }
 
+interface InvestorFundSummary {
+  id: string;
+  name: string;
+  fundType: string;
+  fundDescription: string;
+  investorCount: number;
+  createdAt: string;
+}
+
+interface InvestorFundsResponse {
+  success: boolean;
+  message: string;
+  statusCode: number;
+  data: InvestorFundSummary[];
+}
+
+export const useGetInvestorFunds = () => {
+  return useQuery<InvestorFundSummary[]>({
+    queryKey: ['investorFunds'],
+    queryFn: async () => {
+      const response = await axiosPrivate.get<InvestorFundsResponse>('/fund/investor/funds');
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to fetch investor funds');
+      }
+      return response.data.data;
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to fetch investor funds');
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+  });
+};
+
 export const useUpdateFund = () => {
   const queryClient = useQueryClient();
   return useMutation({

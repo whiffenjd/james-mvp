@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import { LayoutGrid } from "lucide-react";
+import { CircleDollarSign, LayoutGrid } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
 import ManagerSidebar from "../FundManager/Public/ManagerSidebar";
 import { useThemeContext } from "../Context/InvestorThemeContext";
@@ -12,7 +12,6 @@ const InvestorLayout = () => {
   const { user, logout } = useAuth();
 
   const { currentTheme, isLoadingCurrentTheme } = useThemeContext();
-
 
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -42,6 +41,12 @@ const InvestorLayout = () => {
       icon: <LayoutGrid size={22} />,
       label: "Dashboard",
       path: "/investor/dashboard",
+    },
+    {
+      id: "funds",
+      icon: <CircleDollarSign size={22} />,
+      label: "Funds",
+      path: "funds",
     },
   ];
 

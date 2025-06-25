@@ -113,6 +113,9 @@ FundRouter.get(
  *         documentUrl:
  *           type: string
  *           example: https://s3.amazonaws.com/bucket/funds/investorDoc.pdf
+ *         documentName:
+ *           type: string
+ *           example: investorDoc.pdf
  *         addedAt:
  *           type: string
  *           format: date-time
@@ -123,6 +126,9 @@ FundRouter.get(
  *         fileUrl:
  *           type: string
  *           example: https://s3.amazonaws.com/bucket/funds/fundDoc.pdf
+ *         fileName:
+ *           type: string
+ *           example: fundDoc.pdf
  *         uploadedAt:
  *           type: string
  *           format: date-time
@@ -146,6 +152,8 @@ FundRouter.get(
  *           type: number
  *         minimumInvestment:
  *           type: number
+ *         fundManagerId:
+ *           type: string
  *         fundLifetime:
  *           type: string
  *         fundDescription:
@@ -445,12 +453,17 @@ FundRouter.get(
  *                     "targetGeographies": "North America, Europe",
  *                     "targetSectors": "Healthcare, Tech",
  *                     "targetMOIC": 2456,
+ *                     "fundManagerId": 184542342424234,
  *                     "targetIRR": 1845,
  *                     "minimumInvestment": 50000,
  *                     "fundLifetime": "7 years",
  *                     "fundDescription": "Updated fund description",
- *                     "existingDocuments": [
+ *                     "existingDocuments": [{
  *                       "https://s3.aws.com/bucket/fundDoc1.pdf"
+ *                      },
+ *                      {
+ *                       "https://s3.aws.com/bucket/fundDoc1.pdf"
+ *                        }
  *                     ],
  *                     "investors": [
  *                       {
@@ -633,5 +646,141 @@ FundRouter.get(
  *                   type: string
  *                   example: Internal server error
  */
-
+/**
+ * @swagger
+ * /fund/investor/funds:
+ *   get:
+ *     summary: Get all funds for a specific investor
+ *     tags: [Fund]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieves all funds where the authenticated investor is a participant
+ *     responses:
+ *       '200':
+ *         description: Successfully fetched funds for investor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Fetched funds for investor"
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 200
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                         description: Unique identifier for the fund
+ *                         example: "7c26adf3-e3e2-495e-8518-a03d0170e5ca"
+ *                       name:
+ *                         type: string
+ *                         description: Name of the fund
+ *                         example: "dsadasd"
+ *                       fundType:
+ *                         type: string
+ *                         description: Type of the fund
+ *                         example: "dfsfd"
+ *                       fundDescription:
+ *                         type: string
+ *                         description: Description of the fund
+ *                         example: "dasd"
+ *                       investorCount:
+ *                         type: integer
+ *                         description: Total number of investors in the fund
+ *                         example: 2
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Fund creation timestamp
+ *                         example: "2025-06-25T08:51:23.072Z"
+ *             example:
+ *               success: true
+ *               message: "Fetched funds for investor"
+ *               statusCode: 200
+ *               data:
+ *                 - id: "7c26adf3-e3e2-495e-8518-a03d0170e5ca"
+ *                   name: "dsadasd"
+ *                   fundType: "dfsfd"
+ *                   fundDescription: "dasd"
+ *                   investorCount: 2
+ *                   createdAt: "2025-06-25T08:51:23.072Z"
+ *                 - id: "473014f9-da65-483a-aab5-269926cabc4e"
+ *                   name: "sadad"
+ *                   fundType: "sad"
+ *                   fundDescription: "dasda"
+ *                   investorCount: 3
+ *                   createdAt: "2025-06-25T09:28:13.523Z"
+ *                 - id: "65b7d9e5-8bb7-49f1-8e76-167e050eee27"
+ *                   name: "zebi project"
+ *                   fundType: "das"
+ *                   fundDescription: "sada"
+ *                   investorCount: 2
+ *                   createdAt: "2025-06-25T09:31:56.691Z"
+ *                 - id: "8b803b9b-dc2c-41e1-8bfb-396eaa071855"
+ *                   name: "jidat "
+ *                   fundType: "Dev"
+ *                   fundDescription: "devdex"
+ *                   investorCount: 2
+ *                   createdAt: "2025-06-25T09:46:16.753Z"
+ *       '400':
+ *         description: Bad Request - Missing investor ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Missing investorId in query"
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 400
+ *             example:
+ *               success: false
+ *               error: "Missing investorId in query"
+ *               statusCode: 400
+ *       '401':
+ *         description: Unauthorized - Invalid or missing authentication token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               success: false
+ *               error: "Authentication required"
+ *               statusCode: 401
+ *       '500':
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch investor funds"
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 500
+ *             example:
+ *               success: false
+ *               error: "Failed to fetch investor funds"
+ *               statusCode: 500
+ */
 export default FundRouter;

@@ -101,8 +101,8 @@ export default class FundService {
     if (!fund) throw new Error('Fund not found');
 
     // 2. Collect all S3 URLs from fund.documents and fund.investors
-    const documents = fund.documents || [];
-    const investors = fund.investors || [];
+    const documents = Array.isArray(fund.documents) ? fund.documents : [];
+    const investors = Array.isArray(fund.investors) ? fund.investors : [];
 
     const documentUrls = documents.map((doc) => doc.fileUrl);
     const investorDocUrls = investors.map((inv) => inv.documentUrl);
@@ -133,7 +133,7 @@ export default class FundService {
       name: fund.name,
       fundType: fund.fundType,
       fundDescription: fund.fundDescription,
-      investorCount: fund.investors?.length || 0,
+      investorCount: Array.isArray(fund.investors) ? fund.investors.length : 0,
       createdAt: fund.createdAt,
     }));
   }

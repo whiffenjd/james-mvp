@@ -1,7 +1,7 @@
 // src/api/funds.ts
 import toast from "react-hot-toast";
 import axiosPrivate from "../../AxiosInstances/PrivateAxiosInstance";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Investor {
   id: string;
@@ -117,6 +117,7 @@ interface UpdateFundParams {
 }
 
 export const useUpdateFund = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (params: UpdateFundParams) => {
       const formData = new FormData();
@@ -171,6 +172,8 @@ export const useUpdateFund = () => {
     },
     onSuccess: () => {
       toast.success('Fund updated successfully!');
+      queryClient.invalidateQueries({ queryKey: ['funds'] });
+      queryClient.invalidateQueries({ queryKey: ['fund', variables.id] });
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.error || 
@@ -182,6 +185,7 @@ export const useUpdateFund = () => {
 };
 
 export const useCreateFund = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreateFundPayload) => {
       const formData = new FormData();
@@ -230,6 +234,7 @@ export const useCreateFund = () => {
     },
     onSuccess: () => {
       toast.success('Fund created successfully!');
+      queryClient.invalidateQueries({ queryKey: ['funds'] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Failed to create fund');

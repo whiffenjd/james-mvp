@@ -22,7 +22,7 @@ export const uploadMultipleDocs = multer({
       cb(null, fileName);
     },
   }),
-  limits: { fileSize: 20 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
       'image/jpeg',

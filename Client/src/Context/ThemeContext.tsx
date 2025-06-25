@@ -466,7 +466,7 @@ export const ThemeLoader: React.FC<{ children: ReactNode }> = ({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-90 backdrop-blur-sm">
         <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-theme-sidebar-accent"></div>
           <p className="text-gray-600 text-sm">Loading theme...</p>
         </div>
       </div>

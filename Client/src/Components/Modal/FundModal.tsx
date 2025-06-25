@@ -169,10 +169,13 @@ const FundModal: React.FC<FundModalProps> = ({
       if (initialData?.documents) {
         const mappedDocuments = initialData.documents.map((doc, index) => ({
           id: index,
-          name: doc.fileUrl.split("/").pop() || `Document ${index}`,
+          name:
+            doc?.fileUrl?.split("/")?.pop() ||
+            doc?.split("/")?.pop() ||
+            `Document ${index}`,
           size: "N/A", // Size not available for S3 links
           uploaded: true,
-          url: doc.fileUrl,
+          url: doc.fileUrl || doc,
         }));
         setDocuments(mappedDocuments);
       }
@@ -445,10 +448,15 @@ const FundModal: React.FC<FundModalProps> = ({
           investorDocuments[index] = investor.files[0];
         }
       });
-
+      console.log("dts", {
+        id: initialData?.id,
+        data: updateData,
+        fundDocuments,
+        investorDocuments,
+      });
       // 🔥 Actually call the mutation
       await UpdateFund.mutateAsync({
-        id,
+        id: initialData?.id,
         data: updateData,
         fundDocuments,
         investorDocuments,
@@ -753,7 +761,7 @@ const FundModal: React.FC<FundModalProps> = ({
                             }}
                             className="px-3 py-0.5 text-xs bg-theme-sidebar-accent rounded-[10px] text-white cursor-pointer"
                           >
-                            EView
+                            View
                           </button>
                         ) : (
                           <button
@@ -912,7 +920,7 @@ const FundModal: React.FC<FundModalProps> = ({
                               }}
                               className="px-3 py-0.5 text-xs bg-theme-sidebar-accent rounded-[10px] text-white cursor-pointer"
                             >
-                              eView
+                              View
                             </button>
                           ) : (
                             <button
@@ -1046,7 +1054,7 @@ const FundModal: React.FC<FundModalProps> = ({
             <h2 className="text-lg font-semibold mb-4 text-theme-primary-text">
               Preview: {previewFile?.name || "Document"}
             </h2>
-            {mode === "edit" ? (
+            {mode === "edit" && !previewFile ? (
               <div className="flex-1 p-4 h-full">
                 <iframe
                   src={previewSrc}
@@ -1056,7 +1064,7 @@ const FundModal: React.FC<FundModalProps> = ({
               </div>
             ) : (
               <>
-                {previewFile.type.startsWith("image/") ? (
+                {previewFile?.type?.startsWith("image/") ? (
                   <img
                     src={URL.createObjectURL(previewFile)}
                     alt="Preview"
@@ -1069,9 +1077,21 @@ const FundModal: React.FC<FundModalProps> = ({
                     title="PDF Preview"
                   />
                 ) : (
-                  <p className="text-sm text-gray-700">
-                    Cannot preview this file type. Please download to view.
-                  </p>
+                  <>
+                    {previewSrc ? (
+                      <div className="flex-1 p-4 h-full">
+                        <iframe
+                          src={previewSrc}
+                          className="w-full h-[55vh] border-0 rounded"
+                          title="Fundraising Document"
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-700">
+                        Cannot preview this file type. Please download to view.
+                      </p>
+                    )}
+                  </>
                 )}
               </>
             )}

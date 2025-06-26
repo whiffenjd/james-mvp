@@ -159,6 +159,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     dispatch(resetFunds());
     dispatch({ type: RESET_STATE });
+    console.log("Auth state reset");
 
     // 5. Purge persisted store
     // await persistor.purge();

@@ -2,6 +2,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { PURGE } from 'redux-persist';
 import { RESET_STATE } from '../../rootReducers';
+import { all } from 'axios';
 
 interface FundSummary {
   id: string;
@@ -59,6 +60,7 @@ const fundsSlice = createSlice({
   initialState,
   reducers: {
     setAllFunds: (state, action: PayloadAction<FundSummary[]>) => {
+      console.log("Setting all funds: in slice",initialState.allFunds);
       state.allFunds = action.payload;
     },
     setCurrentFund: (state, action: PayloadAction<FundDetail>) => {
@@ -74,9 +76,7 @@ const fundsSlice = createSlice({
       state.currentFund = null;
     },
     resetFunds: () => initialState,
-    
-
-   
+ 
   },
   extraReducers: (builder) => {
     builder

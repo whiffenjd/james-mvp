@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
 import { useLogin } from "../../API/Endpoints/Auth/AuthApis";
 import { useResendOtp } from "../../API/Endpoints/Otp/OtpResendApis";
+import { useAppSelector } from "../../Redux/hooks";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -15,6 +16,9 @@ const Login = () => {
   const loginMutation = useLogin();
   const resendOtpMutation = useResendOtp();
   const logoimg = null;
+  const funds = useAppSelector((state) => state.funds.allFunds);
+
+  console.log("funds on login", funds);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

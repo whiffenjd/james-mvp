@@ -146,6 +146,8 @@ export const useGetInvestorFunds = () => {
       toast.error(error.message || 'Failed to fetch investor funds');
     },
     staleTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnMount: true,     // Refetch on every mount
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -282,7 +284,9 @@ export const useGetAllFundsQuery = () => {
       const response = await axiosPrivate.get('/fund/getAllFundsSpecificData');
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    staleTime: 0,            
+    refetchOnMount: true,     
+    refetchOnWindowFocus: false, 
   });
 };
 
@@ -293,7 +297,10 @@ export const useGetFundByIdQuery = (id: string) => {
       const response = await axiosPrivate.get(`/fund/getFundById/${id}`);
       return response.data;
     },
-    enabled: !!id, // Only fetch when ID is available
-    staleTime: 5 * 60 * 1000
+    enabled: !!id, 
+    staleTime: 5 * 60 * 1000,
+    refetchOnMount: true,     
+    refetchOnWindowFocus: false,
+    
   });
 };

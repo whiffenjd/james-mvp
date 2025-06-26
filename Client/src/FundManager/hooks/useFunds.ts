@@ -20,18 +20,21 @@ export const useFunds = () => {
   // Sync loading state
   useEffect(() => {
     dispatch(setLoading(isLoading || isFetching));
+    console.log("Funds loading state:", isLoading, isFetching);
   }, [isLoading, isFetching, dispatch]);
 
   // Sync error state
   useEffect(() => {
     if (error) {
       dispatch(setError(error instanceof Error ? error.message : 'An error occurred'));
+      console.error("Funds error:", error);
     }
   }, [error, dispatch]);
 
   // Update Redux store when data loads
   useEffect(() => {
     if (funds && user?.id) {
+      console.log("Funds data updated in Redux:", funds);
       dispatch(setAllFunds(funds));
     }
   }, [funds, user?.id, dispatch]);

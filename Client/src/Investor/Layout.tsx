@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import { CircleDollarSign, LayoutGrid } from "lucide-react";
+import { CircleDollarSign, Files, LayoutGrid } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
 import ManagerSidebar from "../FundManager/Public/ManagerSidebar";
 import { useThemeContext } from "../Context/InvestorThemeContext";
@@ -47,6 +47,12 @@ const InvestorLayout = () => {
       icon: <CircleDollarSign size={22} />,
       label: "Funds",
       path: "funds",
+    },
+    {
+      id: "Subscription_Documents",
+      icon: <Files size={22} />,
+      label: "Subscription Documents",
+      path: "subscription-documents",
     },
   ];
 

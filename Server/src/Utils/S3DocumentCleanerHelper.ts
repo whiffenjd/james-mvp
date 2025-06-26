@@ -289,4 +289,31 @@ export class S3DocumentCleanupHelper {
       // Don't throw error here as we don't want to fail the update if S3 cleanup fails
     }
   }
+  static async deleteFromS3Alternative(s3Url: string, bucketName: string): Promise<boolean> {
+    try {
+      console.log(`Alternative deletion method for: ${s3Url}`);
+
+      // Try a different approach to extract the key
+      const urlParts = s3Url.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+
+      // If your files are stored in a 'funds/' folder, construct the key like this:
+      const s3Key = `funds/${fileName}`;
+
+      console.log(`Alternative S3 key: ${s3Key}`);
+
+      const deleteParams = {
+        Bucket: bucketName,
+        Key: s3Key,
+      };
+
+      const deleteResult = await s3.deleteObject(deleteParams).promise();
+      console.log('Alternative deletion result:', deleteResult);
+
+      return true;
+    } catch (error) {
+      console.error('Alternative deletion method failed:', error);
+      return false;
+    }
+  }
 }

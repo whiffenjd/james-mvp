@@ -32,6 +32,7 @@ export default class FundService {
       id: fund.id,
       name: fund.name,
       fundType: fund.fundType,
+      fundSize: fund.fundSize,
       fundDescription: fund.fundDescription,
       investorCount: Array.isArray(fund.investors) ? fund.investors.length : 0,
       createdAt: fund.createdAt,
@@ -123,19 +124,32 @@ export default class FundService {
   static async getAllFundsForInvestor(investorId: string): Promise<any[]> {
     const result = await db.select().from(funds);
 
+    // Only include funds where this investor exists
     const matchingFunds = result.filter((fund) =>
       (Array.isArray(fund.investors) ? fund.investors : []).some(
         (inv: any) => inv.investorId === investorId,
       ),
     );
 
-    return matchingFunds.map((fund) => ({
-      id: fund.id,
-      name: fund.name,
-      fundType: fund.fundType,
-      fundDescription: fund.fundDescription,
-      investorCount: Array.isArray(fund.investors) ? fund.investors.length : 0,
-      createdAt: fund.createdAt,
-    }));
+    // Return only that investor’s data within each matched fund
+    return matchingFunds.map((fund) => {
+      const matchedInvestor = (fund.investors || []).filter(
+        (inv: any) => inv.investorId === investorId,
+      );
+
+      return {
+        id: fund.id,
+        name: fund.name,
+        fundSize: fund.fundSize,
+        fundType: fund.fundType,
+        fundDescription: fund.fundDescription,
+        investors: matchedInvestor,
+        createdAt: fund.createdAt,
+      };
+    });
+  }
+
+  static async updateInvestor(fundId: string, investors: Investor[]): Promise<void> {
+    await db.update(funds).set({ investors }).where(eq(funds.id, fundId));
   }
 }

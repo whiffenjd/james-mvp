@@ -10,6 +10,7 @@ export interface FundDocument {
 
 export interface Investor {
   investorId: string;
+  status: boolean;
   name: string;
   amount: number;
   documentUrl?: string;
@@ -179,6 +180,7 @@ export class FundCreationUpdateHelper {
 
       return {
         investorId: investor.investorId,
+        status: false,
         name: investor.name || '',
         amount: investor.amount || 0,
         documentUrl: investor.documentUrl || '',
@@ -208,6 +210,7 @@ export class FundCreationUpdateHelper {
       const docInfo = investorDocumentMap[index.toString()] || {};
       return {
         ...investor,
+        status: false, // ✅ Add this line to ensure status is included
         documentUrl: docInfo.fileUrl || '',
         documentName: docInfo.fileName || '',
         addedAt: new Date().toISOString(),
@@ -275,6 +278,7 @@ export class FundCreationUpdateHelper {
 
         return {
           investorId: investor.investorId,
+          status: investor.status,
           name: investor.name || existingInvestor?.name || '',
           amount: investor.amount || existingInvestor?.amount || 0,
           documentUrl:
@@ -343,6 +347,7 @@ export class FundCreationUpdateHelper {
 
         return {
           investorId: investor.investorId,
+          status: investor.status,
           name: investor.name || existingInvestor?.name || '',
           amount: investor.amount || existingInvestor?.amount || 0,
           documentUrl:

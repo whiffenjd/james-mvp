@@ -44,6 +44,12 @@ FundRouter.get(
   verifyToken,
   FundController.getInvestorsByManager as unknown as express.RequestHandler,
 );
+FundRouter.patch(
+  '/:fundId/InvDoc/:investorId/sign',
+  verifyToken,
+  uploadMultipleDocs,
+  FundController.signInvestorFunds as unknown as express.RequestHandler,
+);
 /**
  * @swagger
  * tags:
@@ -88,6 +94,9 @@ FundRouter.get(
  *         fundType:
  *           type: string
  *           example: Private Equity
+ *         fundSize:
+ *           type: number
+ *           example: 432
  *         fundDescription:
  *           type: string
  *           example: A fund focused on late-stage growth companies.
@@ -110,6 +119,9 @@ FundRouter.get(
  *         amount:
  *           type: number
  *           example: 423
+ *         status:
+ *           type: boolean
+ *           example: false
  *         documentUrl:
  *           type: string
  *           example: https://s3.amazonaws.com/bucket/funds/investorDoc.pdf
@@ -648,7 +660,7 @@ FundRouter.get(
  */
 /**
  * @swagger
- * /fund/investor/funds:
+ * /fund/getAllInvestorFunds:
  *   get:
  *     summary: Get all funds for a specific investor
  *     tags: [Fund]
@@ -681,57 +693,88 @@ FundRouter.get(
  *                         type: string
  *                         format: uuid
  *                         description: Unique identifier for the fund
- *                         example: "7c26adf3-e3e2-495e-8518-a03d0170e5ca"
+ *                         example: "7501fab3-00db-4ba4-a3e7-420e2e53a016"
  *                       name:
  *                         type: string
  *                         description: Name of the fund
- *                         example: "dsadasd"
+ *                         example: "ahsan"
+ *                       fundSize:
+ *                         type: string
+ *                         description: Size of the fund
+ *                         example: "2500"
  *                       fundType:
  *                         type: string
  *                         description: Type of the fund
- *                         example: "dfsfd"
+ *                         example: "Dev"
  *                       fundDescription:
  *                         type: string
  *                         description: Description of the fund
- *                         example: "dasd"
- *                       investorCount:
- *                         type: integer
- *                         description: Total number of investors in the fund
- *                         example: 2
+ *                         example: "des"
+ *                       investors:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             name:
+ *                               type: string
+ *                               example: "Zohaib Haider"
+ *                             amount:
+ *                               type: string
+ *                               example: "2000"
+ *                             status:
+ *                               type: boolean
+ *                               example: true
+ *                             addedAt:
+ *                               type: string
+ *                               format: date-time
+ *                               example: "2025-06-25T13:25:46.744Z"
+ *                             investorId:
+ *                               type: string
+ *                               format: uuid
+ *                               example: "b5eba7de-475d-4bd1-9e1b-392e9f31627e"
+ *                             documentUrl:
+ *                               type: string
+ *                               example: "https://s3.amazonaws.com/bucket/file.pdf"
+ *                             documentName:
+ *                               type: string
+ *                               example: "file.pdf"
  *                       createdAt:
  *                         type: string
  *                         format: date-time
  *                         description: Fund creation timestamp
- *                         example: "2025-06-25T08:51:23.072Z"
+ *                         example: "2025-06-25T13:25:24.767Z"
  *             example:
  *               success: true
  *               message: "Fetched funds for investor"
  *               statusCode: 200
  *               data:
- *                 - id: "7c26adf3-e3e2-495e-8518-a03d0170e5ca"
- *                   name: "dsadasd"
- *                   fundType: "dfsfd"
- *                   fundDescription: "dasd"
- *                   investorCount: 2
- *                   createdAt: "2025-06-25T08:51:23.072Z"
- *                 - id: "473014f9-da65-483a-aab5-269926cabc4e"
- *                   name: "sadad"
- *                   fundType: "sad"
- *                   fundDescription: "dasda"
- *                   investorCount: 3
- *                   createdAt: "2025-06-25T09:28:13.523Z"
- *                 - id: "65b7d9e5-8bb7-49f1-8e76-167e050eee27"
- *                   name: "zebi project"
- *                   fundType: "das"
- *                   fundDescription: "sada"
- *                   investorCount: 2
- *                   createdAt: "2025-06-25T09:31:56.691Z"
- *                 - id: "8b803b9b-dc2c-41e1-8bfb-396eaa071855"
- *                   name: "jidat "
+ *                 - id: "7501fab3-00db-4ba4-a3e7-420e2e53a016"
+ *                   name: "ahsan"
+ *                   fundSize: "2500"
  *                   fundType: "Dev"
- *                   fundDescription: "devdex"
- *                   investorCount: 2
- *                   createdAt: "2025-06-25T09:46:16.753Z"
+ *                   fundDescription: "des"
+ *                   investors:
+ *                     - name: "Zohaib Haider"
+ *                       amount: "2000"
+ *                       addedAt: "2025-06-25T13:25:46.744Z"
+ *                       investorId: "b5eba7de-475d-4bd1-9e1b-392e9f31627e"
+ *                       documentUrl: "https://s3.amazonaws.com/bucket/file.pdf"
+ *                       documentName: "file.pdf"
+ *                   createdAt: "2025-06-25T13:25:24.767Z"
+ *                 - id: "cf7752c8-44cc-4b78-9b29-f64744ab9745"
+ *                   name: "zebi"
+ *                   fundSize: "234"
+ *                   fundType: "sad"
+ *                   fundDescription: "dsa"
+ *                   investors:
+ *                     - name: "Zohaib Haider"
+ *                       amount: "2423"
+ *                       status: true
+ *                       addedAt: "2025-06-26T09:21:30.686Z"
+ *                       investorId: "b5eba7de-475d-4bd1-9e1b-392e9f31627e"
+ *                       documentUrl: "https://s3.amazonaws.com/bucket/file.pdf"
+ *                       documentName: "file.pdf"
+ *                   createdAt: "2025-06-26T09:21:30.228Z"
  *       '400':
  *         description: Bad Request - Missing investor ID
  *         content:
@@ -782,5 +825,167 @@ FundRouter.get(
  *               success: false
  *               error: "Failed to fetch investor funds"
  *               statusCode: 500
+ */
+/**
+ * @swagger
+ * /fund/{fundId}/InvDoc/{investorId}/sign:
+ *   patch:
+ *     summary: Upload signed investor document for a specific fund
+ *     description: Fund managers or admins can upload a signed document and update investor status.
+ *     tags:
+ *       - Fund
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: fundId
+ *         in: path
+ *         required: true
+ *         description: ID of the fund
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *           example: "1a2b3c4d-5e6f-7g8h-9i0j-abc123xyz456"
+ *       - name: investorId
+ *         in: path
+ *         required: true
+ *         description: ID of the investor in the fund
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *           example: "b5eba7de-475d-4bd1-9e1b-392e9f31627e"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - investor_doc
+ *               - status
+ *             properties:
+ *               investor_doc:
+ *                 type: string
+ *                 format: binary
+ *                 description: Signed investor document file (PDF, DOC, DOCX)
+ *               status:
+ *                 type: string
+ *                 enum: ["true", "false"]
+ *                 description: Approval status for the investor document
+ *                 example: "true"
+ *     responses:
+ *       200:
+ *         description: Investor document uploaded and updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Investor document signed and updated successfully"
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 200
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     investor:
+ *                       $ref: '#/components/schemas/FundInvestor'
+ *             example:
+ *               success: true
+ *               message: "Investor document signed and updated successfully"
+ *               statusCode: 200
+ *               data:
+ *                 investor:
+ *                   name: "Zohaib Haider"
+ *                   amount: "2423"
+ *                   addedAt: "2025-06-26T09:21:30.686Z"
+ *                   investorId: "b5eba7de-475d-4bd1-9e1b-392e9f31627e"
+ *                   documentUrl: "https://jameswhitelabel.s3.eu-north-1.amazonaws.com/funds/1750929972163-file-sample_150kB.pdf"
+ *                   documentName: "file-sample_150kB.pdf"
+ *                   status: true
+ *       400:
+ *         description: Missing file or invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Missing required file or invalid status"
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 400
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Unauthorized access"
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 401
+ *       403:
+ *         description: Forbidden - User is not fund manager or admin
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Access denied. Fund manager or admin role required"
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 403
+ *       404:
+ *         description: Fund or investor not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Fund or investor not found"
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 404
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 500
  */
 export default FundRouter;

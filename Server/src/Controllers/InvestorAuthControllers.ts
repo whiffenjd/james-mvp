@@ -4,7 +4,7 @@ import { registerInvestor } from '../Services/AuthServices';
 export const signupInvestor = async (req: Request, res: Response) => {
   try {
     const { name, email, password, referralId } = req.body;
-    console.log('referralID', referralId);
+
     const result = await registerInvestor(name, email, password, referralId);
 
     res.status(200).json({

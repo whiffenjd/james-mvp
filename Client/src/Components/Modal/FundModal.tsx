@@ -104,7 +104,6 @@ const FundModal: React.FC<FundModalProps> = ({
         name: investor.name,
       }));
       setInvestorOptions(options);
-      console.log("Investor options updated:", options);
     }
   }, [investorsData]);
 
@@ -229,7 +228,6 @@ const FundModal: React.FC<FundModalProps> = ({
   const handleEditInvestor = (id: string): void => {
     const selected = investors.find((inv) => inv.id === id);
     if (selected) {
-      console.log("Editing investor:", selected);
       setInvestor({ id: selected.id, name: selected.name });
       setAmount(selected.amount);
       setFiles(selected.files);

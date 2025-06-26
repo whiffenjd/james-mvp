@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import FundService from '../Services/FundServices';
 import { FundCreationUpdateHelper } from '../Utils/FundCreationUpdatehelper';
+import { S3DocumentCleanupHelper } from '../Utils/S3DocumentCleanerHelper';
 
 export default class FundController {
   // Backend Controller Fix
@@ -267,6 +268,124 @@ export default class FundController {
     } catch (error) {
       console.error('getAllInvestorFunds Error:', error);
       return FundCreationUpdateHelper.sendErrorResponse(res, 'Failed to fetch investor funds', 500);
+    }
+  }
+
+  static async signInvestorFunds(req: Request, res: Response): Promise<Response> {
+    try {
+      const userRole = req.user?.role as string;
+      const isFundManager = userRole === 'fundManager';
+      const isAdmin = userRole === 'admin';
+
+      // Fixed logic: Only allow fundManager OR admin (not when both are true)
+      if (isFundManager && isAdmin) {
+        return FundCreationUpdateHelper.sendErrorResponse(
+          res,
+          'You are not allowed to sign investor funds.',
+          403,
+        );
+      }
+
+      const fundId = req.params.fundId;
+      const investorId = req.params.investorId;
+
+      const { status } = req.body as { status: string };
+      const files = req.files as Express.MulterS3.File[]; // safe cast
+      const file = files?.[0]; // pick the first uploaded file
+
+      console.log('request body', status);
+      if (!file) {
+        return FundCreationUpdateHelper.sendErrorResponse(
+          res,
+          'Document file is required for signing',
+          400,
+        );
+      }
+
+      // Get the fund
+      const fund = await FundService.findById(fundId);
+      if (!fund) {
+        return FundCreationUpdateHelper.sendErrorResponse(res, 'Fund not found', 404);
+      }
+
+      // Find the investor
+      const investors = Array.isArray(fund.investors) ? fund.investors : [];
+      const investorIndex = investors.findIndex((inv) => inv.investorId === investorId);
+
+      if (investorIndex === -1) {
+        return FundCreationUpdateHelper.sendErrorResponse(
+          res,
+          'Investor not found in this fund',
+          404,
+        );
+      }
+
+      const oldInvestor = investors[investorIndex];
+      const oldDocumentUrl = oldInvestor.documentUrl;
+
+      // Update the investor
+      const updatedInvestor: Investor = {
+        ...oldInvestor,
+        status: status === 'true' || status === true, // Convert string to boolean
+        documentUrl: file.location,
+        documentName: file.originalname,
+      };
+
+      // Update the fund's investors array
+      investors[investorIndex] = updatedInvestor;
+
+      // Update the fund in database first
+      await FundService.updateInvestor(fundId, investors);
+
+      // Delete old document from S3 if exists and is different from new one
+      if (
+        oldDocumentUrl &&
+        oldDocumentUrl !== file.location && // Make sure we're not deleting the same file
+        S3DocumentCleanupHelper.isValidS3Url(oldDocumentUrl)
+      ) {
+        const bucketName = process.env.BUCKET_NAME;
+        if (bucketName) {
+          console.log(`Deleting old document from S3: ${oldDocumentUrl}`);
+          let deleteSuccess = await S3DocumentCleanupHelper.deleteFromS3(
+            oldDocumentUrl,
+            bucketName,
+          );
+
+          if (deleteSuccess) {
+            console.log(`Successfully deleted old document: ${oldDocumentUrl}`);
+          } else {
+            console.error(`Primary deletion method failed, trying alternative method...`);
+            // Try alternative deletion method
+            deleteSuccess = await S3DocumentCleanupHelper.deleteFromS3Alternative(
+              oldDocumentUrl,
+              bucketName,
+            );
+            if (deleteSuccess) {
+              console.log(
+                `Successfully deleted old document using alternative method: ${oldDocumentUrl}`,
+              );
+            } else {
+              console.error(`Both deletion methods failed for: ${oldDocumentUrl}`);
+            }
+          }
+        } else {
+          console.error('BUCKET_NAME environment variable is not set');
+        }
+      }
+
+      return FundCreationUpdateHelper.sendSuccessResponse(
+        res,
+        'Investor document signed and updated successfully',
+        200,
+        { investor: updatedInvestor },
+      );
+    } catch (error) {
+      console.error('signInvestorFunds Error:', error);
+      return FundCreationUpdateHelper.sendErrorResponse(
+        res,
+        error instanceof Error ? error.message : 'Failed to sign investor document',
+        500,
+      );
     }
   }
 }

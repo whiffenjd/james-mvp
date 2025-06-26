@@ -208,7 +208,7 @@ export const useUpdateFund = () => {
     onSuccess: () => {
       toast.success('Fund updated successfully!');
       queryClient.invalidateQueries({ queryKey: ['funds'] });
-      queryClient.invalidateQueries({ queryKey: ['fund', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['fund'] });
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.error || 

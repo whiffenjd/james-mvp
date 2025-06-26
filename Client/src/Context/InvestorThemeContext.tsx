@@ -58,7 +58,6 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
   const [currentTheme, setCurrentTheme] = useState<Theme | null>(defaultTheme);
   const [themeError, setThemeError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  console.log("prooo", user);
   // Only fetch data when user is authenticated and is an investor
   const shouldFetchThemes = isAuthenticated && userType === "investor";
 
@@ -100,7 +99,6 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
     selectedThemeId || "",
     shouldFetchThemes && !!selectedThemeId
   );
-  console.log("selectedThemeResponse:", currentThemeResponse);
   // Apply theme mutation
   const applyThemeMutation = useApplyTheme();
 
@@ -144,7 +142,6 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
 
     // ✅ FIXED: When no selectedThemeId, use default theme instead of null
     if (!selectedThemeId && !isAnyLoading) {
-      console.log("No selected theme ID found, applying default theme");
       setCurrentTheme(defaultTheme);
       setThemeError(null);
       setIsInitialized(true);
@@ -326,8 +323,6 @@ export const ThemeCSSInjector: React.FC = () => {
   useEffect(() => {
     // Always apply a theme (currentTheme should never be null now)
     const themeToApply = currentTheme || defaultTheme;
-
-    console.log("Applying theme:", themeToApply);
 
     // Apply theme CSS variables
     const root = document.documentElement;

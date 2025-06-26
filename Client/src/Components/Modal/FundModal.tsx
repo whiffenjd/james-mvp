@@ -147,7 +147,6 @@ const FundModal: React.FC<FundModalProps> = ({
         fundLifetime: initialData?.fundLifetime || "",
         fundDescription: initialData?.fundDescription || "",
       });
-      // console.log("Initial data for edit mode:", initialData);
 
       if (initialData?.investors) {
         const mappedInvestors = initialData.investors.map((inv) => ({
@@ -314,96 +313,8 @@ const FundModal: React.FC<FundModalProps> = ({
     } catch (error) {
       toast.error(error.message || "Failed to create fund");
       setCreating(false);
-
-      // Error handling is already done in useCreateFund
     }
   };
-
-  // const handleUpdate = async (id: string) => {
-  //   if (!validateForm()) return;
-
-  //   try {
-  //     // Prepare the data object
-  //     const updateData = {
-  //       name: formData.name,
-  //       fundSize: formData.fundSize,
-  //       fundType: formData.fundType,
-  //       targetGeographies: formData.targetGeographies,
-  //       targetSectors: formData.targetSectors,
-  //       targetMOIC: formData.targetMOIC,
-  //       targetIRR: formData.targetIRR,
-  //       minimumInvestment: formData.minimumInvestment,
-  //       fundLifetime: formData.fundLifetime,
-  //       fundDescription: formData.fundDescription,
-  //       existingDocuments: documents
-  //         .filter((doc) => doc.url) // Only include existing S3 links in edit mode
-  //         .map((doc) => doc.url),
-  //       investors: investors.map((investor) => ({
-  //         investorId: investor.id,
-  //         name: investor.name,
-  //         amount: investor.amount,
-  //         documentUrl: investor.files?.[0]?.name || "", // Assuming files[0] contains the URL in edit mode
-  //         addedAt: new Date().toISOString(),
-  //       })),
-  //     };
-
-  //     // Prepare FormData for multipart request
-  //     const formDataToSend = new FormData();
-  //     formDataToSend.append("data", JSON.stringify(updateData));
-
-  //     // Add new documents if any
-  //     documents
-  //       .filter((doc) => doc.file) // Only include new files in create mode
-  //       .forEach((doc) => {
-  //         if (doc.file) {
-  //           formDataToSend.append("fundDocuments", doc.file);
-  //         }
-  //       });
-
-  //     // Add investor documents
-  //     investors.forEach((investor, index) => {
-  //       if (
-  //         investor.files &&
-  //         investor.files.length > 0 &&
-  //         investor.files[0] instanceof File
-  //       ) {
-  //         formDataToSend.append(`investorDocument_${index}`, investor.files[0]);
-  //       }
-  //     });
-
-  //     // For now, just console.log the data structure
-  //     console.log("Data to be sent:", {
-  //       id,
-  //       data: updateData,
-  //       fundDocuments: documents
-  //         .filter((doc) => doc.file)
-  //         .map((doc) => doc.file?.name),
-  //       investorDocuments: investors.map((inv, idx) => ({
-  //         index: idx,
-  //         document: inv.files?.[0]?.name,
-  //       })),
-  //     });
-  //     try {
-  //       await useUpdateFund.mutateAsync({
-  //         ...formData,
-  //         documents,
-  //         investors,
-  //       });
-
-  //       // Reset form and close modal on success
-  //       handleReset();
-  //       onClose();
-  //     } catch (error) {
-  //       toast.error(error.message || "Failed to create fund");
-  //       // Error handling is already done in useCreateFund
-  //     }
-
-  //     toast.success("Fund updated successfully (console logged)");
-  //     // onClose();
-  //   } catch (error) {
-  //     toast.error(error.message || "Failed to update fund");
-  //   }
-  // };
 
   const handleUpdate = async (id: string) => {
     if (!validateForm()) return;
@@ -452,13 +363,7 @@ const FundModal: React.FC<FundModalProps> = ({
           investorDocuments[index] = investor.files[0];
         }
       });
-      console.log("dts", {
-        id: initialData?.id,
-        data: updateData,
-        fundDocuments,
-        investorDocuments,
-      });
-      // 🔥 Actually call the mutation
+
       await UpdateFund.mutateAsync({
         id: initialData?.id,
         data: updateData,
@@ -474,8 +379,6 @@ const FundModal: React.FC<FundModalProps> = ({
       setCreating(false);
     }
   };
-
-  console.log("Form previewSrc:", previewSrc);
 
   if (!isOpen) return null;
 
@@ -761,7 +664,6 @@ const FundModal: React.FC<FundModalProps> = ({
                         {mode === "edit" ? (
                           <button
                             onClick={() => {
-                              console.log("Previewing document:", doc);
                               setPreviewSrc(doc.url);
                               setPreviewFile(doc.file);
                             }}

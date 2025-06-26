@@ -20,18 +20,13 @@ const FundsAndReportingInvestors: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  console.log("User data:", user);
   const { isLoading, error, refreshInvestorFunds } = useInvestorFunds();
   const funds = useAppSelector((state) => state.investorFunds.funds);
 
-  console.log("Funds from Redux:", funds);
-
   useEffect(() => {
-    console.log("Funds data:", funds);
     if (funds && funds?.length > 0) {
       setFundsData(funds);
     }
-    console.log("fundsData:", fundsData);
   }, [isLoading, funds, user]);
 
   const sampleEditData: Partial<FormData> = {

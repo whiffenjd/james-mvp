@@ -24,20 +24,15 @@ const FundsAndReporting: React.FC = () => {
   const { isLoading, error } = useFunds();
   const { user } = useAuth();
 
-  console.log("User data:", user);
-
   const funds = useAppSelector((state) => state.funds.allFunds);
 
   useEffect(() => {
-    console.log("Funds data:", funds);
     if (funds && funds?.data?.length > 0) {
       setFundsData(funds?.data);
     }
-    console.log("fundsData:", fundsData);
   }, [isLoading, funds, user]);
 
   const handleSubmit = (data: SubmitData): void => {
-    console.log("Form submitted:", data);
     setIsModalOpen(false);
   };
 

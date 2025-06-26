@@ -27,8 +27,6 @@ const InvestorsProject = (props: Props) => {
   const [activeTab, setActiveTab] = useState(tabFromUrl);
   const fund = useAppSelector((state) => state.funds.currentFund);
 
-  console.log("Current Fund Data://", fund);
-
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
     setSearchParams({ tab: tabId });

@@ -18,8 +18,6 @@ const Login = () => {
   const logoimg = null;
   const funds = useAppSelector((state) => state.funds.allFunds);
 
-  console.log("funds on login", funds);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));

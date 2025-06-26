@@ -57,14 +57,11 @@ const Overview = () => {
 
   useEffect(() => {
     if (fund) {
-      console.log("Current Fund Data:", fund);
       setFundData(fund?.result || {});
     } else {
       console.log("No fund data available");
     }
   }, [fund, isLoading]);
-
-  console.log("Project ID:", id);
 
   if (isLoading) {
     return <BasicLoader />;

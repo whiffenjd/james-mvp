@@ -13,7 +13,6 @@ const ThemeContainer: React.FC<ThemeContainerProps> = ({
   applyGlobally = false,
 }) => {
   const { currentTheme } = useTheme();
-  console.log("currentTheme", currentTheme);
   // Apply CSS variables to document root if applyGlobally is true
   useEffect(() => {
     if (applyGlobally && currentTheme) {

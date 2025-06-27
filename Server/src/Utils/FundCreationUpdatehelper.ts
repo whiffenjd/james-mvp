@@ -16,6 +16,7 @@ export interface Investor {
   documentUrl?: string;
   documentName?: string;
   addedAt: string;
+  
 }
 
 export interface FundCreateRequest {

@@ -1,6 +1,6 @@
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument } from "pdf-lib";
 
-export async function signPdf(pdfBuffer, signatureDataURL) {
+export async function signPdf(pdfBuffer: Uint8Array, signatureDataURL: string): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.load(pdfBuffer);
 
   const pages = pdfDoc.getPages();
@@ -9,7 +9,7 @@ export async function signPdf(pdfBuffer, signatureDataURL) {
   const pngImage = await pdfDoc.embedPng(signatureDataURL);
   const pngDims = pngImage.scale(0.5);
 
-  const { width, height } = firstPage.getSize();
+  const { width } = firstPage.getSize();
 
   // Draw signature in bottom-right corner
   firstPage.drawImage(pngImage, {

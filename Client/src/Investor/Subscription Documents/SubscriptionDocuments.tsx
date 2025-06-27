@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../Context/AuthContext";
 import { useInvestorFunds } from "../../FundManager/hooks/useInvestorFunds";
 import { useAppSelector } from "../../Redux/hooks";
@@ -7,26 +7,32 @@ import { X } from "lucide-react";
 import SignaturePad from "react-signature-pad-wrapper";
 import toast from "react-hot-toast";
 import { useInvestorDocuments } from "../hooks/useInvestorDocuments";
+import type { InvestorFundSummary } from "../../API/Endpoints/Funds/funds";
 
-type Props = {};
-
-const SubscriptionDocuments = (props: Props) => {
-  const [fundsData, setFundsData] = useState<Partial<FormData[]>>([]);
+const SubscriptionDocuments = () => {
+  const [fundsData, setFundsData] = useState<InvestorFundSummary[]>([]);
   const [pdfSrc, setPdfSrc] = useState<string | null>(null);
   const { user } = useAuth();
-  const [signature, setSignature] = useState(null);
-  const [currentFund, setCurrentFund] = useState(null);
+  const [signature, setSignature] = useState<string | null>(null);
+  const [currentFund, setCurrentFund] = useState<InvestorFundSummary | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
   const { signAndUploadDocument } = useInvestorDocuments();
 
-  const padRef = useRef();
+  const padRef = useRef<SignaturePad>(null);
 
   const handleSave = () => {
     const dataURL = padRef.current?.toDataURL("image/png");
-    setSignature(dataURL);
+    // setSignature(dataURL);
+    if (dataURL) {
+      setSignature(dataURL);
+    } else {
+      setSignature(null);
+    }
   };
 
-  const { isLoading, error, refreshInvestorFunds } = useInvestorFunds();
+  const { isLoading } = useInvestorFunds();
   const funds = useAppSelector((state) => state.investorFunds.funds);
 
   useEffect(() => {
@@ -35,7 +41,7 @@ const SubscriptionDocuments = (props: Props) => {
     }
   }, [isLoading, funds, user]);
 
-  const handleAgreement = (fund) => {
+  const handleAgreement = (fund: InvestorFundSummary) => {
     if (fund) {
       setCurrentFund(fund);
       setPdfSrc(fund.investors[0].documentUrl);
@@ -59,8 +65,6 @@ const SubscriptionDocuments = (props: Props) => {
       return;
     }
 
-    const firstInvestor = currentFund.investors[0];
-
     if (!currentFund.investors[0].documentUrl) {
       toast.error("No document URL found for the first investor");
       return;
@@ -74,7 +78,7 @@ const SubscriptionDocuments = (props: Props) => {
     try {
       setLoading(true);
 
-      const response = await signAndUploadDocument(
+      await signAndUploadDocument(
         currentFund.id,
         currentFund.investors[0].investorId,
         currentFund.investors[0].documentUrl,
@@ -86,7 +90,12 @@ const SubscriptionDocuments = (props: Props) => {
       setSignature(null);
       toast.success("PDF Agreement Updated!");
     } catch (error) {
-      toast.error(`Failed to sign and upload document: ${error.message}`);
+      // toast.error(`Failed to sign and upload document: ${error.message}`);
+      if (error instanceof Error) {
+        toast.error(`Failed to sign and upload document: ${error.message}`);
+      } else {
+        toast.error("Failed to sign and upload document");
+      }
     } finally {
       setLoading(false);
     }
@@ -108,14 +117,14 @@ const SubscriptionDocuments = (props: Props) => {
     {
       title: "Status",
       key: "status",
-      render: (row) => (
+      render: (row: InvestorFundSummary) => (
         <span>{row.investors[0].status ? "Signed" : "Pending"}</span>
       ),
     },
     {
       title: "Details",
       key: "action",
-      render: (row) =>
+      render: (row: InvestorFundSummary) =>
         row.investors[0].status === true ? (
           <button
             onClick={() => {
@@ -188,8 +197,8 @@ const SubscriptionDocuments = (props: Props) => {
                       backgroundColor: "rgba(255,255,255,1)",
                     }}
                     canvasProps={{
-                      width: 350,
-                      height: 200,
+                      width: "350",
+                      height: "200",
                       className: "border rounded",
                     }}
                   />

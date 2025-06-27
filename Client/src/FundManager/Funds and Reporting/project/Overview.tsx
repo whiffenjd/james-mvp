@@ -1,39 +1,32 @@
-import {
-  PenLine,
-  Users,
-  TrendingUp,
-  BarChart3,
-  FileText,
-  X,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { Users, TrendingUp, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useFundById } from "../../hooks/useFundById";
 import { useAppSelector } from "../../../Redux/hooks";
 import BasicLoader from "../../../Components/Loader/BasicLoader";
-
-const fundingData = {
-  allInvestors: 200,
-  totalFundsNeeded: "$18000",
-  fundsCollected: "84%",
-};
+import type {
+  FundDetail,
+  FundDocument,
+} from "../../../Redux/features/Funds/fundsSlice";
 
 const Overview = () => {
   const { id } = useParams<{ id: string }>();
-  const [fundData, setFundData] = useState({});
-  const { isLoading, error } = useFundById(id || "");
+  const [fundData, setFundData] = useState<FundDetail | null>(null);
+  const { isLoading } = useFundById(id || "");
   const fund = useAppSelector((state) => state.funds.currentFund);
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [selectedPdf, setSelectedPdf] = useState("");
   const [currentDocIndex, setCurrentDocIndex] = useState(0);
   const documents = fundData?.documents || [];
 
-  const openPdfModal = (pdfUrl, index = 0) => {
-    setSelectedPdf(pdfUrl);
-    setCurrentDocIndex(index);
-    setShowPdfModal(true);
+  console.log("fundmanager Fund Data:", fundData);
+
+  const openPdfModal = (pdfUrl: string | undefined, index: number = 0) => {
+    if (pdfUrl) {
+      setSelectedPdf(pdfUrl);
+      setCurrentDocIndex(index);
+      setShowPdfModal(true);
+    }
   };
 
   const closePdfModal = () => {
@@ -42,7 +35,7 @@ const Overview = () => {
     setCurrentDocIndex(0);
   };
 
-  const navigateToDocument = (direction) => {
+  const navigateToDocument = (direction: "next" | "prev") => {
     let newIndex;
     if (direction === "next") {
       newIndex =
@@ -57,7 +50,8 @@ const Overview = () => {
 
   useEffect(() => {
     if (fund) {
-      setFundData(fund?.result || {});
+      console.log("Fund data fetched:", fund);
+      setFundData(fund?.result);
     } else {
       console.log("No fund data available");
     }
@@ -74,10 +68,12 @@ const Overview = () => {
         <div className="bg-white rounded-lg p-6 mb-6">
           <div className="flex justify-between items-start mb-6">
             <h2 className="text-base lg:text-lg font-semibold  text-theme-primary-text">
-              {fundData.projectName}
+              {fundData?.name}
             </h2>
             <span className="text-sm text-theme-secondary-text  font-semibold font-poppins ">
-              {fundData.date}
+              {fundData?.createdAt
+                ? new Date(fundData.createdAt).toLocaleDateString("en-US")
+                : "N/A"}
             </span>
           </div>
 
@@ -87,7 +83,7 @@ const Overview = () => {
                 Fund Type
               </div>
               <div className="text-theme-secondary-text">
-                {fundData.fundType}
+                {fundData?.fundType}
               </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
@@ -95,7 +91,7 @@ const Overview = () => {
                 Fund Size
               </div>
               <div className="text-theme-secondary-text">
-                {fundData.fundSize}
+                {fundData?.fundSize}
               </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
@@ -103,7 +99,7 @@ const Overview = () => {
                 Target Geographies
               </div>
               <div className="text-theme-secondary-text">
-                {fundData.targetGeographies}
+                {fundData?.targetGeographies}
               </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
@@ -111,7 +107,7 @@ const Overview = () => {
                 Target Sectors
               </div>
               <div className="text-theme-secondary-text">
-                {fundData.targetSectors}
+                {fundData?.targetSectors}
               </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
@@ -119,7 +115,7 @@ const Overview = () => {
                 Target MOIC
               </div>
               <div className="text-theme-secondary-text">
-                {fundData.targetMOIC}
+                {fundData?.targetMOIC}
               </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
@@ -127,7 +123,7 @@ const Overview = () => {
                 Target IRR
               </div>
               <div className="text-theme-secondary-text">
-                {fundData.targetIRR}
+                {fundData?.targetIRR}
               </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
@@ -135,7 +131,7 @@ const Overview = () => {
                 Minimum Investment
               </div>
               <div className="text-theme-secondary-text">
-                {fundData.minimumInvestment}
+                {fundData?.minimumInvestment}
               </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
@@ -143,7 +139,7 @@ const Overview = () => {
                 Fund Lifetime
               </div>
               <div className="text-theme-secondary-text">
-                {fundData.fundLifetime}
+                {fundData?.fundLifetime}
               </div>
             </div>
           </div>
@@ -153,61 +149,10 @@ const Overview = () => {
               Fund Description
             </div>
             <div className="text-theme-secondary-text text-sm leading-relaxed bg-gray-100 border p-4 rounded-lg">
-              {fundData.fundDescription}
+              {fundData?.fundDescription}
             </div>
           </div>
 
-          {/* Fundraising Documents */}
-          {/* <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Fundraising Documents
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gray-100 border rounded-lg p-4 text-center">
-                <div className="w-12 h-12 bg-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-sm text-theme-primary-text mb-1">
-                  All Investors
-                </div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {fundingData.allInvestors}
-                </div>
-              </div>
-              <div className="bg-gray-100 border rounded-lg p-4 text-center">
-                <div className="w-12 h-12 bg-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-sm text-theme-primary-text mb-1">
-                  Total Funds Needed
-                </div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {fundingData.totalFundsNeeded}
-                </div>
-              </div>
-              <div className="bg-gray-100 border rounded-lg p-4 text-center">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className="w-8 h-8 bg-gray-300 rounded-full border-2 border-white"
-                      ></div>
-                    ))}
-                    <div className="w-8 h-8 bg-gray-400 rounded-full border-2 border-white flex items-center justify-center">
-                      <span className="text-xs text-white">5+</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-sm text-theme-primary-text mb-1">
-                  Funds Collected
-                </div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {fundingData.fundsCollected}
-                </div>
-              </div>
-            </div>
-          </div> */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className=" border rounded-lg p-4 text-center">
               <div className="flex items-center justify-start my-3  gap-4">
@@ -216,7 +161,6 @@ const Overview = () => {
                 </div>
               </div>
 
-              {/* <div className="text-2xl font-bold text-gray-900  mt-10 bg-gray-100 rounded-[10px] p-4 w-[50%] mx-auto relative"></div> */}
               <button
                 onClick={() => openPdfModal(fundData?.documents[0]?.fileUrl, 0)}
                 className="bg-theme-sidebar-accent text-white px-4 py-2 rounded-md text-sm font-medium transition-colors mt-8 mb-8"
@@ -309,7 +253,7 @@ const Overview = () => {
             {documents.length > 1 && (
               <div className="flex justify-center items-center p-4">
                 <div className="flex items-center gap-2">
-                  {documents.map((_, index) => (
+                  {documents.map((_: FundDocument, index: number) => (
                     <button
                       key={index}
                       onClick={() => {

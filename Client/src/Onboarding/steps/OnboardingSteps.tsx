@@ -12,229 +12,227 @@ import { ProgressIndicator } from "./ProgressIndicator";
 import { SelfCertifiedSophisticatedStep } from "./SelfCertifiedSophisticatedStep";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, LogOut, RotateCcw } from "lucide-react";
+import { Loader2, LogOut } from "lucide-react";
 
 import { OnboardingComplete } from "./OnboardingComplete";
 
-
 const OnboardingStatus = ({
-    status,
-    rejectionNote
+  status,
+  rejectionNote,
 }: {
-    status: string;
-    rejectionNote?: string;
+  status: string;
+  rejectionNote?: string;
 }) => (
-    <div className="my-6 px-4">
-        <div className={`rounded-xl p-5 shadow-sm border
-            ${status === 'pending'
-                ? 'bg-yellow-50 border-yellow-200'
-                : status === 'rejected'
-                    ? 'bg-red-50 border-red-200'
-                    : 'bg-gray-50 border-gray-200'
-            }`
-        }>
-            <div className="flex items-center gap-2 mb-2">
-                <span className="font-semibold text-lg">
-                    {status === 'pending' && '⏳'}
-                    {status === 'rejected' && '❌'}
-
-                </span>
-                <span className="font-semibold text-gray-800 text-lg capitalize">
-                    {status}
-                </span>
-            </div>
-            {rejectionNote && (
-                <div className="mt-2 text-sm text-red-600">
-                    {rejectionNote}
-                </div>
-            )}
-            <div className="mt-2 text-sm text-gray-600">
-                {status === 'pending'
-                    ? 'Your submission is under review.'
-                    : status === 'rejected'
-                        ? 'Please review the reason and resubmit.'
-                        : 'You have completed onboarding.'}
-            </div>
-        </div>
+  <div className="my-6 px-4">
+    <div
+      className={`rounded-xl p-5 shadow-sm border
+            ${
+              status === "pending"
+                ? "bg-yellow-50 border-yellow-200"
+                : status === "rejected"
+                ? "bg-red-50 border-red-200"
+                : "bg-gray-50 border-gray-200"
+            }`}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <span className="font-semibold text-lg">
+          {status === "pending" && "⏳"}
+          {status === "rejected" && "❌"}
+        </span>
+        <span className="font-semibold text-gray-800 text-lg capitalize">
+          {status}
+        </span>
+      </div>
+      {rejectionNote && (
+        <div className="mt-2 text-sm text-red-600">{rejectionNote}</div>
+      )}
+      <div className="mt-2 text-sm text-gray-600">
+        {status === "pending"
+          ? "Your submission is under review."
+          : status === "rejected"
+          ? "Please review the reason and resubmit."
+          : "You have completed onboarding."}
+      </div>
     </div>
+  </div>
 );
 
-
-
-
 export function OnboardingSteps() {
-    const { state, dispatch, updateFormData } = useOnboarding();
-    const { user, logout, updateOnboardingStatus } = useAuth();
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
-    // Only fetch onboarding info if user has onboarding status
-    const { data: onboardingInfo, isLoading: isLoadingOnboarding, refetch } = useOnboardingInfo({
-        enabled: !!user?.onboardingStatus // Only run query if onboardingStatus exists
-
+  const { state, dispatch, updateFormData } = useOnboarding();
+  const { user, logout, updateOnboardingStatus } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  // Only fetch onboarding info if user has onboarding status
+  const { data: onboardingInfo, isLoading: isLoadingOnboarding } =
+    useOnboardingInfo({
+      enabled: !!user?.onboardingStatus, // Only run query if onboardingStatus exists
     });
 
-    // Effect to handle existing onboarding data
-    useEffect(() => {
-        if (user?.onboardingStatus && onboardingInfo?.data?.formData) {
-            const updateStates = async () => {
-                try {
-                    // Clear existing form data
-                    dispatch({ type: 'RESET_FORM' });
+  // Effect to handle existing onboarding data
+  useEffect(() => {
+    if (user?.onboardingStatus && onboardingInfo?.data?.formData) {
+      const updateStates = async () => {
+        try {
+          // Clear existing form data
+          dispatch({ type: "RESET_FORM" });
 
-                    // Wait for form data update to complete
-                    await new Promise<void>(resolve => {
-                        if (onboardingInfo.data) {
-                            updateFormData(onboardingInfo.data.formData);
-                        }
-                        setTimeout(resolve, 100);
-                    });
+          // Wait for form data update to complete
+          await new Promise<void>((resolve) => {
+            if (onboardingInfo.data) {
+              updateFormData(onboardingInfo.data.formData);
+            }
+            setTimeout(resolve, 100);
+          });
 
-                    // Set to last step based on investor type, with null check
-                    const investorType = onboardingInfo.data?.formData?.investorType;
-                    const lastStep = investorType === 'individual' ? 5 : 4;
-                    dispatch({ type: 'SET_STEP', payload: lastStep });
-                    if (onboardingInfo?.data?.status === 'approved' && user?.onboardingStatus?.status !== 'approved') {
-                        updateOnboardingStatus('approved');
-                        return;
-                    }
-                    // Show status messages with null checks
-                    if (user.onboardingStatus && user.onboardingStatus.status === 'rejected') {
-                        toast.error("Your previous submission was rejected.");
-                    } else if (user.onboardingStatus && user.onboardingStatus.status === 'pending') {
-                        toast.error('Your onboarding submission is pending approval');
-                    }
-                } catch (error) {
-                    console.error('Error updating onboarding state:', error);
-                }
-            };
-
-            updateStates();
+          // Set to last step based on investor type, with null check
+          const investorType = onboardingInfo.data?.formData?.investorType;
+          const lastStep = investorType === "individual" ? 5 : 4;
+          dispatch({ type: "SET_STEP", payload: lastStep });
+          if (
+            onboardingInfo?.data?.status === "approved" &&
+            user?.onboardingStatus?.status !== "approved"
+          ) {
+            updateOnboardingStatus("approved");
+            return;
+          }
+          // Show status messages with null checks
+          if (
+            user.onboardingStatus &&
+            user.onboardingStatus.status === "rejected"
+          ) {
+            toast.error("Your previous submission was rejected.");
+          } else if (
+            user.onboardingStatus &&
+            user.onboardingStatus.status === "pending"
+          ) {
+            toast.error("Your onboarding submission is pending approval");
+          }
+        } catch (error) {
+          console.error("Error updating onboarding state:", error);
         }
-    }, [user?.onboardingStatus, onboardingInfo?.data?.formData]);
+      };
 
+      updateStates();
+    }
+  }, [user?.onboardingStatus, onboardingInfo?.data?.formData]);
 
+  const handleLogout = () => {
+    logout(setIsLoggingOut);
+  };
 
-    const handleLogout = () => {
-        logout(setIsLoggingOut);
-    };
+  // Show loading state only if we're actually fetching data
+  if (user?.onboardingStatus && isLoadingOnboarding) {
+    return (
+      <div className="w-screen h-screen flex flex-col items-center justify-center">
+        <Loader2 className="animate-spin h-8 w-8 mb-4 text-teal-600" />
+        <p className="text-gray-600">Loading your onboarding information...</p>
+      </div>
+    );
+  }
 
-    // Show loading state only if we're actually fetching data
-    if (user?.onboardingStatus && isLoadingOnboarding) {
-        return (
-            <div className="w-screen h-screen flex flex-col items-center justify-center">
-                <Loader2 className="animate-spin h-8 w-8 mb-4 text-teal-600" />
-                <p className="text-gray-600">Loading your onboarding information...</p>
-            </div>
-        );
+  // Helper to get total steps based on investor type
+  const getTotalSteps = () =>
+    state.formData.investorType === "individual" ? 5 : 4;
+
+  const renderCurrentStep = () => {
+    const totalSteps = getTotalSteps();
+    // If there's existing onboarding data, show status at the last step
+    if (user?.onboardingStatus?.status === "approved" && !user?.isOnboarded) {
+      return <OnboardingComplete />;
+    }
+    if (user?.onboardingStatus && state.currentStep === totalSteps) {
+      return (
+        <>
+          <OnboardingStatus
+            status={user.onboardingStatus.status}
+            rejectionNote={user?.onboardingStatus?.rejectionNote ?? undefined}
+          />
+          {/* Still show the document upload step below the status */}
+          {state.formData.investorType === "individual" ? (
+            <DocumentUploadStep />
+          ) : (
+            <DocumentUploadStepEntity />
+          )}
+        </>
+      );
     }
 
-
-
-    // Helper to get total steps based on investor type
-    const getTotalSteps = () => state.formData.investorType === 'individual' ? 5 : 4;
-
-    const renderCurrentStep = () => {
-        const totalSteps = getTotalSteps();
-        // If there's existing onboarding data, show status at the last step
-        if (user?.onboardingStatus?.status === "approved" && !user?.isOnboarded) {
-            return (
-                <OnboardingComplete />
-            )
+    switch (state.currentStep) {
+      case 1:
+        return <JurisdictionStep />;
+      case 2:
+        return <InvestorTypeStep />;
+      case 3:
+        if (state.formData.investorType === "individual") {
+          return <IndividualInvestorTypeStep />;
         }
-        if (
-            user?.onboardingStatus &&
-            state.currentStep === totalSteps
-        ) {
-            return (
-                <>
-                    <OnboardingStatus
-                        status={user.onboardingStatus.status}
-                        rejectionNote={user?.onboardingStatus?.rejectionNote ?? undefined}
-                    />
-                    {/* Still show the document upload step below the status */}
-                    {state.formData.investorType === 'individual'
-                        ? <DocumentUploadStep />
-                        : <DocumentUploadStepEntity />
-                    }
-                </>
-            );
+        return <EntityClassificationStep />;
+      case 4:
+        if (state.formData.investorType === "individual") {
+          if (state.formData.individualInvestorType === "high_net_worth") {
+            return <HighNetWorthQualificationStep />;
+          } else if (
+            state.formData.individualInvestorType ===
+            "self_certified_sophisticated_investor"
+          ) {
+            return <SelfCertifiedSophisticatedStep />;
+          }
+          return <div>Step not found</div>;
         }
-
-
-        switch (state.currentStep) {
-            case 1:
-                return <JurisdictionStep />;
-            case 2:
-                return <InvestorTypeStep />;
-            case 3:
-                if (state.formData.investorType === 'individual') {
-                    return <IndividualInvestorTypeStep />;
-                }
-                return <EntityClassificationStep />;
-            case 4:
-                if (state.formData.investorType === 'individual') {
-                    if (state.formData.individualInvestorType === 'high_net_worth') {
-                        return <HighNetWorthQualificationStep />;
-                    } else if (state.formData.individualInvestorType === 'self_certified_sophisticated_investor') {
-                        return <SelfCertifiedSophisticatedStep />
-                    }
-                    return <div>Step not found</div>;
-                }
-                return <DocumentUploadStepEntity />;
-            case 5:
-                if (state.formData.investorType === 'individual') {
-                    return <DocumentUploadStep />;
-                }
-                if (state.formData.investorType === 'entity') {
-                    return <DocumentUploadStepEntity />;
-                }
-                return <div>Step not found</div>;
-            default:
-                return <div>Step not found</div>;
+        return <DocumentUploadStepEntity />;
+      case 5:
+        if (state.formData.investorType === "individual") {
+          return <DocumentUploadStep />;
         }
-    };
+        if (state.formData.investorType === "entity") {
+          return <DocumentUploadStepEntity />;
+        }
+        return <div>Step not found</div>;
+      default:
+        return <div>Step not found</div>;
+    }
+  };
 
-    return (
-        <div className="w-screen h-screen min-h-screen bg-[#2FB5B4] flex items-center justify-center overflow-auto relative">
+  return (
+    <div className="w-screen h-screen min-h-screen bg-[#2FB5B4] flex items-center justify-center overflow-auto relative">
+      <button
+        onClick={handleLogout}
+        disabled={isLoggingOut}
+        className="absolute top-4 right-4 bg-transparent hover:bg-neutral-200/60 dark:hover:bg-neutral-800/60 text-neutral-700 dark:text-neutral-200 px-3 py-2 rounded-lg transition-colors flex items-center gap-2"
+      >
+        {isLoggingOut ? (
+          <>
+            <Loader2 className="animate-spin w-4 h-4" />
+          </>
+        ) : (
+          <>
+            <LogOut className="w-4 h-4" />
+          </>
+        )}
+      </button>
 
-            <button
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className="absolute top-4 right-4 bg-transparent hover:bg-neutral-200/60 dark:hover:bg-neutral-800/60 text-neutral-700 dark:text-neutral-200 px-3 py-2 rounded-lg transition-colors flex items-center gap-2"
-            >
-                {isLoggingOut ? (
-                    <>
-                        <Loader2 className="animate-spin w-4 h-4" />
-
-                    </>
-                ) : (
-                    <>
-                        <LogOut className="w-4 h-4" />
-
-                    </>
-                )}
-            </button>
-
-            {/* Existing content */}
-            <div className="flex w-[90vw] h-[90vh] gap-4">
-                {/* Progress Sidebar */}
-                <div className="h-full bg-[#F4F4F5] rounded-2xl overflow-hidden">
-                    <ProgressIndicator />
+      {/* Existing content */}
+      <div className="flex w-[90vw] h-[90vh] gap-4">
+        {/* Progress Sidebar */}
+        <div className="h-full bg-[#F4F4F5] rounded-2xl overflow-hidden">
+          <ProgressIndicator />
+        </div>
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col bg-[#F4F4F5] p-10 rounded-3xl overflow-hidden">
+          <div className="w-full h-full flex flex-col">
+            {/* Header - Fixed height */}
+            <div className="flex-shrink-0">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-[#017776] rounded flex items-center justify-center">
+                    <span className="text-white font-bold">▲</span>
+                  </div>
+                  <span className="font-semibold text-[#017776] text-xl tracking-wide">
+                    LOGO
+                  </span>
                 </div>
-                {/* Main Content Area */}
-                <div className="flex-1 flex flex-col bg-[#F4F4F5] p-10 rounded-3xl overflow-hidden">
-                    <div className="w-full h-full flex flex-col">
-                        {/* Header - Fixed height */}
-                        <div className="flex-shrink-0">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-8 h-8 bg-[#017776] rounded flex items-center justify-center">
-                                        <span className="text-white font-bold">▲</span>
-                                    </div>
-                                    <span className="font-semibold text-[#017776] text-xl tracking-wide">LOGO</span>
-                                </div>
-                                <div className="flex items-center space-x-4 text-sm text-gray-700">
-                                    {/* Resync Button */}
-                                    {/* {user?.onboardingStatus && (
+                <div className="flex items-center space-x-4 text-sm text-gray-700">
+                  {/* Resync Button */}
+                  {/* {user?.onboardingStatus && (
                                         <button
                                             // onClick={async () => {
                                             //     await refetchOnboarding();
@@ -254,39 +252,46 @@ export function OnboardingSteps() {
 
                                         </button>
                                     )} */}
-                                    <span className="font-medium">Need Help?</span>
-                                    <span className="underline cursor-pointer">LogIn</span>
-                                </div>
-                            </div>
-
-
-                            <div className="mb-6">
-                                <h1 className="text-3xl font-playfair font-bold text-[#017776]">Investor OnBoarding</h1>
-                                <p className="tertiary-heading">Complete the Following steps to start investing</p>
-                            </div>
-                        </div>
-
-                        {/* Step Content - Scrollable */}
-                        <div className="flex-1 overflow-auto ">
-
-                            {renderCurrentStep()}
-                        </div>
-
-                        {/* Progress Indicator - Fixed at bottom */}
-                        <div className="flex-shrink-0 flex justify-center items-center mt-6">
-                            <div className="flex items-center space-x-2 mb-6">
-                                {Array.from({ length: getTotalSteps() }, (_, i) => i + 1).map((step) => (
-                                    <div key={step} className="flex items-center">
-                                        <div className={`h-2 w-16 rounded-full ${step <= state.currentStep ? 'bg-[#017776]' : 'bg-gray-200'
-                                            }`} />
-                                        {step < getTotalSteps() && <div className="w-2" />}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                  <span className="font-medium">Need Help?</span>
+                  <span className="underline cursor-pointer">LogIn</span>
                 </div>
+              </div>
+
+              <div className="mb-6">
+                <h1 className="text-3xl font-playfair font-bold text-[#017776]">
+                  Investor OnBoarding
+                </h1>
+                <p className="tertiary-heading">
+                  Complete the Following steps to start investing
+                </p>
+              </div>
             </div>
+
+            {/* Step Content - Scrollable */}
+            <div className="flex-1 overflow-auto ">{renderCurrentStep()}</div>
+
+            {/* Progress Indicator - Fixed at bottom */}
+            <div className="flex-shrink-0 flex justify-center items-center mt-6">
+              <div className="flex items-center space-x-2 mb-6">
+                {Array.from({ length: getTotalSteps() }, (_, i) => i + 1).map(
+                  (step) => (
+                    <div key={step} className="flex items-center">
+                      <div
+                        className={`h-2 w-16 rounded-full ${
+                          step <= state.currentStep
+                            ? "bg-[#017776]"
+                            : "bg-gray-200"
+                        }`}
+                      />
+                      {step < getTotalSteps() && <div className="w-2" />}
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

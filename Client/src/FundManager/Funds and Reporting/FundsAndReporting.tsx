@@ -6,52 +6,34 @@ import { useFunds } from "../hooks/useFunds";
 import { useAppSelector } from "../../Redux/hooks";
 import BasicLoader from "../../Components/Loader/BasicLoader";
 import { useAuth } from "../../Context/AuthContext";
-
-interface FundCard {
-  id: number;
-  title: string;
-  projectName: string;
-  description: string;
-  totalInvestors: number;
-  dateCreated: string;
-}
+import type { FundSummary } from "../../Redux/features/Funds/fundsSlice";
 
 const FundsAndReporting: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
-  const [fundsData, setFundsData] = useState<Partial<FormData[]>>([]);
+  const [fundsData, setFundsData] = useState<FundSummary[]>([]);
   const navigate = useNavigate();
-  const { isLoading, error } = useFunds();
+  const { isLoading } = useFunds();
   const { user } = useAuth();
 
   const funds = useAppSelector((state) => state.funds.allFunds);
 
   useEffect(() => {
-    if (funds && funds?.data?.length > 0) {
-      setFundsData(funds?.data);
+    console.log("Funds data:", funds);
+    if (funds && funds?.length > 0) {
+      setFundsData(funds);
+    } else {
+      setFundsData([]);
     }
   }, [isLoading, funds, user]);
 
-  const handleSubmit = (data: SubmitData): void => {
+  const handleSubmit = (): void => {
     setIsModalOpen(false);
   };
 
   const handleClose = (): void => {
     setIsModalOpen(false);
     setMode("create");
-  };
-
-  const sampleEditData: Partial<FormData> = {
-    name: "Growth Fund Alpha",
-    fundSize: "$50M",
-    fundType: "Growth Equity",
-    targetGeographies: "North America",
-    targetSectors: "Technology",
-    targetMOIC: "3.5x",
-    targetIRR: "25%",
-    minimumInvestment: "$1M",
-    fundLifetime: "7 years",
-    fundDescription: "Focused on growth-stage tech companies",
   };
 
   if (isLoading) {
@@ -78,7 +60,7 @@ const FundsAndReporting: React.FC = () => {
         {fundsData.length > 0 ? (
           <>
             {fundsData?.map((fund) => (
-              <div key={fund.id} className="relative mt-8 h-full">
+              <div key={fund?.id} className="relative mt-8 h-full">
                 {/* Circular Icon positioned at top-left */}
                 <div className="absolute -top-8 left-6 w-16 h-16 bg-white rounded-full border-2 border-theme-sidebar-accent flex items-center justify-center z-10 ">
                   <PiCoinsBold
@@ -92,7 +74,7 @@ const FundsAndReporting: React.FC = () => {
                   {/* Card Title */}
                   <div className="text-center mb-6">
                     <h2 className="text-base lg:text-xl font-poppins font-medium text-theme-primary-text">
-                      {fund.name}
+                      {fund?.name}
                     </h2>
                   </div>
 
@@ -103,7 +85,7 @@ const FundsAndReporting: React.FC = () => {
                         <img src="/assets/projectName.png" alt="project icon" />
                       </div>
                       <span className="text-sm lg:text-base font-medium text-theme-secondary-text">
-                        {fund.fundType}
+                        {fund?.fundType}
                       </span>
                     </div>
 
@@ -115,7 +97,7 @@ const FundsAndReporting: React.FC = () => {
                         />
                       </div>
                       <span className="text-sm lg:text-base font-medium text-theme-secondary-text">
-                        {fund.fundDescription}
+                        {fund?.fundDescription}
                       </span>
                     </div>
                   </div>
@@ -130,7 +112,7 @@ const FundsAndReporting: React.FC = () => {
                         Total Investors
                       </span>
                       <span className="text-sm lg:text-base font-semibold text-gray-800">
-                        {fund.investorCount}
+                        {fund?.investorCount}
                       </span>
                     </div>
 
@@ -140,7 +122,7 @@ const FundsAndReporting: React.FC = () => {
                       </span>
                       <span className="text-sm lg:text-base font-semibold text-gray-800">
                         {/* {fund.createdAt} */}
-                        {new Date(fund.createdAt).toLocaleDateString("en-US")}
+                        {new Date(fund?.createdAt).toLocaleDateString("en-US")}
                       </span>
                     </div>
                   </div>
@@ -174,7 +156,6 @@ const FundsAndReporting: React.FC = () => {
         onClose={handleClose}
         onSubmit={handleSubmit}
         mode={mode}
-        initialData={mode === "edit" ? sampleEditData : null}
       />
     </div>
   );

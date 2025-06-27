@@ -11,11 +11,13 @@ export const useFunds = () => {
   const {user}=useAuth();
   
   const { 
-    data: funds, 
+    data: funds, // Assuming the data structure is { data: FundSummary[] }
     isLoading, 
     error,
     isFetching
   } = useGetAllFundsQuery();
+
+  console.log("Funds data:", funds);  
 
   // Sync loading state
   useEffect(() => {
@@ -35,6 +37,7 @@ export const useFunds = () => {
   useEffect(() => {
     if (funds && user?.id) {
       console.log("Funds data updated in Redux:", funds);
+      
       dispatch(setAllFunds(funds));
     }
   }, [funds, user?.id, dispatch]);

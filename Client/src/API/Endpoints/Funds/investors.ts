@@ -1,5 +1,5 @@
 // src/api/investors.ts
-import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {  useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosPrivate from "../../AxiosInstances/PrivateAxiosInstance";
 
 export type Investor = {
@@ -65,7 +65,7 @@ export const useGetInvestors = () => {
     queryKey: ["investors"],
     queryFn: async () => {
       const res = await axiosPrivate.get("/fund/investors");
-      return res.data;
+      return res.data.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes

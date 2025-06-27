@@ -16,7 +16,9 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
   onSave,
 }) => {
   const sigCanvas = useRef<SignatureCanvas | null>(null);
-  const containerRef = useRef(null);
+  // const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
   const [isEmpty, setIsEmpty] = useState(true);
 
   const clearSignature = () => {

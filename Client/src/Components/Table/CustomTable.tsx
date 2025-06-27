@@ -1,6 +1,17 @@
-import React from "react";
+interface Column {
+  key: string;
+  title: string;
+  render?: (row: any, rowIndex: number) => React.ReactNode;
+}
 
-const CustomTable = ({ columns, data }) => {
+// Define props type
+interface CustomTableProps {
+  columns: Column[];
+  data: any[]; // You can make this more specific if you know your row structure
+}
+
+// const CustomTable = ({ columns, data }) => {
+const CustomTable: React.FC<CustomTableProps> = ({ columns, data }) => {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full rounded-lg shadow-sm overflow-hidden border-separate border-spacing-y-3">

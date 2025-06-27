@@ -1,12 +1,10 @@
 // src/hooks/useInvestorDocuments.ts
 
 import { useUpdateInvestorDocument } from "../../API/Endpoints/Funds/investors";
-import { useAppDispatch } from "../../Redux/hooks";
 import { signPdf } from "../../utils/signPdf";
 
 
 export const useInvestorDocuments = () => {
-  const dispatch = useAppDispatch();
   const updateDocumentMutation = useUpdateInvestorDocument();
 
   const signAndUploadDocument = async (
@@ -22,7 +20,7 @@ export const useInvestorDocuments = () => {
       );
 
       // Sign the PDF (assuming signPdf is available)
-      const signedPdfBytes = await signPdf(pdfBuffer, signature);
+      const signedPdfBytes = await signPdf(new Uint8Array(pdfBuffer), signature);
 
       // Create a File object from the signed PDF
       const signedPdfFile = new File(

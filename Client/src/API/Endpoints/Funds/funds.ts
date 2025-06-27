@@ -2,13 +2,22 @@
 import toast from "react-hot-toast";
 import axiosPrivate from "../../AxiosInstances/PrivateAxiosInstance";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { FundApiResponse } from "../../../Redux/features/Funds/fundsSlice";
 
-interface Investor {
-  id: string;
+type Investor = {
+  investorId: string;
   name: string;
-  amount: string;
-  files?: File[];
+  amount: string | number; // Make consistent with Redux type
+  documentUrl: string;
+  addedAt: string;
+  documentName: string;
+  status?: boolean;
+  files?: File[]; // Optional field for uploaded files
+  id?: string; // Optional field for document ID
+  
 }
+
+
 
 interface Document {
   id: string;
@@ -16,6 +25,7 @@ interface Document {
   size: string;
   uploaded: boolean;
   file?: File;
+  
 }
 
 interface CreateFundPayload {
@@ -29,8 +39,13 @@ interface CreateFundPayload {
   minimumInvestment: string;
   fundLifetime: string;
   fundDescription: string;
-  investors: Investor[];
   documents: Document[];
+  investors: {
+    id: string;
+    name: string;
+    amount: number;
+    files: File[]; // Actual File objects to be uploaded
+  }[];
 }
 
 interface FundSummary {
@@ -51,10 +66,7 @@ interface FundSummary {
   createdAt: string;
 }
 
-interface FundDocument {
-  fileUrl: string;
-  uploadedAt: string;
-}
+
 
 interface FundInvestor {
   investorId: string;
@@ -62,36 +74,6 @@ interface FundInvestor {
   amount: number;
   documentUrl: string;
   addedAt: string;
-}
-
-interface FundDetail {
-  name: string;
-  fundSize: string;
-  fundType: string;
-  targetGeographies: string;
-  targetSectors: string;
-  targetMOIC: string;
-  targetIRR: string;
-  minimumInvestment: string;
-  fundLifetime: string;
-  fundDescription: string;
-  investors: FundInvestor[];
-  documents: FundDocument[];
-}
-
-interface FundDetail {
-  name: string;
-  fundSize: string;
-  fundType: string;
-  targetGeographies: string;
-  targetSectors: string;
-  targetMOIC: string;
-  targetIRR: string;
-  minimumInvestment: string;
-  fundLifetime: string;
-  fundDescription: string;
-  investors: FundInvestor[];
-  documents: FundDocument[];
 }
 
 
@@ -116,13 +98,17 @@ interface UpdateFundParams {
   investorDocuments?: Record<number, File>;
 }
 
-interface InvestorFundSummary {
+
+
+export interface InvestorFundSummary {
   id: string;
   name: string;
   fundType: string;
   fundDescription: string;
   investorCount: number;
   createdAt: string;
+  fundSize: string;
+  investors: Investor[];
 }
 
 interface InvestorFundsResponse {
@@ -131,6 +117,12 @@ interface InvestorFundsResponse {
   statusCode: number;
   data: InvestorFundSummary[];
 }
+
+// interface FundsApiResponse {
+//   data: FundSummary[];
+//   success: boolean;
+//   message: string;
+// }
 
 export const useGetInvestorFunds = () => {
   return useQuery<InvestorFundSummary[]>({
@@ -142,9 +134,7 @@ export const useGetInvestorFunds = () => {
       }
       return response.data.data;
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to fetch investor funds');
-    },
+    
     staleTime: 5 * 60 * 1000, // 5 minutes cache
     refetchOnMount: true,     // Refetch on every mount
     refetchOnWindowFocus: false,
@@ -156,6 +146,8 @@ export const useUpdateFund = () => {
   return useMutation({
     mutationFn: async (params: UpdateFundParams) => {
       const formData = new FormData();
+      
+    console.log("1 1")
       
       // Stringify and append the data object exactly as backend expects
       formData.append('data', JSON.stringify({
@@ -178,6 +170,7 @@ export const useUpdateFund = () => {
           addedAt: investor.addedAt
         }))
       }));
+      console.log("2 2")
 
       // Handle fund documents - single field with multiple files
       if (params.fundDocuments) {
@@ -185,6 +178,8 @@ export const useUpdateFund = () => {
           formData.append('fundDocuments', file);
         });
       }
+    console.log("3 3")
+
 
       // Handle investor documents - indexed fields
       if (params.investorDocuments) {
@@ -192,7 +187,8 @@ export const useUpdateFund = () => {
           formData.append(`investorDocument_${index}`, file);
         });
       }
-
+      console.log("4 4")
+ 
       const response = await axiosPrivate.patch(
         `/fund/updateFund/${params.id}`,
         formData,
@@ -201,7 +197,8 @@ export const useUpdateFund = () => {
             'Content-Type': 'multipart/form-data'
           }
         }
-      );
+      ); 
+      console.log("5 5")
 
       return response.data;
     },
@@ -277,12 +274,14 @@ export const useCreateFund = () => {
   });
 };
 
+
+//////////////
 export const useGetAllFundsQuery = () => {
   return useQuery<FundSummary[]>({
     queryKey: ['funds'],
     queryFn: async () => {
       const response = await axiosPrivate.get('/fund/getAllFundsSpecificData');
-      return response.data;
+      return response.data.data;
     },
     staleTime: 0,            
     refetchOnMount: true,     
@@ -291,7 +290,7 @@ export const useGetAllFundsQuery = () => {
 };
 
 export const useGetFundByIdQuery = (id: string) => {
-  return useQuery<FundDetail>({
+  return useQuery<FundApiResponse>({
     queryKey: ['fund', id],
     queryFn: async () => {
       const response = await axiosPrivate.get(`/fund/getFundById/${id}`);

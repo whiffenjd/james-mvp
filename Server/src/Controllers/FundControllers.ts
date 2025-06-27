@@ -65,6 +65,7 @@ export default class FundController {
   static async updateFund(req: Request, res: Response): Promise<Response> {
     try {
       let userRole = req.user?.role as string;
+      console.log("called ")
       const isFundManager = userRole === 'fundManager';
       const isAdmin = userRole === 'admin';
 
@@ -75,6 +76,7 @@ export default class FundController {
           403,
         );
       }
+      console.log("called 2")
 
       // Validate fund ID
       const fundId = req.params?.id;
@@ -95,11 +97,14 @@ export default class FundController {
       if (validationError) {
         return FundCreationUpdateHelper.sendErrorResponse(res, validationError, 400);
       }
+      console.log("called 3")
+
 
       // Process uploaded files
       const { fundDocuments, investorDocumentMap } = FundCreationUpdateHelper.processUploadedFiles(
         req.files as Express.MulterS3.File[],
       );
+      console.log("called 4")
 
       // Get S3 bucket name from environment variables
       const s3BucketName = process.env.BUCKET_NAME;
@@ -109,6 +114,8 @@ export default class FundController {
         );
       }
 
+      console.log("called 5")
+       
       // Build update data with S3 cleanup (if bucket name is available)
       let updateData;
       if (s3BucketName) {

@@ -2,9 +2,10 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { PURGE } from 'redux-persist';
 import { RESET_STATE } from '../../rootReducers';
-import { all } from 'axios';
+import type { InvestorFundSummary } from '../../../API/Endpoints/Funds/funds';
 
-interface FundSummary {
+
+export interface FundSummary {
   id: string;
   name: string;
   fundType: string;
@@ -13,7 +14,8 @@ interface FundSummary {
   createdAt: string;
 }
 
-interface FundDocument {
+
+export interface FundDocument {
   fileUrl: string;
   uploadedAt: string;
 }
@@ -26,7 +28,7 @@ interface FundInvestor {
   addedAt: string;
 }
 
-interface FundDetail {
+export interface FundDetail {
   name: string;
   fundSize: string;
   fundType: string;
@@ -39,14 +41,23 @@ interface FundDetail {
   fundDescription: string;
   investors: FundInvestor[];
   documents: FundDocument[];
+  createdAt: string;
+  id: string;
+}
+
+export interface FundApiResponse {
+  result: FundDetail;
+  success: boolean;
+  message: string;
 }
 
 interface FundsState {
-  allFunds: FundSummary[];
-  currentFund: FundDetail | null;
+  allFunds: Array<FundSummary | InvestorFundSummary>;
+  currentFund: FundApiResponse | null;
   loading: boolean;
   error: string | null;
 }
+
 
 const initialState: FundsState = {
   allFunds: [],
@@ -59,10 +70,11 @@ const fundsSlice = createSlice({
   name: 'funds',
   initialState,
   reducers: {
-    setAllFunds: (state, action: PayloadAction<FundSummary[]>) => {
+    setAllFunds: (state, action: PayloadAction<Array<FundSummary | InvestorFundSummary>>) => {
+      console.log("Setting all funds:", action.payload);
       state.allFunds = action.payload;
     },
-    setCurrentFund: (state, action: PayloadAction<FundDetail>) => {
+    setCurrentFund: (state, action: PayloadAction<FundApiResponse>) => {
       state.currentFund = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {

@@ -35,7 +35,6 @@ import InvestorsPage from "./FundManager/InvestorsPage/Investors";
 import FundsAndReporting from "./FundManager/Funds and Reporting/FundsAndReporting";
 import Project from "./FundManager/Funds and Reporting/project";
 
-import FundTestComponent from "./Auth/FundCreationTest";
 import FundsAndReportingInvestors from "./Investor/Funds and Reporting/FundsAndReportingInvestors";
 import InvestorsProject from "./Investor/Funds and Reporting/project";
 import SubscriptionDocuments from "./Investor/Subscription Documents/SubscriptionDocuments";

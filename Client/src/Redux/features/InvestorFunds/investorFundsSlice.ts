@@ -2,6 +2,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { PURGE } from 'redux-persist';
 import { RESET_STATE } from '../../rootReducers';
+import type { InvestorFundSummary } from '../../../API/Endpoints/Funds/funds';
 
 interface InvestorFundsState {
   funds: InvestorFundSummary[];

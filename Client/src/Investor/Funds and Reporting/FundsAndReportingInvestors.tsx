@@ -5,22 +5,14 @@ import BasicLoader from "../../Components/Loader/BasicLoader";
 import { useAuth } from "../../Context/AuthContext";
 import { useInvestorFunds } from "../../FundManager/hooks/useInvestorFunds";
 import { useAppSelector } from "../../Redux/hooks";
-
-interface FundCard {
-  id: number;
-  title: string;
-  projectName: string;
-  description: string;
-  totalInvestors: number;
-  dateCreated: string;
-}
+import type { InvestorFundSummary } from "../../API/Endpoints/Funds/funds";
 
 const FundsAndReportingInvestors: React.FC = () => {
-  const [fundsData, setFundsData] = useState<Partial<FormData[]>>([]);
+  const [fundsData, setFundsData] = useState<InvestorFundSummary[]>([]);
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { isLoading, error, refreshInvestorFunds } = useInvestorFunds();
+  const { isLoading } = useInvestorFunds();
   const funds = useAppSelector((state) => state.investorFunds.funds);
 
   useEffect(() => {
@@ -28,19 +20,6 @@ const FundsAndReportingInvestors: React.FC = () => {
       setFundsData(funds);
     }
   }, [isLoading, funds, user]);
-
-  const sampleEditData: Partial<FormData> = {
-    name: "Growth Fund Alpha",
-    fundSize: "$50M",
-    fundType: "Growth Equity",
-    targetGeographies: "North America",
-    targetSectors: "Technology",
-    targetMOIC: "3.5x",
-    targetIRR: "25%",
-    minimumInvestment: "$1M",
-    fundLifetime: "7 years",
-    fundDescription: "Focused on growth-stage tech companies",
-  };
 
   if (isLoading) {
     return <BasicLoader />;
@@ -52,13 +31,6 @@ const FundsAndReportingInvestors: React.FC = () => {
         <h1 className="text-xl font-semibold text-gray-800 mb-4 sm:mb-0 font-poppins">
           Fund Creation
         </h1>
-        {/* <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-theme-sidebar-accent text-white px-8 py-2 rounded-[10px] text-sm font-normal transition-colors duration-200 flex items-center gap-2"
-        >
-          <span className="text-lg">+</span>
-          Create Fund
-        </button> */}
       </div>
 
       {/* Content Section - Fund Cards Grid */}

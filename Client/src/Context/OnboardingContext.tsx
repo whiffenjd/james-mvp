@@ -120,10 +120,10 @@ export function OnboardingProvider({
   };
 
   const updateFormData = (data: Partial<InvestorOnboardingPayload>) => {
-    const cleanedData = cleanFormData({
-      ...state.formData,
-      ...data,
-    });
+    // const cleanedData = cleanFormData({
+    //   ...state.formData,
+    //   ...data,
+    // });
     dispatch({ type: "UPDATE_FORM_DATA", payload: data });
   };
 

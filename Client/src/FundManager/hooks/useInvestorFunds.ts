@@ -1,7 +1,4 @@
-// src/hooks/useInvestorFunds.ts
 import { useEffect } from "react";
-// import { useGetInvestorFunds } from "../API/Endpoints/Funds/funds";
-
 import { useAppDispatch } from "../../Redux/hooks";
 import { useGetInvestorFunds } from "../../API/Endpoints/Funds/funds";
 import { resetInvestorFunds , setInvestorFunds, 
@@ -19,7 +16,7 @@ export const useInvestorFunds = () => {
     error,
     isFetching,
     refetch
-  } = useGetInvestorFunds();
+  } =  useGetInvestorFunds();
 
   // Reset funds when user logs out
   useEffect(() => {
@@ -43,7 +40,12 @@ export const useInvestorFunds = () => {
   // Update Redux store when data loads
   useEffect(() => {
     if (funds && user) {
-      dispatch(setInvestorFunds(funds));
+      if (Array.isArray(funds)) {
+        dispatch(setInvestorFunds(funds));
+      } else {
+        console.error('Expected array of InvestorFundSummary but received:', funds);
+        dispatch(setInvestorFunds([])); // Fallback to empty array
+      }
     }
   }, [funds, user, dispatch]);
 

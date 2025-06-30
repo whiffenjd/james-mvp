@@ -19,8 +19,6 @@ const Overview = () => {
   const [currentDocIndex, setCurrentDocIndex] = useState(0);
   const documents = fundData?.documents || [];
 
-  console.log("fundmanager Fund Data:", fundData);
-
   const openPdfModal = (pdfUrl: string | undefined, index: number = 0) => {
     if (pdfUrl) {
       setSelectedPdf(pdfUrl);
@@ -50,7 +48,6 @@ const Overview = () => {
 
   useEffect(() => {
     if (fund) {
-      console.log("Fund data fetched:", fund);
       setFundData(fund?.result);
     } else {
       console.log("No fund data available");

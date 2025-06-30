@@ -68,38 +68,13 @@ interface FundSummary {
 
 
 
-interface FundInvestor {
-  investorId: string;
-  name: string;
-  amount: number;
-  documentUrl: string;
-  addedAt: string;
-}
-
-
-
-interface UpdateFundParams {
-  id: string;
-  data: {
-    name: string;
-    fundSize: string;
-    fundType: string;
-    targetGeographies: string;
-    targetSectors: string;
-    targetMOIC: string;
-    targetIRR: string;
-    minimumInvestment: string;
-    fundLifetime: string;
-    fundDescription: string;
-    existingDocuments: string[];
-    investors: FundInvestor[];
-  };
-  fundDocuments?: File[];
-  investorDocuments?: Record<number, File>;
-}
-
-
-
+// interface FundInvestor {
+//   investorId: string;
+//   name: string;
+//   amount: number;
+//   documentUrl: string;
+//   addedAt: string;
+// }
 export interface InvestorFundSummary {
   id: string;
   name: string;
@@ -118,36 +93,67 @@ interface InvestorFundsResponse {
   data: InvestorFundSummary[];
 }
 
-// interface FundsApiResponse {
-//   data: FundSummary[];
-//   success: boolean;
-//   message: string;
-// }
+interface UpdateFundPayload {
+  id: string;
+  data: {
+    name: string;
+    fundSize: string;
+    fundType: string;
+    targetGeographies: string;
+    targetSectors: string;
+    targetMOIC: string;
+    targetIRR: string;
+    minimumInvestment: string;
+    fundLifetime: string;
+    fundDescription: string;
+    existingDocuments: string[];
+    investors: {
+      investorId: string;
+      name: string;
+      amount: number;
+      documentUrl: string;
+      addedAt: string;
+    }[];
+  };
+  fundDocuments?: File[];
+  investorDocuments?: Record<number, File>;
+}
 
-export const useGetInvestorFunds = () => {
-  return useQuery<InvestorFundSummary[]>({
-    queryKey: ['investorFunds'],
-    queryFn: async () => {
-      const response = await axiosPrivate.get<InvestorFundsResponse>('/fund/getAllInvestorFunds');
-      if (!response.data.success) {
-        throw new Error(response.data.message || 'Failed to fetch investor funds');
-      }
-      return response.data.data;
-    },
-    
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
-    refetchOnMount: true,     // Refetch on every mount
-    refetchOnWindowFocus: false,
-  });
-};
+
+// export const useUpdateFund = () => {
+//   const queryClient = useQueryClient();
+  
+//   return useMutation({
+//     mutationFn: async ({ fundId, payload }: { fundId: string; payload: FormData }) => {
+//       const response = await axiosPrivate.patch(
+//         `/fund/updateFund/${fundId}`,
+//         payload,
+//         {
+//           headers: {
+//             'Content-Type': 'multipart/form-data',
+//           },
+//         }
+//       );
+//       return response.data;
+//     },
+//     onSuccess: (_, variables) => {
+//       toast.success('Fund updated successfully!');
+//       // Invalidate both the specific fund and the funds list
+//       queryClient.invalidateQueries(['fund', variables.fundId]);
+//       queryClient.invalidateQueries(['funds']);
+//     },
+//     onError: (error: any) => {
+//       toast.error(error.response?.data?.message || 'Failed to update fund');
+//     },
+//   });
+// };
+
 
 export const useUpdateFund = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (params: UpdateFundParams) => {
+    mutationFn: async (params: UpdateFundPayload) => {
       const formData = new FormData();
-      
-    console.log("1 1")
       
       // Stringify and append the data object exactly as backend expects
       formData.append('data', JSON.stringify({
@@ -170,7 +176,6 @@ export const useUpdateFund = () => {
           addedAt: investor.addedAt
         }))
       }));
-      console.log("2 2")
 
       // Handle fund documents - single field with multiple files
       if (params.fundDocuments) {
@@ -178,8 +183,6 @@ export const useUpdateFund = () => {
           formData.append('fundDocuments', file);
         });
       }
-    console.log("3 3")
-
 
       // Handle investor documents - indexed fields
       if (params.investorDocuments) {
@@ -187,8 +190,7 @@ export const useUpdateFund = () => {
           formData.append(`investorDocument_${index}`, file);
         });
       }
-      console.log("4 4")
- 
+
       const response = await axiosPrivate.patch(
         `/fund/updateFund/${params.id}`,
         formData,
@@ -197,14 +199,14 @@ export const useUpdateFund = () => {
             'Content-Type': 'multipart/form-data'
           }
         }
-      ); 
-      console.log("5 5")
+      );
 
       return response.data;
     },
     onSuccess: () => {
       toast.success('Fund updated successfully!');
       queryClient.invalidateQueries({ queryKey: ['funds'] });
+      // queryClient.invalidateQueries({ queryKey: ['fund', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['fund'] });
     },
     onError: (error: any) => {
@@ -215,6 +217,25 @@ export const useUpdateFund = () => {
     }
   });
 };
+
+export const useGetInvestorFunds = () => {
+  return useQuery<InvestorFundSummary[]>({
+    queryKey: ['investorFunds'],
+    queryFn: async () => {
+      const response = await axiosPrivate.get<InvestorFundsResponse>('/fund/getAllInvestorFunds');
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to fetch investor funds');
+      }
+      return response.data.data;
+    },
+    
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnMount: true,     // Refetch on every mount
+    refetchOnWindowFocus: false,
+  });
+};
+
+
 
 export const useCreateFund = () => {
   const queryClient = useQueryClient();
@@ -275,7 +296,6 @@ export const useCreateFund = () => {
 };
 
 
-//////////////
 export const useGetAllFundsQuery = () => {
   return useQuery<FundSummary[]>({
     queryKey: ['funds'],

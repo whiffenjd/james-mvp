@@ -15,7 +15,6 @@
 //   const [currentDocIndex, setCurrentDocIndex] = useState(0);
 //   const documents = fundData?.documents || [];
 
-//   console.log("invvestorn Fund Data:", fundData);
 
 //   const openPdfModal = (pdfUrl, index = 0) => {
 //     setSelectedPdf(pdfUrl);
@@ -46,7 +45,6 @@
 //     if (fund) {
 //       setFundData(fund?.result || {});
 //     } else {
-//       console.log("No fund data available");
 //     }
 //   }, [fund, isLoading]);
 

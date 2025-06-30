@@ -71,7 +71,6 @@ const fundsSlice = createSlice({
   initialState,
   reducers: {
     setAllFunds: (state, action: PayloadAction<Array<FundSummary | InvestorFundSummary>>) => {
-      console.log("Setting all funds:", action.payload);
       state.allFunds = action.payload;
     },
     setCurrentFund: (state, action: PayloadAction<FundApiResponse>) => {

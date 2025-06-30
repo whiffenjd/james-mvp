@@ -17,12 +17,10 @@ export const useFunds = () => {
     isFetching
   } = useGetAllFundsQuery();
 
-  console.log("Funds data:", funds);  
 
   // Sync loading state
   useEffect(() => {
     dispatch(setLoading(isLoading || isFetching));
-    console.log("Funds loading state:", isLoading, isFetching);
   }, [isLoading, isFetching, dispatch]);
 
   // Sync error state
@@ -36,7 +34,6 @@ export const useFunds = () => {
   // Update Redux store when data loads
   useEffect(() => {
     if (funds && user?.id) {
-      console.log("Funds data updated in Redux:", funds);
       
       dispatch(setAllFunds(funds));
     }

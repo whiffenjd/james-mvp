@@ -19,7 +19,6 @@ const FundsAndReporting: React.FC = () => {
   const funds = useAppSelector((state) => state.funds.allFunds);
 
   useEffect(() => {
-    console.log("Funds data:", funds);
     if (funds && funds?.length > 0) {
       setFundsData(funds);
     } else {

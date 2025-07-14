@@ -1,23 +1,57 @@
-import { PDFDocument } from "pdf-lib";
+// src/utils/signPdf.ts
 
-export async function signPdf(pdfBuffer: Uint8Array, signatureDataURL: string): Promise<Uint8Array> {
+import { PDFDocument, rgb } from "pdf-lib";
+
+interface Placement {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fontSize?: number;
+}
+
+interface PagePlacement {
+  page: number;
+  signature?: Placement;
+  date?: Placement;
+}
+
+export async function signPdf(
+  pdfBuffer: Uint8Array,
+  signatureDataURL: string,
+  dateText: string,
+  placements: PagePlacement[]
+): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.load(pdfBuffer);
+  const font = await pdfDoc.embedFont("Helvetica");
 
-  const pages = pdfDoc.getPages();
-  const firstPage = pages[0];
+  console.log("placements received:", JSON.stringify(placements, null, 2));
 
-  const pngImage = await pdfDoc.embedPng(signatureDataURL);
-  const pngDims = pngImage.scale(0.5);
+  for (const placement of placements) {
+    console.log(`Processing placement on page ${placement.page}:`, placement);
 
-  const { width } = firstPage.getSize();
+    const page = pdfDoc.getPage(placement.page - 1);
 
-  // Draw signature in bottom-right corner
-  firstPage.drawImage(pngImage, {
-    x: width - pngDims.width - 50,
-    y: 50,
-    width: pngDims.width,
-    height: pngDims.height,
-  });
+    if (placement.signature && signatureDataURL) {
+      const pngImage = await pdfDoc.embedPng(signatureDataURL);
+      page.drawImage(pngImage, {
+        x: placement.signature.x,
+        y: placement.signature.y,
+        width: placement.signature.width,
+        height: placement.signature.height,
+      });
+    }
+
+    if (placement.date && dateText) {
+      page.drawText(dateText, {
+        x: placement.date.x,
+        y: placement.date.y,
+        size: placement.date.fontSize || 12,
+        font,
+        color: rgb(0, 0, 0),
+      });
+    }
+  }
 
   const signedPdfBytes = await pdfDoc.save();
   return signedPdfBytes;

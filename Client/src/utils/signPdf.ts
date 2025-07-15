@@ -25,11 +25,7 @@ export async function signPdf(
   const pdfDoc = await PDFDocument.load(pdfBuffer);
   const font = await pdfDoc.embedFont("Helvetica");
 
-  console.log("placements received:", JSON.stringify(placements, null, 2));
-
   for (const placement of placements) {
-    console.log(`Processing placement on page ${placement.page}:`, placement);
-
     const page = pdfDoc.getPage(placement.page - 1);
 
     if (placement.signature && signatureDataURL) {
@@ -43,6 +39,8 @@ export async function signPdf(
     }
 
     if (placement.date && dateText) {
+      console.log("placment date", placement.date);
+      console.log("date text", dateText);
       page.drawText(dateText, {
         x: placement.date.x,
         y: placement.date.y,

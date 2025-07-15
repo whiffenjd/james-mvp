@@ -1,17 +1,17 @@
-import { defineConfig } from "drizzle-kit";
-import * as dotenv from "dotenv";
+import { defineConfig } from 'drizzle-kit';
+import * as dotenv from 'dotenv';
 dotenv.config();
 
 const { DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD } = process.env;
 
 if (!DB_HOST || !DB_PORT || !DB_NAME || !DB_USER || !DB_PASSWORD) {
-  throw new Error("Database environment variables are missing.");
+  throw new Error('Database environment variables are missing.');
 }
 
 export default defineConfig({
-  schema: "./src/db/schema", // ✅ point to the folder, not index.ts
-  out: "./drizzle",
-  dialect: "postgresql",
+  schema: './src/db/schema',
+  out: './drizzle',
+  dialect: 'postgresql',
   dbCredentials: {
     host: DB_HOST,
     port: Number(DB_PORT),

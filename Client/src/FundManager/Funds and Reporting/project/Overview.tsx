@@ -49,8 +49,6 @@ const Overview = () => {
   useEffect(() => {
     if (fund) {
       setFundData(fund?.result);
-    } else {
-      console.log("No fund data available");
     }
   }, [fund, isLoading]);
 
@@ -257,11 +255,10 @@ const Overview = () => {
                         setCurrentDocIndex(index);
                         setSelectedPdf(documents[index].fileUrl);
                       }}
-                      className={`w-3 h-3 rounded-full transition-colors ${
-                        index === currentDocIndex
-                          ? "bg-theme-sidebar-accent"
-                          : "bg-gray-300 hover:bg-gray-400"
-                      }`}
+                      className={`w-3 h-3 rounded-full transition-colors ${index === currentDocIndex
+                        ? "bg-theme-sidebar-accent"
+                        : "bg-gray-300 hover:bg-gray-400"
+                        }`}
                       title={`Go to document ${index + 1}`}
                     />
                   ))}

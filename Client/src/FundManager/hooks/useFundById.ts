@@ -1,17 +1,17 @@
 import { useEffect } from "react";
 import { useAppDispatch } from "../../Redux/hooks";
 import { useGetFundByIdQuery } from "../../API/Endpoints/Funds/funds";
-import { clearCurrentFund, setCurrentFund, setError, setLoading } from "../../Redux/features/Funds/fundsSlice";
+import {
+  clearCurrentFund,
+  setCurrentFund,
+  setError,
+  setLoading,
+} from "../../Redux/features/Funds/fundsSlice";
 
 export const useFundById = (id: string) => {
   const dispatch = useAppDispatch();
-  
-  const { 
-    data: fund, 
-    isLoading, 
-    error,
-    isFetching
-  } = useGetFundByIdQuery(id);
+
+  const { data: fund, isLoading, error, isFetching } = useGetFundByIdQuery(id);
 
   // Clear current fund when unmounting
   useEffect(() => {
@@ -28,7 +28,9 @@ export const useFundById = (id: string) => {
   // Sync error state
   useEffect(() => {
     if (error) {
-      dispatch(setError(error instanceof Error ? error.message : 'An error occurred'));
+      dispatch(
+        setError(error instanceof Error ? error.message : "An error occurred")
+      );
     }
   }, [error, dispatch]);
 
@@ -41,6 +43,6 @@ export const useFundById = (id: string) => {
 
   return {
     isLoading: isLoading || isFetching,
-    error: error instanceof Error ? error.message : null
+    error: error instanceof Error ? error.message : null,
   };
 };

@@ -1,9 +1,8 @@
 // src/Redux/features/Funds/fundsSlice.ts
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { PURGE } from 'redux-persist';
-import { RESET_STATE } from '../../rootReducers';
-import type { InvestorFundSummary } from '../../../API/Endpoints/Funds/funds';
-
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { PURGE } from "redux-persist";
+import { RESET_STATE } from "../../rootReducers";
+import type { InvestorFundSummary } from "../../../API/Endpoints/Funds/funds";
 
 export interface FundSummary {
   id: string;
@@ -13,7 +12,6 @@ export interface FundSummary {
   investorCount: number;
   createdAt: string;
 }
-
 
 export interface FundDocument {
   fileUrl: string;
@@ -58,22 +56,25 @@ interface FundsState {
   error: string | null;
 }
 
-
 const initialState: FundsState = {
   allFunds: [],
   currentFund: null,
   loading: false,
-  error: null
+  error: null,
 };
 
 const fundsSlice = createSlice({
-  name: 'funds',
+  name: "funds",
   initialState,
   reducers: {
-    setAllFunds: (state, action: PayloadAction<Array<FundSummary | InvestorFundSummary>>) => {
+    setAllFunds: (
+      state,
+      action: PayloadAction<Array<FundSummary | InvestorFundSummary>>
+    ) => {
       state.allFunds = action.payload;
     },
     setCurrentFund: (state, action: PayloadAction<FundApiResponse>) => {
+      console.log("current funf set", action.payload);
       state.currentFund = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
@@ -86,7 +87,6 @@ const fundsSlice = createSlice({
       state.currentFund = null;
     },
     resetFunds: () => initialState,
- 
   },
   extraReducers: (builder) => {
     builder
@@ -95,13 +95,13 @@ const fundsSlice = createSlice({
   },
 });
 
-export const { 
-  setAllFunds, 
-  setCurrentFund, 
-  setLoading, 
+export const {
+  setAllFunds,
+  setCurrentFund,
+  setLoading,
   setError,
-  clearCurrentFund ,
-  resetFunds
+  clearCurrentFund,
+  resetFunds,
 } = fundsSlice.actions;
 
 export default fundsSlice.reducer;

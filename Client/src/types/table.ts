@@ -11,7 +11,7 @@ export interface TableColumn<T = any> {
 export interface TableAction<T = any> {
   label: string;
   onClick: (row: T, index: number) => void;
-  variant?: "primary" | "secondary" | "danger";
+  variant?: "primary" | "secondary" | "danger" | undefined;
   icon?: React.ReactNode;
   show?: (row: T) => boolean;
 }

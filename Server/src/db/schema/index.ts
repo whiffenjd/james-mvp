@@ -5,3 +5,6 @@ export * from './Themes';
 export * from './DashboardAssets';
 export * from './onboarding';
 export * from './Funds';
+export * from './CapitalCall';
+export * from './ActivityLogs';
+export * from './distribution';

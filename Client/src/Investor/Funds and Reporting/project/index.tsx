@@ -69,7 +69,7 @@ const InvestorsProject = () => {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className=" p-4 md:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
         <h1 className="text-xl font-semibold text-gray-800 mb-4 sm:mb-0 font-poppins">
           Project

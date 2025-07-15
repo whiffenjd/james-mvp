@@ -134,11 +134,10 @@ const Tabs = ({ activeTab, onTabChange }: TabsProps) => {
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-[10px] text-sm font-medium transition-colors duration-200 ${
-                  activeTab === tab.id
-                    ? "bg-theme-sidebar-accent text-white"
-                    : "bg-white text-theme-sidebar-accent border border-theme-sidebar-accent"
-                } min-w-[190px] flex items-center justify-center`}
+                className={`flex items-center gap-2 px-4 py-3 rounded-[10px] text-sm font-medium transition-colors duration-200 ${activeTab === tab.id
+                  ? "bg-theme-sidebar-accent text-white"
+                  : "bg-white text-theme-sidebar-accent border border-theme-sidebar-accent"
+                  } min-w-[190px] flex items-center justify-center`}
               >
                 <Icon className="w-4 h-4" />
                 {tab.label}

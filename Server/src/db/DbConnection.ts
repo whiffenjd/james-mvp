@@ -1,7 +1,7 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
-import * as dotenv from "dotenv";
-import * as schema from "./schema"; // all tables imported via index.ts
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import * as dotenv from 'dotenv';
+import * as schema from './schema'; // all tables imported via index.ts
 dotenv.config();
 
 // Parse database connection details explicitly
@@ -11,7 +11,7 @@ const dbConfig = {
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 };
 
 // Create connection pool with explicit parameters

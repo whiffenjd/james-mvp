@@ -64,6 +64,13 @@
       "when": 1752579180437,
       "tag": "0008_chilly_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1752588344774,
+      "tag": "0009_awesome_slyde",
+      "breakpoints": true
     }
   ]
 }

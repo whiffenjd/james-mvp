@@ -16,6 +16,7 @@ import documentUploadRouter from './Routes/documentUploadRouter';
 import FundRouter from './Routes/FundsManagerRoutes';
 import CapitalCallRouter from './Routes/capitalCall.router';
 import distributionsRoutes from './Routes/distributions.routes';
+import fundReportRouter from './Routes/fundReport.router';
 
 dotenv.config();
 export const app = express();
@@ -49,6 +50,7 @@ app.use('/dashboard/theme', DashboardThemeRouter);
 app.use('/api/documents', documentUploadRouter);
 app.use('/capital-call', CapitalCallRouter);
 app.use('/distribution', distributionsRoutes);
+app.use('/fund-report', fundReportRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');

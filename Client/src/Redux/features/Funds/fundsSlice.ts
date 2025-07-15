@@ -74,7 +74,6 @@ const fundsSlice = createSlice({
       state.allFunds = action.payload;
     },
     setCurrentFund: (state, action: PayloadAction<FundApiResponse>) => {
-      console.log("current funf set", action.payload);
       state.currentFund = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {

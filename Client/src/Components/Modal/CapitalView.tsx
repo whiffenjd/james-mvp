@@ -1,27 +1,31 @@
-import React, { useState } from 'react';
-import { MoreVertical, X, CreditCard, DollarSign, Calendar, Building, User, Hash } from 'lucide-react';
+import React from 'react';
+import { X, CreditCard, } from 'lucide-react';
 import type { CapitalCall } from '../../API/Endpoints/Funds/capitalCall';
+import type { Distribution as DistType } from '../../API/Endpoints/Funds/distributions';
 
+type FundTransaction = CapitalCall | DistType;
 
-interface CapitalCallModalProps {
+interface FundTransactionViewModalProps {
     isOpen: boolean;
     onClose: () => void;
-    capitalCall: CapitalCall | null; // ✅ allow null
+    transaction: FundTransaction;
     onApprove: () => void;
     onReject: () => void;
     isLoading: boolean;
+    entityType: "capital" | "distribution";
 }
 
 // Separate Modal Component
-export const CapitalViewModal: React.FC<CapitalCallModalProps> = ({
+export const FundTransactionViewModal: React.FC<FundTransactionViewModalProps> = ({
     isOpen,
     onClose,
-    capitalCall,
+    transaction,
     onApprove,
     onReject,
-    isLoading
+    isLoading,
+    entityType,
 }) => {
-    if (!isOpen) return null;
+    if (!isOpen || !transaction) return null;
 
     const formatDate = (dateString: string): string => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -35,7 +39,7 @@ export const CapitalViewModal: React.FC<CapitalCallModalProps> = ({
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD'
-        }).format(amount);
+        }).format(Number(amount));
     };
 
     return (
@@ -43,7 +47,9 @@ export const CapitalViewModal: React.FC<CapitalCallModalProps> = ({
             <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
                 {/* Modal Header */}
                 <div className="flex items-center justify-between p-6 border-b">
-                    <h3 className="text-xl font-semibold">Bank Details</h3>
+                    <h3 className="text-xl font-semibold">
+                        {entityType === "capital" ? "Capital Call Bank Details" : "Distribution Bank Details"}
+                    </h3>
                     <button
                         onClick={onClose}
                         className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -57,7 +63,7 @@ export const CapitalViewModal: React.FC<CapitalCallModalProps> = ({
                     <div className="mb-6">
                         <h4 className="text-lg font-medium mb-4 flex items-center">
                             <CreditCard className="w-5 h-5 mr-2 text-gray-500" />
-                            Card Details
+                            {entityType === "capital" ? "Capital Call Card Details" : "Distribution Card Details"}
                         </h4>
 
                         <div className="space-y-4">
@@ -65,42 +71,42 @@ export const CapitalViewModal: React.FC<CapitalCallModalProps> = ({
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Name
                                 </label>
-                                <p className="text-gray-900">{capitalCall.recipientName}</p>
+                                <p className="text-gray-900">{transaction.recipientName}</p>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Account No/IBN
+                                    Account No/IBAN
                                 </label>
-                                <p className="text-gray-900">{capitalCall.accountNumber}</p>
+                                <p className="text-gray-900">{transaction.accountNumber}</p>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Amount
                                 </label>
-                                <p className="text-gray-900 font-semibold">{formatAmount(capitalCall.amount)}</p>
+                                <p className="text-gray-900 font-semibold">{formatAmount(transaction.amount)}</p>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Bank Name
                                 </label>
-                                <p className="text-gray-900">{capitalCall.bankName}</p>
+                                <p className="text-gray-900">{transaction.bankName}</p>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Description
                                 </label>
-                                <p className="text-gray-900">{capitalCall.description}</p>
+                                <p className="text-gray-900">{transaction.description}</p>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Date
                                 </label>
-                                <p className="text-gray-900">{formatDate(capitalCall.date)}</p>
+                                <p className="text-gray-900">{formatDate(transaction.date)}</p>
                             </div>
                         </div>
                     </div>

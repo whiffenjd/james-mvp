@@ -6,10 +6,11 @@ import type { PaginationInfo, TableAction, TableColumn } from '../../../types/ta
 import { formatDateToDDMMYYYY } from '../../../utils/dateUtils';
 import { Table } from '../../../Components/Table';
 import { useParams } from 'react-router-dom';
-import CapitalCallModal from '../../../Components/Modal/CapitalCallModal';
+
 import { useAppSelector } from '../../../Redux/hooks';
 import type { FundDetail } from '../../../Redux/features/Funds/fundsSlice';
-import { CapitalViewModal } from '../../../Components/Modal/CapitalView';
+import { FundTransactionViewModal } from '../../../Components/Modal/CapitalView';
+import FundTransactionModal from '../../../Components/Modal/CapitalCallModal';
 
 
 const CapitalCall = () => {
@@ -317,18 +318,20 @@ const CapitalCall = () => {
         className="mb-8"
       />
 
-      <CapitalCallModal
+      <FundTransactionModal
         isOpen={isCapitalModalOpen}
         onClose={() => setIsCapitalModalOpen(false)}
         onSubmit={handleUpdateCapitalCall}
         mode={'edit'}
-        initialData={capitalCall ?? undefined} // ✅ not null
+        initialData={capitalCall ?? undefined}
         fund={fundData || null}
+        entityType="capital"
+
       />
-      <CapitalViewModal
+      <FundTransactionViewModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        capitalCall={capitalCall}
+        transaction={capitalCall}
         onApprove={handleApprove}
         onReject={handleReject}
         isLoading={updateMutation.isPending}

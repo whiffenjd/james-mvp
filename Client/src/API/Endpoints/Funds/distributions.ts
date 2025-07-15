@@ -97,7 +97,7 @@ export const useUpdateDistributionStatus = () => {
   const queryClient = useQueryClient();
   return useMutation<Distribution, Error, UpdateDistributionStatusPayload>({
     mutationFn: async ({ id, status }) => {
-      const response = await axiosPrivate.patch(`/distribution/${id}/status`, {
+      const response = await axiosPrivate.patch(`/distribution/status/${id}`, {
         status,
       });
       return response.data.data;

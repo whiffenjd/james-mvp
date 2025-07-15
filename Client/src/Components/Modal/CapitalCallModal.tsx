@@ -1,31 +1,36 @@
-import type React from "react"
-import { useState, useEffect } from "react"
-import { X, ChevronDown, Edit } from "lucide-react"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { X, ChevronDown, Edit } from "lucide-react";
 
-import type { CapitalCall } from "../../API/Endpoints/Funds/capitalCall"
-import type { FundDetail } from "../../Redux/features/Funds/fundsSlice"
-import DatePicker from "react-datepicker"
-import "react-datepicker/dist/react-datepicker.css"
+import type { CapitalCall } from "../../API/Endpoints/Funds/capitalCall";
+import type { Distribution as DistType } from "../../API/Endpoints/Funds/distributions";
+import type { FundDetail } from "../../Redux/features/Funds/fundsSlice";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
-type CapitalCallModalProps = {
-    isOpen: boolean
-    onClose: () => void
-    onSubmit: (data: any) => Promise<void>
-    mode: "create" | "edit" | "view" // Added view mode
-    initialData?: CapitalCall
-    fund: FundDetail | null
-    onEditClick?: () => void // Optional edit handler for view mode
-}
+type FundTransaction = CapitalCall | DistType; // Union type for both entities
 
-export default function CapitalCallModal({
+type FundTransactionModalProps = {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: any) => Promise<void>;
+    mode: "create" | "edit" | "view"; // Added view mode
+    initialData?: FundTransaction; // Can be either CapitalCall or Distribution
+    fund: FundDetail | null;
+    entityType: "capital" | "distribution"; // To differentiate between capital call and distribution
+    onEditClick?: () => void; // Optional edit handler for view mode
+};
+
+export default function FundTransactionModal({
     isOpen,
     onClose,
     onSubmit,
     mode,
     initialData,
     fund,
-    onEditClick
-}: CapitalCallModalProps) {
+    entityType,
+    onEditClick,
+}: FundTransactionModalProps) {
     const [formData, setFormData] = useState({
         investorId: "",
         amount: "",
@@ -34,110 +39,109 @@ export default function CapitalCallModal({
         bankName: "",
         accountNumber: "",
         description: "",
-    })
-    const investors = fund?.investors || []
+    });
+    const investors = fund?.investors || [];
     const isViewMode = mode === "view";
 
-
-    const [errors, setErrors] = useState<Record<string, string>>({})
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
     // Reset form when modal opens/closes
     useEffect(() => {
         if (isOpen) {
-            const initialDate = initialData?.date ? new Date(initialData.date) : null
-            setSelectedDate(initialDate)
+            const initialDate = initialData?.date ? new Date(initialData.date) : null;
+            setSelectedDate(initialDate);
 
             setFormData({
                 investorId: initialData?.investorId || "",
                 amount: initialData?.amount || "",
-                date: initialData?.date ? initialData.date.split('T')[0] : "",
+                date: initialData?.date ? initialData.date.split("T")[0] : "",
                 recipientName: initialData?.recipientName || "",
                 bankName: initialData?.bankName || "",
                 accountNumber: initialData?.accountNumber || "",
                 description: initialData?.description || "",
-            })
-            setErrors({})
+            });
+            setErrors({});
         }
-    }, [isOpen, initialData])
+    }, [isOpen, initialData]);
 
-    if (!isOpen) return null
+    if (!isOpen) return null;
 
     const validateForm = () => {
-        const newErrors: Record<string, string> = {}
+        const newErrors: Record<string, string> = {};
 
-        if (!formData.investorId) newErrors.investorId = "Please select an investor"
+        if (!formData.investorId) newErrors.investorId = "Please select an investor";
         if (!formData.amount) {
-            newErrors.amount = "Amount is required"
+            newErrors.amount = "Amount is required";
         } else if (isNaN(Number(formData.amount)) || Number(formData.amount) <= 0) {
-            newErrors.amount = "Please enter a valid amount"
+            newErrors.amount = "Please enter a valid amount";
         }
-        if (!formData.date) newErrors.date = "Date is required"
-        if (!formData.recipientName.trim()) newErrors.recipientName = "Recipient name is required"
-        if (!formData.bankName.trim()) newErrors.bankName = "Bank name is required"
-        if (!formData.accountNumber.trim()) newErrors.accountNumber = "Account number is required"
-        if (!formData.description.trim()) newErrors.description = "Description is required"
+        if (!formData.date) newErrors.date = "Date is required";
+        if (!formData.recipientName.trim()) newErrors.recipientName = "Recipient name is required";
+        if (!formData.bankName.trim()) newErrors.bankName = "Bank name is required";
+        if (!formData.accountNumber.trim()) newErrors.accountNumber = "Account number is required";
+        if (!formData.description.trim()) newErrors.description = "Description is required";
 
-        setErrors(newErrors)
-        return Object.keys(newErrors).length === 0
-    }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleInputChange = (field: string, value: string) => {
-        setFormData((prev) => ({ ...prev, [field]: value }))
+        setFormData((prev) => ({ ...prev, [field]: value }));
         // Clear error when user starts typing
         if (errors[field]) {
-            setErrors((prev) => ({ ...prev, [field]: "" }))
+            setErrors((prev) => ({ ...prev, [field]: "" }));
         }
-    }
+    };
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value
+        const value = e.target.value;
         // Allow only numbers and decimal point
         if (/^\d*\.?\d*$/.test(value) || value === "") {
-            handleInputChange("amount", value)
+            handleInputChange("amount", value);
         }
-    }
+    };
 
     const handleDateChange = (date: Date | null) => {
-        setSelectedDate(date)
+        setSelectedDate(date);
         if (date) {
-            const formattedDate = date.toISOString().split('T')[0]
-            handleInputChange("date", formattedDate)
+            const formattedDate = date.toISOString().split("T")[0];
+            handleInputChange("date", formattedDate);
         } else {
-            handleInputChange("date", "")
+            handleInputChange("date", "");
         }
-    }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
+        e.preventDefault();
 
-        if (mode === "view") return onClose() // No submission in view mode
+        if (mode === "view") return onClose(); // No submission in view mode
 
-        setIsSubmitting(true)
+        setIsSubmitting(true);
 
         if (!validateForm()) {
-            setIsSubmitting(false)
-            return
+            setIsSubmitting(false);
+            return;
         }
 
         try {
-            await onSubmit(formData)
+            await onSubmit(formData);
         } catch (error) {
-            console.error("Error submitting form:", error)
+            console.error("Error submitting form:", error);
         } finally {
-            setIsSubmitting(false)
+            setIsSubmitting(false);
         }
-    }
+    };
 
     const handleBackdropClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
-            onClose()
+            onClose();
         }
-    }
+    };
 
-    const selectedInvestor = investors.find((inv) => inv.investorId === formData.investorId)
+    const selectedInvestor = investors.find((inv) => inv.investorId === formData.investorId);
 
     return (
         <div
@@ -148,8 +152,11 @@ export default function CapitalCallModal({
                 <div className="relative flex items-center justify-center py-2 m-2">
                     {/* Centered Heading */}
                     <h2 className="text-xl font-semibold text-gray-900">
-                        {mode === "create" ? "Create Capital Call" :
-                            mode === "edit" ? "Edit Capital Call" : "Capital Call Details"}
+                        {mode === "create"
+                            ? `Create ${entityType === "capital" ? "Capital Call" : "Distribution"}`
+                            : mode === "edit"
+                                ? `Edit ${entityType === "capital" ? "Capital Call" : "Distribution"}`
+                                : `${entityType === "capital" ? "Capital Call" : "Distribution"} Details`}
                     </h2>
 
                     {/* Close Button aligned to the right */}
@@ -383,17 +390,15 @@ export default function CapitalCallModal({
                             disabled={isSubmitting}
                             className="w-full h-12 bg-theme-sidebar-accent disabled:bg-gray-400 text-white rounded-xl font-medium mt-6 transition-colors"
                         >
-                            {isSubmitting ? (
-                                "Submitting..."
-                            ) : mode === "edit" ? (
-                                "Update Capital Call"
-                            ) : (
-                                "Create Capital Call"
-                            )}
+                            {isSubmitting
+                                ? "Submitting..."
+                                : mode === "edit"
+                                    ? `Update ${entityType === "capital" ? "Capital Call" : "Distribution"}`
+                                    : `Create ${entityType === "capital" ? "Capital Call" : "Distribution"}`}
                         </button>
                     )}
                 </form>
             </div>
         </div>
-    )
+    );
 }

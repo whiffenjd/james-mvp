@@ -6,9 +6,10 @@ import Tabs, { tabIds, type TabType } from "../../../Components/Tabs/Tabs"; // i
 import { useSearchParams } from "react-router-dom";
 import { useAppSelector } from "../../../Redux/hooks";
 import { useAuth } from "../../../Context/AuthContext";
-import CapitalCallModal from "../../../Components/Modal/CapitalCallModal";
 import type { FundDetail } from "../../../Redux/features/Funds/fundsSlice";
 import { useCreateCapitalCall } from "../../../API/Endpoints/Funds/capitalCall";
+import FundTransactionModal from "../../../Components/Modal/CapitalCallModal";
+import { useCreateDistribution } from "../../../API/Endpoints/Funds/distributions";
 
 const isValidTab = (tab: string | null): tab is TabType => {
   return tabIds.includes(tab as TabType);
@@ -31,7 +32,11 @@ const Project = () => {
   const [activeTab, setActiveTab] = useState<TabType>(getInitialTab());
   const [fundData, setFundData] = useState<FundDetail | null>(null);
   const fund = useAppSelector((state) => state.funds.currentFund);
+  const [isDistModalOpen, setIsDistModalOpen] = useState<boolean>(false); // Changed from isCapitalModalOpen
+
   const { mutateAsync: createCapitalCall } = useCreateCapitalCall();
+  const { mutateAsync: createDistribution } = useCreateDistribution();
+
   useEffect(() => {
     if (fund) {
       setFundData(fund?.result);
@@ -88,6 +93,36 @@ const Project = () => {
       console.error("Capital call submission failed:", error);
     }
   };
+  const handleSubmitDistribution = async (data: any) => {
+    if (!fundData?.id) {
+      console.error("❌ fund.id is missing!");
+      return;
+    }
+    // Validate and parse the date
+    let parsedDate: string;
+    try {
+      const dateValue = data.date ? new Date(data.date) : new Date();
+      if (isNaN(dateValue.getTime())) {
+        throw new Error("Invalid date format");
+      }
+      parsedDate = dateValue.toISOString();
+    } catch (error) {
+      console.error("❌ Date parsing failed:", error);
+      return;
+    }
+    const payload = {
+      ...data,
+      fundId: fundData.id,
+      date: parsedDate,
+    };
+
+    try {
+      await createDistribution(payload);
+      setIsDistModalOpen(false);
+    } catch (error) {
+      console.error("Capital call submission failed:", error);
+    }
+  };
 
 
   return (
@@ -114,6 +149,15 @@ const Project = () => {
             Create Capital Call
           </button>
         )}
+        {activeTab === 'distribution' && user?.role === 'fundManager' && (
+          <button
+            onClick={() => setIsDistModalOpen(true)}
+            className="bg-theme-sidebar-accent text-white px-8 py-2 rounded-[10px] text-sm font-normal transition-colors duration-200 flex items-center gap-2"
+          >
+            <TrendingUp />
+            Create Distribution
+          </button>
+        )}
       </div>
 
       <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
@@ -126,13 +170,23 @@ const Project = () => {
         initialData={fund?.result || {}}
       />
 
-      <CapitalCallModal
+      <FundTransactionModal
         isOpen={isCapitalModalOpen}
         onClose={() => setIsCapitalModalOpen(false)}
         onSubmit={handleSubmitCapitalCall}
         mode={'create'}
         initialData={undefined}
         fund={fundData || null}
+        entityType="capital"
+      />
+      <FundTransactionModal
+        isOpen={isDistModalOpen}
+        onClose={() => setIsDistModalOpen(false)}
+        onSubmit={handleSubmitDistribution}
+        mode={'create'}
+        initialData={undefined}
+        fund={fundData || null}
+        entityType="distribution"
       />
     </div>
   );

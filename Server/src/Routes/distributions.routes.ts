@@ -4,6 +4,11 @@ import express, { Router } from 'express';
 
 const router = Router();
 
+router.patch(
+  '/status/:id',
+  verifyToken,
+  DistributionController.updateStatus as unknown as express.RequestHandler,
+);
 router.post(
   '/create',
   verifyToken,
@@ -14,11 +19,10 @@ router.get(
   verifyToken,
   DistributionController.getAll as unknown as express.RequestHandler,
 );
-router.put(
-  '/status/:id',
+router.patch(
+  '/:id',
   verifyToken,
-  DistributionController.updateStatus as unknown as express.RequestHandler,
+  DistributionController.update as unknown as express.RequestHandler,
 );
-router.put('/:id', verifyToken, DistributionController.update as unknown as express.RequestHandler);
 
 export default router;

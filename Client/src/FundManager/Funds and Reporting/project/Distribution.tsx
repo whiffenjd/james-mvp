@@ -6,10 +6,10 @@ import type { PaginationInfo, TableAction, TableColumn } from '../../../types/ta
 import { formatDateToDDMMYYYY } from '../../../utils/dateUtils';
 import { Table } from '../../../Components/Table';
 import { useParams } from 'react-router-dom';
-import DistributionModal from '../../../Components/Modal/DistributionModal'; // Renamed modal
 import { useAppSelector } from '../../../Redux/hooks';
 import type { FundDetail } from '../../../Redux/features/Funds/fundsSlice';
-import { DistributionViewModal } from '../../../Components/Modal/DistributionView'; // Renamed view modal
+import { FundTransactionViewModal } from '../../../Components/Modal/CapitalView';
+import FundTransactionModal from '../../../Components/Modal/CapitalCallModal';
 
 const Distribution = () => {
   const { id } = useParams<{ id: string }>();
@@ -110,7 +110,7 @@ const Distribution = () => {
                   : 'bg-red-100 text-red-700'
               }`}
           >
-            {value === 'approved' ? 'Approved' : value === 'pending' ? 'Pending' : 'Rejected'}
+            {value === 'approved' ? 'Received' : value === 'pending' ? 'Pending' : 'Rejected'}
           </span>
         </div>
       ),
@@ -125,7 +125,6 @@ const Distribution = () => {
           label: 'View',
           variant: 'primary',
           onClick: (row: DistType) => {
-            console.log('View distribution:', row);
             setDistribution(row);
             setIsViewModalOpen(true);
           },
@@ -230,7 +229,6 @@ const Distribution = () => {
   };
 
   const handleUpdateDistribution = async (data: any) => {
-    console.log('fund', fundData, distribution);
     if (!fundData?.id) {
       console.error('❌ Fund ID is missing!');
       return;
@@ -312,21 +310,24 @@ const Distribution = () => {
         className="mb-8"
       />
 
-      <DistributionModal
+      <FundTransactionModal
         isOpen={isDistModalOpen}
         onClose={() => setIsDistModalOpen(false)}
         onSubmit={handleUpdateDistribution}
         mode={'edit'}
-        initialData={distribution ?? undefined} // ✅ not null
+        initialData={distribution ?? undefined}
         fund={fundData || null}
+        entityType="distribution"
       />
-      <DistributionViewModal
+
+      <FundTransactionViewModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
-        distribution={distribution} // Changed from capitalCall
+        transaction={distribution}
         onApprove={handleApprove}
         onReject={handleReject}
         isLoading={updateMutation.isPending}
+        entityType="distribution"
       />
     </div>
   );

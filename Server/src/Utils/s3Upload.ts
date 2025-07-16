@@ -1,7 +1,5 @@
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-
-import { randomUUID } from 'crypto';
 import { Express } from 'express';
 
 const s3Client = new S3Client({
@@ -12,17 +10,19 @@ const s3Client = new S3Client({
   },
 });
 
-export const s3Upload = async (file: Express.Multer.File): Promise<string> => {
+export const s3Upload = async (file: Express.Multer.File, userId: string): Promise<string> => {
   if (!file) {
     throw new Error('No file provided for upload');
   }
 
   const bucketName = process.env.BUCKET_NAME;
   if (!bucketName) {
-    throw new Error('S3 bucket name is not configured in environment variables');
+    throw new Error('S3 bucket name is not configured');
   }
 
-  const key = `${randomUUID()}-${file.originalname.replace(/\s+/g, '_')}`;
+  const sanitizedFilename = file.originalname.replace(/\s+/g, '_');
+  const key = `fundReports/${userId}/${sanitizedFilename}`;
+
   const params = {
     Bucket: bucketName,
     Key: key,
@@ -34,11 +34,14 @@ export const s3Upload = async (file: Express.Multer.File): Promise<string> => {
     const command = new PutObjectCommand(params);
     await s3Client.send(command);
 
-    // Generate a signed URL (optional, expires in 1 hour)
+    // Optionally return a signed URL
     const signedUrl = await getSignedUrl(s3Client, new PutObjectCommand(params), {
       expiresIn: 3600,
     });
-    return signedUrl; // Return signed URL; use s3Client.config.endpoint?.href + key for permanent URL if needed
+
+    // Alternatively return public S3 URL (if bucket allows public read or CDN access)
+    const fileUrl = `https://${bucketName}.s3.amazonaws.com/${key}`;
+    return fileUrl;
   } catch (error) {
     console.error('S3 upload failed:', error);
     throw new Error('Failed to upload file to S3');

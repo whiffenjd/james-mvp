@@ -17,8 +17,7 @@ export const createFundReport = async (req: Request, res: Response) => {
     }
 
     const file = req.file;
-    const documentUrl = await s3Upload(file); // Upload to S3 and get URL
-
+    const documentUrl = await s3Upload(file, createdBy);
     const parsed = CreateFundReportSchema.safeParse({
       ...req.body,
       documentUrl,
@@ -45,13 +44,21 @@ export const getFundReportsByFund = async (req: Request, res: Response) => {
     const fundId = req.params.fundId;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const year = req.query.year as string | undefined;
+    const quarter = req.query.quarter as string | undefined;
 
-    // Role check (optional, adjust based on requirements)
-    if (role !== 'fundManager' && role !== 'admin') {
-      return sendErrorResponse(res, 'Unauthorized access to fund reports', 403);
-    }
+    // // Role check (optional, adjust based on requirements)
+    // if (role !== 'fundManager' && role !== 'admin') {
+    //   return sendErrorResponse(res, 'Unauthorized access to fund reports', 403);
+    // }
 
-    const { data, totalItems, totalPages, currentPage } = await getByFund(fundId, page, limit);
+    const { data, totalItems, totalPages, currentPage } = await getByFund(
+      fundId,
+      page,
+      limit,
+      year,
+      quarter,
+    );
     return sendSuccessResponse(res, 'Fund reports retrieved successfully', 200, {
       results: data,
       totalCount: totalItems,

@@ -9,10 +9,11 @@ export type FundReport = {
   createdBy: string;
   projectName: string;
   description: string;
-  documentUrl: string;
+  documentUrl?: string;
   year: string;
   quarter: string;
   createdAt: string;
+  createdByName?: string;
 };
 
 export type CreateFundReportPayload = {
@@ -31,20 +32,23 @@ export type PaginatedFundReports = {
   currentPage: number;
 };
 
-// Hook to fetch paginated fund reports by fund
 export const useGetFundReports = ({
   fundId,
   page = 1,
   limit = 10,
+  year,
+  quarter,
 }: {
   fundId: string;
   page?: number;
   limit?: number;
+  year?: string;
+  quarter?: string;
 }) => {
   return useQuery<PaginatedFundReports, Error>({
-    queryKey: ["fundReports", fundId, page, limit],
+    queryKey: ["fundReports", fundId, page, limit, year, quarter], // Include year and quarter in queryKey
     queryFn: async () => {
-      const params = { page, limit };
+      const params = { page, limit, year, quarter };
       const response = await axiosPrivate.get(
         `/fund-report/by-fund/${fundId}`,
         {

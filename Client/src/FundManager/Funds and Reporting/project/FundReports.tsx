@@ -1,13 +1,20 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Download, Eye, Trash2 } from 'lucide-react';
+import { Upload, FileText, Download, Eye, Trash2, X } from 'lucide-react';
 import { Table, type PaginationInfo, type TableAction, type TableColumn } from '../../../Components/Table';
 import { useCreateFundReport, useGetFundReports, type FundReport } from '../../../API/Endpoints/Funds/fundReport';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../../Context/AuthContext';
+import ReportDetailsModal from '../../../Components/Modal/ReportDetailsModal';
+import { EnhancedYearQuarterDropdowns } from '../../../Components/Modal/EnhancedYearQuarterDropdowns';
 
 interface FormData {
   projectName: string;
   description: string;
+  year: string;
+  quarter: string;
+}
+interface FetchFormData {
+
   year: string;
   quarter: string;
 }
@@ -24,6 +31,10 @@ const FundReports = () => {
     year: new Date().getFullYear().toString(),
     quarter: 'Q1'
   });
+  const [fetchFormData, setFetchFormData] = useState<FetchFormData>({
+    year: '',
+    quarter: '',
+  });
   const itemsPerPage = 5;
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,7 +46,9 @@ const FundReports = () => {
   const { data } = useGetFundReports({
     fundId: id || '',
     page: currentPage,
-    limit: itemsPerPage
+    limit: itemsPerPage,
+    ...(fetchFormData.year ? { year: fetchFormData.year } : {}),
+    ...(fetchFormData.quarter ? { quarter: fetchFormData.quarter } : {}),
   });
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -71,6 +84,14 @@ const FundReports = () => {
     }));
   };
 
+  const handleFetchInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFetchFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleSubmit = async () => {
     if (!selectedFile || !id) {
       alert('Please select a document to upload and ensure fund ID is available');
@@ -97,11 +118,9 @@ const FundReports = () => {
           quarter: 'Q1'
         });
         setSelectedFile(null);
-        alert('Fund report created successfully!');
         setIsLoading(false);
       },
       onError: () => {
-        alert('Failed to create fund report');
         setIsLoading(false);
       }
     });
@@ -116,11 +135,42 @@ const FundReports = () => {
     setIsModalOpen(true);
   };
 
-  const handleDownload = (report: FundReport) => {
-    console.log('Download report:', report);
-    // Implement actual download logic here
-  };
+  const handleDownload = async (report: FundReport) => {
+    if (!report.documentUrl) {
+      console.error('No document URL available');
+      return;
+    }
 
+    try {
+      const response = await fetch(report.documentUrl, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch the PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+
+      // Optionally name the file
+      const filename =
+        report.projectName?.replace(/\s+/g, '_') || `fund-report-${report.id}`;
+      link.download = `${filename}.pdf`;
+
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+  };
   const columns: TableColumn<FundReport>[] = [
     {
       key: 'projectName',
@@ -186,7 +236,6 @@ const FundReports = () => {
       },
     },
   ];
-
   const actions: TableAction<FundReport>[] = [
     {
       label: 'View',
@@ -195,13 +244,19 @@ const FundReports = () => {
       onClick: (row: FundReport) => handleViewReport(row),
       show: () => true,
     },
-    {
-      label: 'Download',
-      variant: 'secondary',
-      icon: <Download className="w-4 h-4" />,
-      onClick: (row: FundReport) => handleDownload(row),
-      show: () => true,
-    },
+    ...(user?.role === 'investor'
+      ? [
+        {
+
+          variant: 'primary',
+          icon: <Download className="w-5 h-5" />,
+          onClick: (row: FundReport) => handleDownload(row),
+          show: () => true,
+        },
+      ]
+      : []),
+
+    // 👇 Optional: Only show for fund managers
     ...(user?.role === 'fundManager'
       ? [
         {
@@ -213,185 +268,183 @@ const FundReports = () => {
               console.log('Delete report:', row);
             }
           },
-          show: () => true,
+          show: () => false,
         },
       ]
       : []),
   ];
-  console.log("data", data)
-
   const paginationInfo: PaginationInfo = {
-    currentPage: data.currentPage || 1,
+    currentPage: data?.currentPage || 1,
     totalPages: data?.totalPages || 1,
     totalItems: data?.totalCount || 0,
     itemsPerPage
   };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-  console.log("selec", selectedReport)
+  const setFetchField = (name: keyof FetchFormData, value: string) => {
+    setFetchFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
   return (
-    <div className="w-full max-w-6xl">
+    <div className="w-full">
       <div className="">
         {/* Upload Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Add New Fund Report</h2>
+        {user?.role === 'fundManager' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Add New Fund Report</h2>
 
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Left Side - Document Upload */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Fund Report Document</h3>
-                <div className="text-sm text-gray-500 mb-4">File Size should be 5MB</div>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Side - Document Upload */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900">Fund Report Document</h3>
+                  <div className="text-sm text-gray-500 mb-4">File Size should be 5MB</div>
 
-                <div
-                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDragging
-                    ? 'border-teal-400 bg-teal-50'
-                    : selectedFile
-                      ? 'border-teal-500 bg-teal-50'
-                      : 'border-gray-300 bg-gray-50'
-                    }`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <div className="flex flex-col items-center space-y-4">
-                    {selectedFile ? (
-                      <>
-                        <FileText className="w-16 h-16 text-teal-600" />
-                        <div className="text-center">
-                          <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
-                          <p className="text-xs text-gray-500">
-                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-16 h-16 text-gray-400" />
-                        <div className="text-center">
-                          <p className="text-sm font-medium text-gray-900">
-                            Drop your document here, or{' '}
-                            <button
-                              type="button"
-                              className="text-teal-600 hover:text-teal-700 underline"
-                              onClick={() => fileInputRef.current?.click()}
-                            >
-                              browse
-                            </button>
-                          </p>
-                          <p className="text-xs text-gray-500">Supports PDF, DOC, DOCX files</p>
-                        </div>
-                      </>
-                    )}
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDragging
+                      ? 'border-theme-sidebar-accent bg-teal-50'
+                      : selectedFile
+                        ? ' bg-teal-50'
+                        : 'border-gray-300 bg-gray-50'
+                      }`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    <div className="flex flex-col items-center space-y-4">
+                      {selectedFile ? (
+                        <>
+                          <FileText className="w-16 h-16 text-teal-600" />
+                          <div className="text-center">
+                            <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-16 h-16 text-gray-400" />
+                          <div className="text-center">
+                            <p className="text-sm font-medium text-gray-900">
+                              Drop your document here, or{' '}
+                              <button
+                                type="button"
+                                className="text-theme-sidebar-accent underline"
+                                onClick={() => fileInputRef.current?.click()}
+                              >
+                                browse
+                              </button>
+                            </p>
+                            <p className="text-xs text-gray-500">Supports PDF files</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
+
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileSelect}
+                    accept=".pdf"
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full bg-theme-sidebar-accent text-white py-3 px-4 rounded-lg  transition-colors font-medium"
+                  >
+                    Upload Document
+                  </button>
                 </div>
 
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileSelect}
-                  accept=".pdf,.doc,.docx"
-                  className="hidden"
-                />
+                {/* Right Side - Form Fields */}
+                <div className="space-y-6">
+                  {/* Project Name Section */}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-sm font-medium text-theme-sidebar-accent">
+                        Project Name
+                      </label>
 
+                    </div>
+                    <input
+                      type="text"
+                      name="projectName"
+                      value={formData.projectName}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-theme-sidebar-accent/30 rounded-lg outline-none
+                focus:ring-2 focus:ring-theme-sidebar-accent focus:border-theme-sidebar-accent
+                bg-white/90 text-gray-700 placeholder-theme-sidebar-accent/50"
+                      placeholder="Enter project name"
+                      required
+                    />
+                  </div>
+
+                  {/* Description Section */}
+                  <div>
+                    <label className="block text-sm font-medium text-theme-sidebar-accent mb-2">
+                      Project Description
+                    </label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      rows={4}
+                      className="w-full px-4 py-3 border border-theme-sidebar-accent/30 rounded-lg outline-none
+                focus:ring-2 focus:ring-theme-sidebar-accent focus:border-theme-sidebar-accent
+                bg-white/90 text-gray-700 placeholder-theme-sidebar-accent/50"
+                      placeholder="Enter project description"
+                      required
+                    />
+                  </div>
+                  <EnhancedYearQuarterDropdowns
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-6 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium"
+                  onClick={handleSubmit}
+                  disabled={isLoading || !selectedFile}
+                  className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Upload Document
+                  {isLoading ? 'Submitting...' : 'Submit'}
                 </button>
               </div>
-
-              {/* Right Side - Form Fields */}
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Project Name
-                  </label>
-                  <div className="text-sm text-gray-500 mb-2">By Fund Manager Name</div>
-                  <input
-                    type="text"
-                    name="projectName"
-                    value={formData.projectName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                    placeholder="Enter project name"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Project Description
-                  </label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                    placeholder="Enter project description"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Year
-                    </label>
-                    <select
-                      name="year"
-                      value={formData.year}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                      required
-                    >
-                      {[2024, 2023, 2022, 2021, 2020].map(year => (
-                        <option key={year} value={year.toString()}>
-                          {year}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Quarter
-                    </label>
-                    <select
-                      name="quarter"
-                      value={formData.quarter}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                      required
-                    >
-                      <option value="Q1">Q1</option>
-                      <option value="Q2">Q2</option>
-                      <option value="Q3">Q3</option>
-                      <option value="Q4">Q4</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-6 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isLoading || !selectedFile}
-                className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Submitting...' : 'Submit'}
-              </button>
             </div>
           </div>
-        </div>
+        )}
+        <div className="w-[60%] my-4 relative ">
+          <EnhancedYearQuarterDropdowns
+            formData={fetchFormData}
+            handleInputChange={handleFetchInputChange}
+          />
 
+          {/* Clear Filter Icon */}
+          {(fetchFormData.year || fetchFormData.quarter) && (
+            <button
+              type="button"
+              onClick={() => {
+                setFetchField('year', '');
+                setFetchField('quarter', '');
+              }}
+              className="absolute top-11 -right-11 text-gray-500 hover:text-red-500 transition-colors"
+              title="Clear Filters"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+          )}
+        </div>
         <Table
           data={data?.results || []}
           columns={columns}
@@ -402,93 +455,14 @@ const FundReports = () => {
           emptyMessage="No capital calls found"
           className="mb-8"
         />
-
-        {/* View Report Modal */}
-        {isModalOpen && selectedReport && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold text-gray-900">Report Details</h3>
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-6 overflow-y-auto">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Project Name</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedReport.projectName}</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Created By</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedReport.createdBy}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Year</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedReport.year}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Quarter</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedReport.quarter}</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Description</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedReport.description}</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Created Date</label>
-                    <p className="mt-1 text-sm text-gray-900">{formatDate(selectedReport.createdAt)}</p>
-                  </div>
-                  {selectedReport.documentUrl && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Attached Document</label>
-                      <div className="max-h-[400px] overflow-auto rounded border border-gray-200">
-                        {selectedReport.documentUrl.endsWith('.pdf') ? (
-                          <iframe
-                            src={selectedReport.documentUrl}
-                            title="PDF Preview"
-                            className="w-full h-[400px]"
-                          />
-                        ) : (
-                          <img
-                            src={selectedReport.documentUrl}
-                            alt="Document"
-                            className="w-full object-contain"
-                          />
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-
-                  <div className="pt-4 border-t border-gray-200">
-                    <button
-                      onClick={() => handleDownload(selectedReport)}
-                      className="w-full bg-teal-600 text-white py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium flex items-center justify-center"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Document
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <ReportDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          selectedReport={selectedReport}
+          onDownload={(report) => {
+            handleDownload(report);
+          }}
+        />
       </div>
     </div>
   );

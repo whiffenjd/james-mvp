@@ -1,7 +1,7 @@
 import { db } from '../db/DbConnection';
-import { fundReports, activityLogs } from '../db/schema';
+import { fundReports, activityLogs, UsersTable } from '../db/schema';
 import { CreateFundReportSchema } from '../validators/fundReport.schema';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 export const create = async (data: {
   fundId: string;
@@ -44,15 +44,46 @@ export const create = async (data: {
   });
 };
 
-export const getByFund = async (fundId: string, page: number = 1, limit: number = 10) => {
+export const getByFund = async (
+  fundId: string,
+  page: number = 1,
+  limit: number = 10,
+  year?: string,
+  quarter?: string,
+) => {
   const offset = (page - 1) * limit;
 
+  // Build conditions array
+  const conditions = [eq(fundReports.fundId, fundId)];
+  if (year) conditions.push(eq(fundReports.year, year));
+  if (quarter) conditions.push(eq(fundReports.quarter, quarter));
+
+  // Reduce conditions into a single and clause if there are multiple
+  const whereClause = conditions.length > 1 ? and(...conditions) : conditions[0];
+
   const [data, [{ count }]] = await Promise.all([
-    db.select().from(fundReports).where(eq(fundReports.fundId, fundId)).limit(limit).offset(offset),
+    db
+      .select({
+        id: fundReports.id,
+        fundId: fundReports.fundId,
+        createdBy: fundReports.createdBy,
+        projectName: fundReports.projectName,
+        description: fundReports.description,
+        documentUrl: fundReports.documentUrl,
+        year: fundReports.year,
+        quarter: fundReports.quarter,
+        createdAt: fundReports.createdAt,
+        createdByName: UsersTable.name,
+      })
+      .from(fundReports)
+      .leftJoin(UsersTable, eq(fundReports.createdBy, UsersTable.id))
+      .where(whereClause)
+      .limit(limit)
+      .offset(offset),
     db
       .select({ count: sql`count(*)::integer` })
       .from(fundReports)
-      .where(eq(fundReports.fundId, fundId)),
+      .where(whereClause),
   ]);
 
   const totalItems = Number(count || 0);

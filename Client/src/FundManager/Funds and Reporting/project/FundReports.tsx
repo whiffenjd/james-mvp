@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Download, Eye, Trash2, X } from 'lucide-react';
+import { Upload, FileText, Download, Eye, X } from 'lucide-react';
 import { Table, type PaginationInfo, type TableAction, type TableColumn } from '../../../Components/Table';
 import { useCreateFundReport, useGetFundReports, type FundReport } from '../../../API/Endpoints/Funds/fundReport';
 import { useParams } from 'react-router-dom';

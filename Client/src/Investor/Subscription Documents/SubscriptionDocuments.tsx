@@ -290,7 +290,7 @@ const SubscriptionDocuments = () => {
           const scaledY = placement.date.y * scaleY;
           const scaledWidth = placement.date.width * scaleX;
           const scaledHeight = placement.date.height * scaleY;
-          const scaledFontSize = fontSize * scaleY;
+
 
 
 

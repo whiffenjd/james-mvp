@@ -50,10 +50,10 @@ const Capital = () => {
       },
     },
     {
-      key: 'investorId',
-      header: 'Investor ID',
+      key: 'InvestorName',
+      header: 'Investor Name',
       sortable: false,
-      width: '15vh',
+      width: '20vh',
       align: 'left',
       render: (value: string) => {
         const shortValue = value?.split('-')[0];
@@ -135,7 +135,7 @@ const Capital = () => {
           label: 'View',
           variant: "primary" as "primary" | "secondary" | "danger" | undefined,
           onClick: (row: CapitalCall) => {
-            console.log('Approve capital call:', row);
+
             // Add approve logic
             setCapitalCall(row);
             setIsModalOpen(true)
@@ -193,7 +193,7 @@ const Capital = () => {
           onClick: (row: CapitalCall) => {
             setCapitalCall(row);
             setIsCapitalModalOpen(true);
-            console.log('Edit capital call:', row);
+
           },
           show: (row: CapitalCall) => row.status !== 'approved',
         },
@@ -245,7 +245,7 @@ const Capital = () => {
 
 
   const handleUpdateCapitalCall = async (data: any) => {
-    console.log("fund", fundData, capitalCall);
+
     if (!fundData?.id) {
       console.error('❌ Fund ID is missing!');
       return;

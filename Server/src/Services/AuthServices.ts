@@ -28,7 +28,6 @@ export const registerInvestor = async (
   if (existingUser.length > 0) {
     throw new Error('An account with this email already exists.');
   }
-  console.log('referralID', referralId);
   // Step 2: If referralId is provided, fetch their theme
   let selectedThemeId: string | null = null;
   if (referralId) {

@@ -25,7 +25,14 @@ interface FundInvestor {
   documentUrl: string;
   addedAt: string;
 }
-
+interface HistoryItem {
+  id: string;
+  description: string;
+  timeAgo: string;
+  timestamp: string;
+  entityType: string;
+  action: string;
+}
 export interface FundDetail {
   name: string;
   fundSize: string;
@@ -41,6 +48,7 @@ export interface FundDetail {
   documents: FundDocument[];
   createdAt: string;
   id: string;
+  history: HistoryItem[];
 }
 
 export interface FundApiResponse {

@@ -35,7 +35,6 @@ export const getUserProfile = async (req: Request, res: Response) => {
       theme: profile.selectedTheme,
     };
 
-    console.log('formattedProfile', formattedProfile);
     return res.status(200).json({
       success: true,
       message: 'Profile fetched from database',

@@ -3,6 +3,7 @@ import { ActivityLogCreate, CapitalCallCreate } from '../Types/capitalCall.types
 import { db } from '../db/DbConnection';
 import { capitalCalls } from '../db/schema/CapitalCall';
 import { activityLogs } from '../db/schema/ActivityLogs';
+import { UsersTable } from '../db/schema';
 
 export const create = async (data: CapitalCallCreate) => {
   return db.transaction(async (tx) => {
@@ -54,17 +55,28 @@ export const getAllForUser = async (
   role: string,
   page: number,
   limit: number,
-  fundId?: string, // Optional fundId parameter
+  fundId?: string,
 ) => {
   const offset = (page - 1) * limit;
 
-  let query = db.select().from(capitalCalls);
+  // Build base query with join to UsersTable
+  const baseQuery = db
+    .select({
+      ...capitalCalls,
+      InvestorName: UsersTable.name,
+      InvestorEmail: UsersTable.email,
+    })
+    .from(capitalCalls)
+    .innerJoin(UsersTable, eq(capitalCalls.investorId, UsersTable.id));
+
+  // Apply filters
+  let filteredQuery;
   if (role === 'fundManager') {
-    query = query.where(
+    filteredQuery = baseQuery.where(
       and(eq(capitalCalls.createdBy, userId), fundId ? eq(capitalCalls.fundId, fundId) : undefined),
     );
   } else if (role === 'investor') {
-    query = query.where(
+    filteredQuery = baseQuery.where(
       and(
         eq(capitalCalls.investorId, userId),
         fundId ? eq(capitalCalls.fundId, fundId) : undefined,
@@ -72,11 +84,14 @@ export const getAllForUser = async (
     );
   } else if (role !== 'admin') {
     throw new Error('Invalid user role');
+  } else {
+    filteredQuery = baseQuery;
   }
 
+  // Get paginated results and total count
   const [data, [{ count }]] = await Promise.all([
-    query.limit(limit).offset(offset),
-    db.select({ count: sql`count(*)::integer` }).from(query.as('subquery')),
+    filteredQuery.limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::integer` }).from(filteredQuery.as('subquery')),
   ]);
 
   const totalItems = count || 0;

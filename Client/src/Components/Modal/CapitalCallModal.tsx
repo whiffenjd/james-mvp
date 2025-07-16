@@ -148,7 +148,7 @@ export default function FundTransactionModal({
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
             onClick={handleBackdropClick}
         >
-            <div className="bg-white rounded-2xl p-6 w-full max-w-xl shadow-2xl">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl">
                 <div className="relative flex items-center justify-center py-2 m-2">
                     {/* Centered Heading */}
                     <h2 className="text-xl font-semibold text-gray-900">
@@ -186,7 +186,7 @@ export default function FundTransactionModal({
                     {/* Investor Selection */}
                     <div className="relative">
                         {mode === "view" ? (
-                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl flex items-center">
+                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center">
                                 <span className="text-gray-900">
                                     {selectedInvestor?.name || "No investor selected"}
                                 </span>
@@ -196,7 +196,7 @@ export default function FundTransactionModal({
                                 <button
                                     type="button"
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                    className={`w-full h-12 px-4 text-left bg-white border rounded-xl flex items-center justify-between transition-colors ${errors.investorId ? "border-red-500" : "border-gray-200 hover:border-gray-300"
+                                    className={`w-full h-12 px-4 text-left bg-white border rounded-lg flex items-center justify-between transition-colors ${errors.investorId ? "border-red-500" : "border-gray-200 hover:border-gray-300"
                                         } ${!formData.investorId ? "text-gray-500" : "text-gray-900"}`}
                                     disabled={isViewMode}
                                 >
@@ -207,7 +207,7 @@ export default function FundTransactionModal({
                                 </button>
 
                                 {isDropdownOpen && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 max-h-60 overflow-y-auto">
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
                                         {investors.map((investor) => (
                                             <button
                                                 key={investor.investorId}
@@ -231,7 +231,7 @@ export default function FundTransactionModal({
                     {/* Amount */}
                     <div>
                         {mode === "view" ? (
-                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl flex items-center">
+                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center">
                                 <span className="text-gray-900">
                                     {formData.amount ? `$${Number(formData.amount).toLocaleString()}` : "N/A"}
                                 </span>
@@ -244,7 +244,7 @@ export default function FundTransactionModal({
                                     value={formData.amount}
                                     onChange={handleAmountChange}
                                     placeholder="Amount"
-                                    className={`w-full h-12 pl-8 pr-4 border rounded-xl transition-colors ${errors.amount ? "border-red-500" : "border-gray-200 hover:border-gray-300 focus:border-teal-500"
+                                    className={`w-full h-12 pl-8 pr-4 border rounded-lg transition-colors ${errors.amount ? "border-red-500" : "border-gray-200 hover:border-gray-300 focus:border-teal-500"
                                         } focus:outline-none focus:ring-0`}
                                     disabled={isViewMode}
                                 />
@@ -256,7 +256,7 @@ export default function FundTransactionModal({
                     {/* Date */}
                     <div className="relative w-full">
                         {mode === "view" ? (
-                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl flex items-center">
+                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center">
                                 <span className="text-gray-900">
                                     {selectedDate?.toLocaleDateString() || "No date selected"}
                                 </span>
@@ -268,12 +268,14 @@ export default function FundTransactionModal({
                                     onChange={handleDateChange}
                                     dateFormat="MMMM d, yyyy"
                                     placeholderText="Select Date"
-                                    className={`w-full h-12 pl-4 pr-10 border rounded-xl transition-colors ${errors.date
+                                    className={`w-full h-12 pl-4 pr-10 border rounded-lg transition-colors ${errors.date
                                         ? "border-red-500"
                                         : "border-gray-200 hover:border-gray-300 focus:border-teal-500"
                                         } focus:outline-none focus:ring-0`}
                                     disabled={isViewMode}
                                     wrapperClassName="w-full"
+                                    onKeyDown={(e) => e?.preventDefault()} // Prevent keyboard input
+                                    onChangeRaw={(e) => e?.preventDefault()} // Prevent manual changes
                                 />
                                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                                     <svg
@@ -298,7 +300,7 @@ export default function FundTransactionModal({
                     {/* Recipient Name */}
                     <div>
                         {mode === "view" ? (
-                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl flex items-center">
+                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center">
                                 <span className="text-gray-900">
                                     {formData.recipientName || "N/A"}
                                 </span>
@@ -309,7 +311,7 @@ export default function FundTransactionModal({
                                 value={formData.recipientName}
                                 onChange={(e) => handleInputChange("recipientName", e.target.value)}
                                 placeholder="Recipient's Full Name"
-                                className={`w-full h-12 px-4 border rounded-xl transition-colors ${errors.recipientName ? "border-red-500" : "border-gray-200 hover:border-gray-300 focus:border-teal-500"
+                                className={`w-full h-12 px-4 border rounded-lg transition-colors ${errors.recipientName ? "border-red-500" : "border-gray-200 hover:border-gray-300 focus:border-teal-500"
                                     } focus:outline-none focus:ring-0`}
                                 disabled={isViewMode}
                             />
@@ -320,7 +322,7 @@ export default function FundTransactionModal({
                     {/* Bank Name */}
                     <div>
                         {mode === "view" ? (
-                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl flex items-center">
+                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center">
                                 <span className="text-gray-900">
                                     {formData.bankName || "N/A"}
                                 </span>
@@ -331,7 +333,7 @@ export default function FundTransactionModal({
                                 value={formData.bankName}
                                 onChange={(e) => handleInputChange("bankName", e.target.value)}
                                 placeholder="Bank Name"
-                                className={`w-full h-12 px-4 border rounded-xl transition-colors ${errors.bankName ? "border-red-500" : "border-gray-200 hover:border-gray-300 focus:border-teal-500"
+                                className={`w-full h-12 px-4 border rounded-lg transition-colors ${errors.bankName ? "border-red-500" : "border-gray-200 hover:border-gray-300 focus:border-teal-500"
                                     } focus:outline-none focus:ring-0`}
                                 disabled={isViewMode}
                             />
@@ -342,7 +344,7 @@ export default function FundTransactionModal({
                     {/* Account Number */}
                     <div>
                         {mode === "view" ? (
-                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl flex items-center">
+                            <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center">
                                 <span className="text-gray-900">
                                     {formData.accountNumber || "N/A"}
                                 </span>
@@ -353,7 +355,7 @@ export default function FundTransactionModal({
                                 value={formData.accountNumber}
                                 onChange={(e) => handleInputChange("accountNumber", e.target.value)}
                                 placeholder="Account Number/IBAN"
-                                className={`w-full h-12 px-4 border rounded-xl transition-colors ${errors.accountNumber ? "border-red-500" : "border-gray-200 hover:border-gray-300 focus:border-teal-500"
+                                className={`w-full h-12 px-4 border rounded-lg transition-colors ${errors.accountNumber ? "border-red-500" : "border-gray-200 hover:border-gray-300 focus:border-teal-500"
                                     } focus:outline-none focus:ring-0`}
                                 disabled={isViewMode}
                             />
@@ -364,7 +366,7 @@ export default function FundTransactionModal({
                     {/* Description */}
                     <div>
                         {mode === "view" ? (
-                            <div className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl">
+                            <div className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg">
                                 <p className="text-gray-900 whitespace-pre-line">
                                     {formData.description || "No description provided"}
                                 </p>
@@ -375,7 +377,7 @@ export default function FundTransactionModal({
                                 onChange={(e) => handleInputChange("description", e.target.value)}
                                 placeholder="Description"
                                 rows={4}
-                                className={`w-full px-4 py-3 border rounded-xl resize-none transition-colors ${errors.description ? "border-red-500" : "border-gray-200 hover:border-gray-300 focus:border-teal-500"
+                                className={`w-full px-4 py-3 border rounded-lg resize-none transition-colors ${errors.description ? "border-red-500" : "border-gray-200 hover:border-gray-300 focus:border-teal-500"
                                     } focus:outline-none focus:ring-0`}
                                 disabled={isViewMode}
                             />
@@ -388,7 +390,7 @@ export default function FundTransactionModal({
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full h-12 bg-theme-sidebar-accent disabled:bg-gray-400 text-white rounded-xl font-medium mt-6 transition-colors"
+                            className="w-full h-12 bg-theme-sidebar-accent disabled:bg-gray-400 text-white rounded-lg font-medium mt-6 transition-colors"
                         >
                             {isSubmitting
                                 ? "Submitting..."

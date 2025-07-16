@@ -256,22 +256,22 @@ const FundReports = () => {
       ]
       : []),
 
-    // 👇 Optional: Only show for fund managers
-    ...(user?.role === 'fundManager'
-      ? [
-        {
-          label: 'Delete',
-          variant: "danger" as "primary" | "secondary" | "danger" | undefined,
-          icon: <Trash2 className="w-4 h-4" />,
-          onClick: (row: FundReport) => {
-            if (confirm('Are you sure you want to delete this report?')) {
-              console.log('Delete report:', row);
-            }
-          },
-          show: () => false,
-        },
-      ]
-      : []),
+    // // 👇 Optional: Only show for fund managers
+    // ...(user?.role === 'fundManager'
+    //   ? [
+    //     {
+    //       label: 'Delete',
+    //       variant: "danger" as "primary" | "secondary" | "danger" | undefined,
+    //       icon: <Trash2 className="w-4 h-4" />,
+    //       onClick: (row: FundReport) => {
+    //         if (confirm('Are you sure you want to delete this report?')) {
+    //           console.log('Delete report:', row);
+    //         }
+    //       },
+    //       show: () => false,
+    //     },
+    //   ]
+    //   : []),
   ];
   const paginationInfo: PaginationInfo = {
     currentPage: data?.currentPage || 1,

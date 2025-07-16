@@ -17,6 +17,8 @@ export type Distribution = {
   status: "pending" | "approved" | "rejected";
   createdAt: string;
   updatedAt: string;
+  InvestorName?: string;
+  InvestorEmail?: string;
 };
 
 export type CreateDistributionPayload = {

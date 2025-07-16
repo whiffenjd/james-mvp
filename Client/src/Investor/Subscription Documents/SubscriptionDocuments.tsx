@@ -237,7 +237,6 @@ const SubscriptionDocuments = () => {
 
     try {
       setLoading(true);
-      console.log("placements before transformation", placements);
 
       // Load the PDF to get the page dimensions
       const response = await fetch(currentFund.investors[0].documentUrl);
@@ -261,8 +260,7 @@ const SubscriptionDocuments = () => {
         const scaleX = actualWidth / renderedWidth;
         const scaleY = actualHeight / renderedHeight;
 
-        console.log(`Page ${placement.page} - Rendered: ${renderedWidth}x${renderedHeight}, Actual: ${actualWidth}x${actualHeight}`);
-        console.log(`Scale factors - X: ${scaleX}, Y: ${scaleY}`);
+
 
         const updatedPlacement: PagePlacement = { page: placement.page };
 
@@ -281,21 +279,12 @@ const SubscriptionDocuments = () => {
             height: scaledHeight,
           };
 
-          console.log(`Signature - Original: (${placement.signature.x}, ${placement.signature.y}), Scaled: (${scaledX}, ${scaledY}), Final: (${updatedPlacement.signature.x}, ${updatedPlacement.signature.y})`);
         }
 
         if (placement.date) {
           const fontSize = placement.date.fontSize || 12;
 
-          // Log original placement
-          console.log(`--- Date Placement Debug ---`);
-          console.log(`Original Date Placement:`, {
-            x: placement.date.x,
-            y: placement.date.y,
-            width: placement.date.width,
-            height: placement.date.height,
-            fontSize,
-          });
+
 
           const scaledX = placement.date.x * scaleX;
           const scaledY = placement.date.y * scaleY;
@@ -303,21 +292,11 @@ const SubscriptionDocuments = () => {
           const scaledHeight = placement.date.height * scaleY;
           const scaledFontSize = fontSize * scaleY;
 
-          console.log(`Scaled Date Placement:`, {
-            scaledX,
-            scaledY,
-            scaledWidth,
-            scaledHeight,
-            scaledFontSize,
-          });
+
 
           const flippedY = actualHeight - scaledY - fontSize;
 
-          console.log(`Flipping Calculation:`);
-          console.log(`actualHeight: ${actualHeight}`);
-          console.log(`scaledY: ${scaledY}`);
-          console.log(`scaledFontSize (used in flip): ${scaledFontSize}`);
-          console.log(`Final Y after flip (flippedY): ${flippedY}`);
+
 
           updatedPlacement.date = {
             ...placement.date,
@@ -328,13 +307,12 @@ const SubscriptionDocuments = () => {
             fontSize: fontSize,
           };
 
-          console.log(`Final Transformed Date Placement:`, updatedPlacement.date);
+
         }
 
         return updatedPlacement;
       });
 
-      console.log("placements after transformation", transformedPlacements);
 
       await signAndUploadDocument(
         currentFund.id,
@@ -430,9 +408,13 @@ const SubscriptionDocuments = () => {
 
 
   const formatDateForInput = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return date.toISOString().split("T")[0]
-  }
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = new Date(e.target.value)

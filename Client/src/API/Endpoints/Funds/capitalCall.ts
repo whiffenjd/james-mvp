@@ -17,6 +17,8 @@ export type CapitalCall = {
   status: "pending" | "approved" | "rejected";
   createdAt: string;
   updatedAt: string;
+  InvestorName?: string;
+  InvestorEmail?: string;
 };
 
 export type CreateCapitalCallPayload = {

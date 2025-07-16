@@ -39,8 +39,6 @@ export async function signPdf(
     }
 
     if (placement.date && dateText) {
-      console.log("placment date", placement.date);
-      console.log("date text", dateText);
       page.drawText(dateText, {
         x: placement.date.x,
         y: placement.date.y,

@@ -27,15 +27,15 @@ const Distribution = () => {
   });
   const [isViewModalOpen, setIsViewModalOpen] = useState<boolean>(false); // Changed from isModalOpen
 
-  const { mutateAsync: updateDistribution } = useUpdateDist(); // Changed from updateCapitalCall
-  const updateMutation = useUpdateDistStatus(); // Changed from updateCapitalCallStatus
+  const { mutateAsync: updateDistribution } = useUpdateDist();
+  const updateMutation = useUpdateDistStatus();
 
   const columns: TableColumn<DistType>[] = [
     {
-      key: 'fundId',
-      header: 'Fund ID',
+      key: 'InvestorName',
+      header: 'Investor Name',
       sortable: false,
-      width: '15vh',
+      width: '20vh',
       align: 'left',
       render: (value: string) => {
         const shortValue = value?.split('-')[0];
@@ -47,10 +47,10 @@ const Distribution = () => {
       },
     },
     {
-      key: 'investorId',
-      header: 'Investor ID',
+      key: 'InvestorEmail',
+      header: 'Investor Email',
       sortable: false,
-      width: '15vh',
+      width: '25vh',
       align: 'left',
       render: (value: string) => {
         const shortValue = value?.split('-')[0];
@@ -66,7 +66,7 @@ const Distribution = () => {
       key: 'amount',
       header: 'Amount',
       sortable: false,
-      width: '15vh',
+      width: '10vh',
       align: 'left',
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -184,7 +184,7 @@ const Distribution = () => {
           onClick: (row: DistType) => {
             setDistribution(row);
             setIsDistModalOpen(true);
-            console.log('Edit distribution:', row);
+
           },
           show: (row: DistType) => row.status !== 'approved',
         },

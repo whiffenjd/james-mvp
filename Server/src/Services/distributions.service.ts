@@ -2,7 +2,7 @@ import { eq, and } from 'drizzle-orm';
 import { DistributionCreate, ActivityLogCreate } from '../Types/distributions.types';
 import { sql } from 'drizzle-orm';
 import { db } from '../db/DbConnection';
-import { activityLogs, distributions } from '../db/schema';
+import { activityLogs, distributions, UsersTable } from '../db/schema';
 
 export const create = async (data: DistributionCreate) => {
   return db.transaction(async (tx) => {
@@ -57,16 +57,26 @@ export const getAllForUser = async (
 ) => {
   const offset = (page - 1) * limit;
 
-  let query = db.select().from(distributions);
+  const baseQuery = db
+    .select({
+      ...distributions,
+      InvestorName: UsersTable.name,
+      InvestorEmail: UsersTable.email,
+    })
+    .from(distributions)
+    .innerJoin(UsersTable, eq(distributions.investorId, UsersTable.id));
+
+  // Apply conditions
+  let filteredQuery;
   if (role === 'fundManager') {
-    query = query.where(
+    filteredQuery = baseQuery.where(
       and(
         eq(distributions.createdBy, userId),
         fundId ? eq(distributions.fundId, fundId) : undefined,
       ),
     );
   } else if (role === 'investor') {
-    query = query.where(
+    filteredQuery = baseQuery.where(
       and(
         eq(distributions.investorId, userId),
         fundId ? eq(distributions.fundId, fundId) : undefined,
@@ -74,11 +84,13 @@ export const getAllForUser = async (
     );
   } else if (role !== 'admin') {
     throw new Error('Invalid user role');
+  } else {
+    filteredQuery = baseQuery; // Admin gets all
   }
 
   const [data, [{ count }]] = await Promise.all([
-    query.limit(limit).offset(offset),
-    db.select({ count: sql`count(*)::integer` }).from(query.as('subquery')),
+    filteredQuery.limit(limit).offset(offset),
+    db.select({ count: sql`count(*)::integer` }).from(filteredQuery.as('subquery')),
   ]);
 
   const totalItems = count || 0;

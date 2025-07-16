@@ -1,10 +1,11 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, or, desc } from 'drizzle-orm';
 import { db } from '../db/DbConnection';
 
 import { funds } from '../db/schema/Funds';
-import { UsersTable } from '../db/schema';
+import { activityLogs, capitalCalls, distributions, fundReports, UsersTable } from '../db/schema';
 import deleteS3Keys, { extractKeyFromUrl } from './DeleteS3Keys';
 import { FundCreateRequest } from '../Utils/FundCreationUpdatehelper';
+import { formatDistanceToNow } from 'date-fns';
 
 export default class FundService {
   static async create(data: FundCreateRequest) {
@@ -38,10 +39,104 @@ export default class FundService {
       createdAt: fund.createdAt,
     }));
   }
-
   static async getById(id: string) {
-    const result = await db.select().from(funds).where(eq(funds.id, id)).limit(1);
-    return result[0] || null;
+    return db.transaction(async (tx) => {
+      // Fetch fund details
+      const fundResult = await tx.select().from(funds).where(eq(funds.id, id)).limit(1);
+      if (!fundResult[0]) return null;
+
+      const rawFund = fundResult[0];
+
+      // Fetch activity logs related to this fund
+      const logs = await tx
+        .select({
+          id: activityLogs.id,
+          entityType: activityLogs.entityType,
+          entityId: activityLogs.entityId,
+          action: activityLogs.action,
+          description: activityLogs.description,
+          createdAt: activityLogs.createdAt,
+          performedBy: UsersTable.name,
+          capitalCallAmount: capitalCalls.amount,
+          distributionAmount: distributions.amount,
+          fundReportFundId: fundReports.fundId, // add joinable fundId from fundReports
+        })
+        .from(activityLogs)
+        .innerJoin(UsersTable, eq(activityLogs.performedBy, UsersTable.id))
+        .leftJoin(
+          capitalCalls,
+          and(
+            eq(activityLogs.entityType, 'capital_call'),
+            eq(activityLogs.entityId, capitalCalls.id),
+          ),
+        )
+        .leftJoin(
+          distributions,
+          and(
+            eq(activityLogs.entityType, 'distribution'),
+            eq(activityLogs.entityId, distributions.id),
+          ),
+        )
+        .leftJoin(
+          fundReports,
+          and(
+            eq(activityLogs.entityType, 'fund_report'),
+            eq(activityLogs.entityId, fundReports.id),
+          ),
+        )
+        .where(
+          or(eq(capitalCalls.fundId, id), eq(distributions.fundId, id), eq(fundReports.fundId, id)),
+        )
+        .orderBy(desc(activityLogs.createdAt));
+
+      // Format history
+      const history = logs.map((log) => {
+        let description = log.description || '';
+        const amount = log.capitalCallAmount || log.distributionAmount;
+
+        const isCapitalCall = log.entityType === 'capital_call';
+        const isDistribution = log.entityType === 'distribution';
+        const isFundReport = log.entityType === 'fund_report';
+
+        if (isCapitalCall) {
+          if (log.action === 'created') {
+            description = 'Capital call has been initiated';
+          } else if (log.action === 'approved' && amount) {
+            description = `${log.performedBy} invested $${amount.toLocaleString()}`;
+          } else if (log.action === 'rejected') {
+            description = 'Capital call has been rejected';
+          }
+        } else if (isDistribution) {
+          if (log.action === 'created') {
+            description = 'Profit Distribution has been initiated';
+          } else if (log.action === 'approved' && amount) {
+            description = `${log.performedBy} received distribution of $${amount.toLocaleString()}`;
+          } else if (log.action === 'rejected') {
+            description = 'Profit Distribution has been rejected';
+          }
+        } else if (isFundReport) {
+          if (log.action === 'created') {
+            description = `${log.performedBy} uploaded a Fund Report`;
+          }
+        } else if (log.action === 'created') {
+          description = `${log.entityType.replace('_', ' ')} has been initiated`;
+        }
+
+        return {
+          id: log.id,
+          description,
+          timeAgo: formatDistanceToNow(new Date(log.createdAt), { addSuffix: true }),
+          timestamp: log.createdAt.toISOString(),
+          entityType: log.entityType,
+          action: log.action,
+        };
+      });
+
+      return {
+        ...rawFund,
+        history,
+      };
+    });
   }
 
   static async getByManagerId(managerId: string) {

@@ -8,7 +8,7 @@ type FundTransaction = CapitalCall | DistType;
 interface FundTransactionViewModalProps {
     isOpen: boolean;
     onClose: () => void;
-    transaction: FundTransaction;
+    transaction: FundTransaction | null;
     onApprove: () => void;
     onReject: () => void;
     isLoading: boolean;

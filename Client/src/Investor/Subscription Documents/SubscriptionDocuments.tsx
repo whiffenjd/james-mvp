@@ -131,11 +131,6 @@ const SubscriptionDocuments = () => {
     if (!dragging || !pdfContainerRef.current) return;
 
     const container = pdfContainerRef.current;
-    const rect = container.getBoundingClientRect();
-
-    const x = e.clientX - rect.left + container.scrollLeft;
-    const y = e.clientY - rect.top + container.scrollTop;
-
     const pdfPage = container.querySelector('.react-pdf__Page');
     if (!pdfPage) return;
 
@@ -858,8 +853,8 @@ const SubscriptionDocuments = () => {
                   penColor: "black",
                 }}
                 canvasProps={{
-                  width: 400,
-                  height: 150,
+                  width: "400",
+                  height: "150",
                   className: "rounded-lg",
                 }}
               />

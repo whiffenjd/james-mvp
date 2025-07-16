@@ -56,7 +56,11 @@ export const useGetCapitalCalls = ({
   return useQuery<PaginatedCapitalCalls, Error>({
     queryKey: ["capitalCalls", page, limit, fundId], // Include fundId in queryKey
     queryFn: async () => {
-      const params = { page, limit };
+      const params = { page, limit } as {
+        page: number;
+        limit: number;
+        fundId?: string;
+      };
       if (fundId) {
         params.fundId = fundId; // Add fundId to params if provided
       }
@@ -68,9 +72,6 @@ export const useGetCapitalCalls = ({
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
-    onError: (error) => {
-      toast.error(error.message || "Failed to fetch capital calls");
-    },
   });
 };
 

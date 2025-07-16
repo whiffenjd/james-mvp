@@ -37,11 +37,14 @@ const Distribution = () => {
       sortable: false,
       width: '15vh',
       align: 'left',
-      render: (value: string) => (
-        <div className="truncate" title={value}>
-          {value}
-        </div>
-      ),
+      render: (value: string) => {
+        const shortValue = value?.split('-')[0];
+        return (
+          <div className="truncate" title={value}>
+            {shortValue}
+          </div>
+        );
+      },
     },
     {
       key: 'investorId',
@@ -49,12 +52,16 @@ const Distribution = () => {
       sortable: false,
       width: '15vh',
       align: 'left',
-      render: (value: string) => (
-        <div className="truncate" title={value}>
-          {value}
-        </div>
-      ),
+      render: (value: string) => {
+        const shortValue = value?.split('-')[0];
+        return (
+          <div className="truncate" title={value}>
+            {shortValue}
+          </div>
+        );
+      },
     },
+
     {
       key: 'amount',
       header: 'Amount',
@@ -123,7 +130,7 @@ const Distribution = () => {
       ? [
         {
           label: 'View',
-          variant: 'primary',
+          variant: "primary" as "primary" | "secondary" | "danger" | undefined,
           onClick: (row: DistType) => {
             setDistribution(row);
             setIsViewModalOpen(true);
@@ -132,7 +139,7 @@ const Distribution = () => {
         },
         {
           label: '',
-          variant: 'primary',
+          variant: "primary" as "primary" | "secondary" | "danger" | undefined,
           icon: (
             <div className="w-6 h-6 rounded flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,7 +152,7 @@ const Distribution = () => {
         },
         {
           label: '',
-          variant: 'danger',
+          variant: "danger" as "primary" | "secondary" | "danger" | undefined,
           icon: (
             <div className="w-6 h-6 rounded bg-red-600 flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,7 +170,7 @@ const Distribution = () => {
       ? [
         {
           label: 'Edit',
-          variant: 'secondary',
+          variant: "secondary" as "primary" | "secondary" | "danger" | undefined,
           icon: (
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -183,7 +190,7 @@ const Distribution = () => {
         },
         {
           label: '',
-          variant: 'primary',
+          variant: "primary" as "primary" | "secondary" | "danger" | undefined,
           icon: (
             <div className="w-6 h-6 rounded flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,7 +203,7 @@ const Distribution = () => {
         },
         {
           label: '',
-          variant: 'danger',
+          variant: "danger" as "primary" | "secondary" | "danger" | undefined,
           icon: (
             <div className="w-6 h-6 rounded bg-red-600 flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

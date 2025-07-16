@@ -13,7 +13,7 @@ import { FundTransactionViewModal } from '../../../Components/Modal/CapitalView'
 import FundTransactionModal from '../../../Components/Modal/CapitalCallModal';
 
 
-const CapitalCall = () => {
+const Capital = () => {
   const { id } = useParams<{ id: string }>();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -40,11 +40,14 @@ const CapitalCall = () => {
       sortable: false,
       width: '15vh',
       align: 'left',
-      render: (value: string) => (
-        <div className="truncate" title={value}>
-          {value}
-        </div>
-      ),
+      render: (value: string) => {
+        const shortValue = value?.split('-')[0];
+        return (
+          <div className="truncate" title={value}>
+            {shortValue}
+          </div>
+        );
+      },
     },
     {
       key: 'investorId',
@@ -52,12 +55,16 @@ const CapitalCall = () => {
       sortable: false,
       width: '15vh',
       align: 'left',
-      render: (value: string) => (
-        <div className="truncate" title={value}>
-          {value}
-        </div>
-      ),
+      render: (value: string) => {
+        const shortValue = value?.split('-')[0];
+        return (
+          <div className="truncate" title={value}>
+            {shortValue}
+          </div>
+        );
+      },
     },
+
     {
       key: 'amount',
       header: 'Amount',
@@ -126,7 +133,7 @@ const CapitalCall = () => {
       ? [
         {
           label: 'View',
-          variant: "primary",
+          variant: "primary" as "primary" | "secondary" | "danger" | undefined,
           onClick: (row: CapitalCall) => {
             console.log('Approve capital call:', row);
             // Add approve logic
@@ -140,7 +147,7 @@ const CapitalCall = () => {
 
         {
           label: '',
-          variant: 'primary',
+          variant: "primary" as "primary" | "secondary" | "danger" | undefined,
           icon: (
             <div className="w-6 h-6 rounded  flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,7 +160,7 @@ const CapitalCall = () => {
         },
         {
           label: '',
-          variant: 'danger',
+          variant: "danger" as "primary" | "secondary" | "danger" | undefined,
           icon: (
             <div className="w-6 h-6 rounded bg-red-600 flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +179,7 @@ const CapitalCall = () => {
       ? [
         {
           label: 'Edit',
-          variant: 'secondary',
+          variant: "secondary" as "primary" | "secondary" | "danger" | undefined,
           icon: (
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -192,7 +199,7 @@ const CapitalCall = () => {
         },
         {
           label: '',
-          variant: 'primary',
+          variant: "primary" as "primary" | "secondary" | "danger" | undefined,
           icon: (
             <div className="w-6 h-6 rounded  flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,7 +212,7 @@ const CapitalCall = () => {
         },
         {
           label: '',
-          variant: 'danger',
+          variant: "danger" as "primary" | "secondary" | "danger" | undefined,
           icon: (
             <div className="w-6 h-6 rounded bg-red-600 flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -334,10 +341,11 @@ const CapitalCall = () => {
         transaction={capitalCall}
         onApprove={handleApprove}
         onReject={handleReject}
+        entityType='capital'
         isLoading={updateMutation.isPending}
       />
     </div>
   );
 };
 
-export default CapitalCall;
+export default Capital;

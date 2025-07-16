@@ -19,30 +19,30 @@ export function Table<T = any>({
     emptyMessage = "No data available",
     className = "",
 }: TableProps<T>) {
-    const [sortKey, setSortKey] = useState<string | null>(null)
-    const [sortDirection, setSortDirection] = useState<SortDirection>(null)
+    const [sortKey, setSortKey] = useState<string | null>(null);
+    const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
     const handleSort = (key: string) => {
-        let newDirection: SortDirection = "asc"
+        let newDirection: SortDirection = "asc";
 
         if (sortKey === key) {
-            newDirection = sortDirection === "asc" ? "desc" : sortDirection === "desc" ? null : "asc"
+            newDirection = sortDirection === "asc" ? "desc" : sortDirection === "desc" ? null : "asc";
         }
 
-        setSortKey(newDirection ? key : null)
-        setSortDirection(newDirection)
+        setSortKey(newDirection ? key : null);
+        setSortDirection(newDirection);
 
         if (onSort && newDirection) {
-            onSort(key, newDirection)
+            onSort(key, newDirection);
         }
-    }
+    };
 
-    const hasActions = actions.length > 0
+    const hasActions = actions.length > 0;
 
     return (
-        <div className={`space-y-4 ${className}`}>
+        <div className={`space-y-4 w-full ${className}`}>
             {/* Floating Header */}
-            <div className="bg-theme-card shadow-sm rounded-md overflow-hidden">
+            <div className="bg-theme-card shadow-sm rounded-md overflow-hidden w-full">
                 <TableHeader
                     columns={columns}
                     hasActions={hasActions}
@@ -66,7 +66,7 @@ export function Table<T = any>({
                     data.map((row, index) => (
                         <div
                             key={index}
-                            className="bg-theme-card shadow-sm rounded-md  border border-theme-sidebar-accent overflow-hidden hover:shadow-md transition-shadow"
+                            className="bg-theme-card shadow-sm rounded-md border border-theme-sidebar-accent overflow-hidden hover:shadow-md transition-shadow"
                         >
                             <TableRow row={row} columns={columns} actions={actions} index={index} />
                         </div>
@@ -75,7 +75,7 @@ export function Table<T = any>({
             </div>
 
             {pagination && onPageChange && (
-                <div className="bg-theme-card shadow-sm rounded-md  border border-theme-sidebar-accent overflow-hidden">
+                <div className="bg-theme-card shadow-sm rounded-md border border-theme-sidebar-accent overflow-hidden">
                     <Pagination pagination={pagination} onPageChange={onPageChange} />
                 </div>
             )}

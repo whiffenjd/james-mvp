@@ -60,9 +60,6 @@ export const useGetFundReports = ({
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
-    onError: (error) => {
-      toast.error(error.message || "Failed to fetch fund reports");
-    },
   });
 };
 

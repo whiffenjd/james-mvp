@@ -176,7 +176,7 @@ const FundReports = () => {
       key: 'projectName',
       header: 'Project Name',
       sortable: false,
-      width: '20vh',
+      width: '25vh',
       align: 'left',
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -185,10 +185,10 @@ const FundReports = () => {
       ),
     },
     {
-      key: 'createdBy',
+      key: 'createdByName',
       header: 'Created By',
       sortable: false,
-      width: '15vh',
+      width: '20vh',
       align: 'left',
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -200,7 +200,7 @@ const FundReports = () => {
       key: 'year',
       header: 'Year',
       sortable: false,
-      width: '10vh',
+      width: '15vh',
       align: 'left',
       render: (value: number | string) => (
         <div className="truncate" title={value.toString()}>
@@ -212,7 +212,7 @@ const FundReports = () => {
       key: 'quarter',
       header: 'Quarter',
       sortable: false,
-      width: '10vh',
+      width: '15vh',
       align: 'left',
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -224,7 +224,7 @@ const FundReports = () => {
       key: 'createdAt',
       header: 'Created Date',
       sortable: false,
-      width: '15vh',
+      width: '20vh',
       align: 'left',
       render: (value: string) => {
         const formattedDate = formatDate(value);
@@ -239,7 +239,7 @@ const FundReports = () => {
   const actions: TableAction<FundReport>[] = [
     {
       label: 'View',
-      variant: 'primary',
+      variant: "primary" as "primary" | "secondary" | "danger" | undefined,
       icon: <Eye className="w-4 h-4" />,
       onClick: (row: FundReport) => handleViewReport(row),
       show: () => true,
@@ -247,8 +247,8 @@ const FundReports = () => {
     ...(user?.role === 'investor'
       ? [
         {
-
-          variant: 'primary',
+          label: '',
+          variant: "primary" as "primary" | "secondary" | "danger" | undefined,
           icon: <Download className="w-5 h-5" />,
           onClick: (row: FundReport) => handleDownload(row),
           show: () => true,
@@ -261,7 +261,7 @@ const FundReports = () => {
       ? [
         {
           label: 'Delete',
-          variant: 'danger',
+          variant: "danger" as "primary" | "secondary" | "danger" | undefined,
           icon: <Trash2 className="w-4 h-4" />,
           onClick: (row: FundReport) => {
             if (confirm('Are you sure you want to delete this report?')) {

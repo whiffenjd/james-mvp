@@ -3,7 +3,7 @@ import { ActivityLogCreate, CapitalCallCreate } from '../Types/capitalCall.types
 import { db } from '../db/DbConnection';
 import { capitalCalls } from '../db/schema/CapitalCall';
 import { activityLogs } from '../db/schema/ActivityLogs';
-import { UsersTable } from '../db/schema';
+import { funds, userNotifications, UsersTable } from '../db/schema';
 
 export const create = async (data: CapitalCallCreate) => {
   return db.transaction(async (tx) => {
@@ -18,6 +18,7 @@ export const create = async (data: CapitalCallCreate) => {
       throw new Error('Invalid date format');
     }
 
+    // Insert the capital call
     const [capitalCall] = await tx
       .insert(capitalCalls)
       .values({
@@ -33,23 +34,47 @@ export const create = async (data: CapitalCallCreate) => {
       })
       .returning();
 
-    const log: ActivityLogCreate = {
-      entityType: 'capital_call',
-      entityId: capitalCall.id,
-      action: 'created',
-      performedBy: data.createdBy,
-      description: `Created capital call for fund ID ${data.fundId}`,
-    };
+    // Insert the activity log
+    const [activityLog] = await tx
+      .insert(activityLogs)
+      .values({
+        entityType: 'capital_call',
+        entityId: capitalCall.id,
+        action: 'created',
+        performedBy: data.createdBy,
+        fundId: data.fundId,
+        description: `Created capital call for fund ID ${data.fundId}`,
+      })
+      .returning();
 
-    await tx.insert(activityLogs).values({
-      ...log,
-      createdAt: new Date(),
-    });
+    // Fetch the fund to get the fund manager and investors
+    const [fund] = await tx
+      .select({
+        fundManagerId: funds.fundManagerId,
+        investorIds: sql<string[]>`jsonb_path_query_array(${funds.investors}, '$.investorId')`,
+      })
+      .from(funds)
+      .where(eq(funds.id, data.fundId));
+
+    // Prepare user IDs to notify (fund manager and investors, excluding the creator)
+    const usersToNotify = [fund.fundManagerId, ...fund.investorIds];
+    // Insert user_notifications for each relevant user
+    if (usersToNotify.length > 0) {
+      await tx.insert(userNotifications).values(
+        usersToNotify.map((userId) => ({
+          userId,
+          activityLogId: activityLog.id,
+          isRead: false,
+          isDeleted: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })),
+      );
+    }
 
     return capitalCall;
   });
 };
-
 export const getAllForUser = async (
   userId: string,
   role: string,
@@ -102,34 +127,64 @@ export const getAllForUser = async (
 
 export const updateStatus = async (id: string, status: 'approved' | 'rejected', userId: string) => {
   return db.transaction(async (tx) => {
+    // Check if the capital call exists
     const [existing] = await tx.select().from(capitalCalls).where(eq(capitalCalls.id, id)).limit(1);
 
     if (!existing) {
       throw new Error('Capital call not found');
     }
 
+    // Authorize the user
     if (existing.investorId !== userId) {
       throw new Error('You are not authorized to update this capital call');
     }
 
+    // Update the capital call status
     const [updated] = await tx
       .update(capitalCalls)
       .set({ status, updatedAt: new Date() })
       .where(eq(capitalCalls.id, id))
       .returning();
 
-    const log: ActivityLogCreate = {
-      entityType: 'capital_call',
-      entityId: id,
-      action: status,
-      performedBy: userId,
-      description: `${status.charAt(0).toUpperCase() + status.slice(1)} capital call for fund ID ${existing.fundId}`,
-    };
+    // Insert the activity log
+    const [activityLog] = await tx
+      .insert(activityLogs)
+      .values({
+        entityType: 'capital_call',
+        entityId: id,
+        action: status,
+        performedBy: userId,
+        fundId: updated.fundId,
+        description: `${status.charAt(0).toUpperCase() + status.slice(1)} capital call for fund ID ${updated.fundId}`,
+        createdAt: new Date(),
+      })
+      .returning();
 
-    await tx.insert(activityLogs).values({
-      ...log,
-      createdAt: new Date(),
-    });
+    // Fetch the fund to get the fund manager and investors
+    const [fund] = await tx
+      .select({
+        fundManagerId: funds.fundManagerId,
+        investorIds: sql<string[]>`jsonb_path_query_array(${funds.investors}, '$.investorId')`,
+      })
+      .from(funds)
+      .where(eq(funds.id, updated.fundId));
+
+    // Prepare user IDs to notify (fund manager and investors, excluding the performer)
+    const usersToNotify = [fund.fundManagerId, ...fund.investorIds];
+
+    // Insert user_notifications for each relevant user
+    if (usersToNotify.length > 0) {
+      await tx.insert(userNotifications).values(
+        usersToNotify.map((userId) => ({
+          userId,
+          activityLogId: activityLog.id,
+          isRead: false,
+          isDeleted: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })),
+      );
+    }
 
     return updated;
   });
@@ -191,6 +246,7 @@ export const update = async (id: string, data: Partial<CapitalCallCreate>, userI
       entityId: id,
       action: 'updated',
       performedBy: userId,
+      fundId: updated.fundId, // Use fundId from updated capital call
       description: `Updated capital call for fund ID ${updated.fundId}`,
     };
 

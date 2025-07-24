@@ -28,7 +28,7 @@ const Distribution = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState<boolean>(false); // Changed from isModalOpen
 
   const { mutateAsync: updateDistribution } = useUpdateDist();
-  const updateMutation = useUpdateDistStatus();
+  const updateMutation = useUpdateDistStatus(user?.id || '');
 
   const columns: TableColumn<DistType>[] = [
     {

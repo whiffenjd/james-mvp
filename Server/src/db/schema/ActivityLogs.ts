@@ -1,5 +1,6 @@
 import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core';
 import { UsersTable } from './Admin';
+import { funds } from './Funds';
 
 export const activityLogs = pgTable('activity_logs', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -12,6 +13,9 @@ export const activityLogs = pgTable('activity_logs', {
   performedBy: uuid('performed_by')
     .notNull()
     .references(() => UsersTable.id), // User who performed the action
+  fundId: uuid('fund_id')
+    .notNull()
+    .references(() => funds.id), // Reference to the fund
 
   description: text('description'), // Optional: human-readable message
 

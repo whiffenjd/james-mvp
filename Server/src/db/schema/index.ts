@@ -9,3 +9,4 @@ export * from './CapitalCall';
 export * from './ActivityLogs';
 export * from './distribution';
 export * from './fundReports';
+export * from './UserNotifications';

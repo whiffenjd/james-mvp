@@ -1,5 +1,5 @@
 import { db } from '../db/DbConnection';
-import { fundReports, activityLogs, UsersTable } from '../db/schema';
+import { fundReports, activityLogs, UsersTable, funds, userNotifications } from '../db/schema';
 import { CreateFundReportSchema } from '../validators/fundReport.schema';
 import { and, eq, sql } from 'drizzle-orm';
 
@@ -13,11 +13,13 @@ export const create = async (data: {
   createdBy: string;
 }) => {
   return db.transaction(async (tx) => {
+    // Validate input data
     const parsed = CreateFundReportSchema.safeParse(data);
     if (!parsed.success) {
       throw new Error(parsed.error.message);
     }
 
+    // Insert the fund report
     const [fundReport] = await tx
       .insert(fundReports)
       .values({
@@ -31,19 +33,49 @@ export const create = async (data: {
       })
       .returning();
 
-    await tx.insert(activityLogs).values({
-      entityType: 'fund_report',
-      entityId: fundReport.id,
-      action: 'created',
-      performedBy: data.createdBy,
-      description: `Created fund report for fund ID ${data.fundId}`,
-      createdAt: new Date(),
-    });
+    // Insert the activity log
+    const [activityLog] = await tx
+      .insert(activityLogs)
+      .values({
+        entityType: 'fund_report',
+        entityId: fundReport.id,
+        action: 'created',
+        performedBy: data.createdBy,
+        fundId: data.fundId,
+        description: `Created fund report for fund ID ${data.fundId}`,
+        createdAt: new Date(),
+      })
+      .returning();
+
+    // Fetch the fund to get the fund manager and investors
+    const [fund] = await tx
+      .select({
+        fundManagerId: funds.fundManagerId,
+        investorIds: sql<string[]>`jsonb_path_query_array(${funds.investors}, '$.investorId')`,
+      })
+      .from(funds)
+      .where(eq(funds.id, data.fundId));
+
+    // Prepare user IDs to notify (fund manager and all investors, including the creator)
+    const usersToNotify = [fund.fundManagerId, ...fund.investorIds];
+
+    // Insert user_notifications for each relevant user
+    if (usersToNotify.length > 0) {
+      await tx.insert(userNotifications).values(
+        usersToNotify.map((userId) => ({
+          userId,
+          activityLogId: activityLog.id,
+          isRead: false,
+          isDeleted: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })),
+      );
+    }
 
     return fundReport;
   });
 };
-
 export const getByFund = async (
   fundId: string,
   page: number = 1,

@@ -34,8 +34,8 @@ const Project = () => {
   const fund = useAppSelector((state) => state.funds.currentFund);
   const [isDistModalOpen, setIsDistModalOpen] = useState<boolean>(false); // Changed from isCapitalModalOpen
 
-  const { mutateAsync: createCapitalCall } = useCreateCapitalCall();
-  const { mutateAsync: createDistribution } = useCreateDistribution();
+  const { mutateAsync: createCapitalCall } = useCreateCapitalCall(user?.id || "");
+  const { mutateAsync: createDistribution } = useCreateDistribution(user?.id || "");
 
   useEffect(() => {
     if (fund) {

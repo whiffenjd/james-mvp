@@ -78,7 +78,7 @@ export const useGetDistributions = ({
 };
 
 // Hook to create a new distribution
-export const useCreateDistribution = () => {
+export const useCreateDistribution = (userId: string) => {
   const queryClient = useQueryClient();
   return useMutation<Distribution, Error, CreateDistributionPayload>({
     mutationFn: async (payload) => {
@@ -88,6 +88,11 @@ export const useCreateDistribution = () => {
     onSuccess: () => {
       toast.success("Distribution created successfully");
       queryClient.invalidateQueries({ queryKey: ["distributions"] });
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: ["unreadNotifications", userId],
+        });
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Failed to create distribution");
@@ -96,7 +101,7 @@ export const useCreateDistribution = () => {
 };
 
 // Hook to update distribution status
-export const useUpdateDistributionStatus = () => {
+export const useUpdateDistributionStatus = (userId: string) => {
   const queryClient = useQueryClient();
   return useMutation<Distribution, Error, UpdateDistributionStatusPayload>({
     mutationFn: async ({ id, status }) => {
@@ -108,6 +113,11 @@ export const useUpdateDistributionStatus = () => {
     onSuccess: () => {
       toast.success("Distribution status updated");
       queryClient.invalidateQueries({ queryKey: ["distributions"] });
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: ["unreadNotifications", userId],
+        });
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update distribution status");

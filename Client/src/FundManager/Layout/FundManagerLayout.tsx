@@ -3,10 +3,11 @@ import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import { CircleDollarSign, LayoutGrid, Settings } from "lucide-react";
+import { Bell, CircleDollarSign, LayoutGrid, Settings } from "lucide-react";
 import { useAuth } from "../../Context/AuthContext";
 import { useTheme } from "../../Context/ThemeContext";
 import ManagerSidebar from "../Public/ManagerSidebar";
+import { useGetUnreadCount } from "../../API/Endpoints/Notification/notification";
 
 const FundManagerLayout = () => {
   const { user, logout } = useAuth();
@@ -14,7 +15,8 @@ const FundManagerLayout = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-
+  const { data, isLoading } = useGetUnreadCount(user?.id);
+  const unreadCount = data?.unreadCount || 0;
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -59,6 +61,21 @@ const FundManagerLayout = () => {
       label: "Settings",
       path: "settings", // This matches your nested route
     },
+    {
+      id: "notifications",
+      icon: (
+        <div className={`relative ${isLoading ? 'opacity-70 blur-[1px]' : ''}`}>
+          <Bell size={22} />
+          {!isLoading && unreadCount > 0 && (
+            <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </div>
+      ),
+      label: "Notifications",
+      path: "notifications",
+    }
   ];
 
   return (

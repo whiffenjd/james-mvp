@@ -31,7 +31,7 @@ const Capital = () => {
 
 
   const { mutateAsync: updateCapitalCall } = useUpdateCapitalCall();
-  const updateMutation = useUpdateCapitalCallStatus();
+  const updateMutation = useUpdateCapitalCallStatus(user?.id || '');
 
   const columns: TableColumn<CapitalCall>[] = [
     {

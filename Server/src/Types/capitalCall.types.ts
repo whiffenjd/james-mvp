@@ -15,5 +15,6 @@ export type ActivityLogCreate = {
   entityId: string;
   action: string;
   performedBy: string;
+  fundId?: string;
   description?: string;
 };

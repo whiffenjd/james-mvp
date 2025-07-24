@@ -42,7 +42,7 @@ const FundReports = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { mutate: createFundReport } = useCreateFundReport();
+  const { mutate: createFundReport } = useCreateFundReport(user?.id || '');
   const { data } = useGetFundReports({
     fundId: id || '',
     page: currentPage,

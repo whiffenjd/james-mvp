@@ -1,0 +1,2 @@
+ALTER TABLE "activity_logs" ADD COLUMN "fund_id" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "activity_logs" ADD CONSTRAINT "activity_logs_fund_id_funds_id_fk" FOREIGN KEY ("fund_id") REFERENCES "public"."funds"("id") ON DELETE no action ON UPDATE no action;

@@ -78,7 +78,7 @@ export const useGetCapitalCalls = ({
 };
 
 // Hook to create a new capital call
-export const useCreateCapitalCall = () => {
+export const useCreateCapitalCall = (userId: string) => {
   const queryClient = useQueryClient();
   return useMutation<CapitalCall, Error, CreateCapitalCallPayload>({
     mutationFn: async (payload) => {
@@ -88,6 +88,12 @@ export const useCreateCapitalCall = () => {
     onSuccess: () => {
       toast.success("Capital call created successfully");
       queryClient.invalidateQueries({ queryKey: ["capitalCalls"] });
+      // Invalidate unread notifications using provided userId
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: ["unreadNotifications", userId],
+        });
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Failed to create capital call");
@@ -96,7 +102,7 @@ export const useCreateCapitalCall = () => {
 };
 
 // Hook to update capital call status
-export const useUpdateCapitalCallStatus = () => {
+export const useUpdateCapitalCallStatus = (userId: string) => {
   const queryClient = useQueryClient();
   return useMutation<CapitalCall, Error, UpdateCapitalCallStatusPayload>({
     mutationFn: async ({ id, status }) => {
@@ -108,6 +114,11 @@ export const useUpdateCapitalCallStatus = () => {
     onSuccess: () => {
       toast.success("Capital call status updated");
       queryClient.invalidateQueries({ queryKey: ["capitalCalls"] });
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: ["unreadNotifications", userId],
+        });
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update capital call status");

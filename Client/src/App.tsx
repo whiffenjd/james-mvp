@@ -38,6 +38,7 @@ import Project from "./FundManager/Funds and Reporting/project";
 import FundsAndReportingInvestors from "./Investor/Funds and Reporting/FundsAndReportingInvestors";
 import InvestorsProject from "./Investor/Funds and Reporting/project";
 import SubscriptionDocuments from "./Investor/Subscription Documents/SubscriptionDocuments";
+import NotificationsScreen from "./FundManager/Notification/Notification";
 
 function RedirectBasedOnRole() {
   const { user } = useAuth();
@@ -104,6 +105,8 @@ function App() {
               <Route path="project/:id" element={<Project />} />
 
               <Route path="settings" element={<DashboardSettings />} />
+              <Route path="notifications" element={<NotificationsScreen />} />
+
               {/* <Route path="funds" element={<FundTestComponent />} /> */}
 
               {/* Add more fund manager routes here */}
@@ -135,6 +138,8 @@ function App() {
                 path="subscription-documents"
                 element={<SubscriptionDocuments />}
               />
+              <Route path="notifications" element={<NotificationsScreen />} />
+
 
               {/* Add more investor routes here */}
             </Route>

@@ -64,7 +64,7 @@ export const useGetFundReports = ({
 };
 
 // Hook to create a new fund report
-export const useCreateFundReport = () => {
+export const useCreateFundReport = (userId: string) => {
   const queryClient = useQueryClient();
   return useMutation<FundReport, Error, CreateFundReportPayload>({
     mutationFn: async (payload) => {
@@ -88,6 +88,11 @@ export const useCreateFundReport = () => {
     onSuccess: (data) => {
       toast.success("Fund report created successfully");
       queryClient.invalidateQueries({ queryKey: ["fundReports", data.fundId] });
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: ["unreadNotifications", userId],
+        });
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Failed to create fund report");

@@ -3,10 +3,11 @@ import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import { CircleDollarSign, Files, LayoutGrid } from "lucide-react";
+import { Bell, CircleDollarSign, Files, LayoutGrid } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
 import ManagerSidebar from "../FundManager/Public/ManagerSidebar";
 import { useThemeContext } from "../Context/InvestorThemeContext";
+import { useGetUnreadCount } from "../API/Endpoints/Notification/notification";
 
 const InvestorLayout = () => {
   const { user, logout } = useAuth();
@@ -16,7 +17,8 @@ const InvestorLayout = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-
+  const { data, isPending } = useGetUnreadCount(user?.id);
+  const unreadCount = data?.unreadCount || 0;
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -54,6 +56,21 @@ const InvestorLayout = () => {
       label: "Subscription Documents",
       path: "subscription-documents",
     },
+    {
+      id: "notifications",
+      icon: (
+        <div className={`relative ${isPending ? 'opacity-70 blur-[1px]' : ''}`}>
+          <Bell size={22} />
+          {!isPending && unreadCount > 0 && (
+            <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </div>
+      ),
+      label: "Notifications",
+      path: "notifications",
+    }
   ];
 
   // Show loading state while theme is loading

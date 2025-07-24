@@ -2,10 +2,11 @@ import { eq, and } from 'drizzle-orm';
 import { DistributionCreate, ActivityLogCreate } from '../Types/distributions.types';
 import { sql } from 'drizzle-orm';
 import { db } from '../db/DbConnection';
-import { activityLogs, distributions, UsersTable } from '../db/schema';
+import { activityLogs, distributions, funds, userNotifications, UsersTable } from '../db/schema';
 
 export const create = async (data: DistributionCreate) => {
   return db.transaction(async (tx) => {
+    // Validate and transform data
     const parsedAmount = parseFloat(data.amount);
     if (isNaN(parsedAmount)) {
       throw new Error('Invalid amount format');
@@ -16,6 +17,7 @@ export const create = async (data: DistributionCreate) => {
       throw new Error('Invalid date format');
     }
 
+    // Insert the distribution
     const [distribution] = await tx
       .insert(distributions)
       .values({
@@ -31,23 +33,49 @@ export const create = async (data: DistributionCreate) => {
       })
       .returning();
 
-    const log: ActivityLogCreate = {
-      entityType: 'distribution',
-      entityId: distribution.id,
-      action: 'created',
-      performedBy: data.createdBy,
-      description: `Created distribution for fund ID ${data.fundId}`,
-    };
+    // Insert the activity log
+    const [activityLog] = await tx
+      .insert(activityLogs)
+      .values({
+        entityType: 'distribution',
+        entityId: distribution.id,
+        action: 'created',
+        performedBy: data.createdBy,
+        fundId: data.fundId,
+        description: `Created distribution for fund ID ${data.fundId}`,
+        createdAt: new Date(),
+      })
+      .returning();
 
-    await tx.insert(activityLogs).values({
-      ...log,
-      createdAt: new Date(),
-    });
+    // Fetch the fund to get the fund manager and investors
+    const [fund] = await tx
+      .select({
+        fundManagerId: funds.fundManagerId,
+        investorIds: sql<string[]>`jsonb_path_query_array(${funds.investors}, '$.investorId')`,
+      })
+      .from(funds)
+      .where(eq(funds.id, data.fundId));
+
+    // Prepare user IDs to notify (fund manager and all investors, including the creator)
+    const usersToNotify = [fund.fundManagerId, ...fund.investorIds];
+
+    // Insert user_notifications for each relevant user
+    if (usersToNotify.length > 0) {
+      await tx.insert(userNotifications).values(
+        usersToNotify.map((userId) => ({
+          userId,
+          activityLogId: activityLog.id,
+          isRead: false,
+          isDeleted: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })),
+      );
+    }
 
     return distribution;
   });
 };
-
 export const getAllForUser = async (
   userId: string,
   role: string,
@@ -101,6 +129,7 @@ export const getAllForUser = async (
 
 export const updateStatus = async (id: string, status: 'approved' | 'rejected', userId: string) => {
   return db.transaction(async (tx) => {
+    // Check if the distribution exists
     const [existing] = await tx
       .select()
       .from(distributions)
@@ -111,28 +140,57 @@ export const updateStatus = async (id: string, status: 'approved' | 'rejected', 
       throw new Error('Distribution not found');
     }
 
+    // Authorize the user
     if (existing.investorId !== userId) {
       throw new Error('You are not authorized to update this distribution');
     }
 
+    // Update the distribution status
     const [updated] = await tx
       .update(distributions)
       .set({ status, updatedAt: new Date() })
       .where(eq(distributions.id, id))
       .returning();
 
-    const log: ActivityLogCreate = {
-      entityType: 'distribution',
-      entityId: id,
-      action: status,
-      performedBy: userId,
-      description: `${status.charAt(0).toUpperCase() + status.slice(1)} distribution for fund ID ${existing.fundId}`,
-    };
+    // Insert the activity log
+    const [activityLog] = await tx
+      .insert(activityLogs)
+      .values({
+        entityType: 'distribution',
+        entityId: id,
+        action: status,
+        performedBy: userId,
+        fundId: updated.fundId,
+        description: `${status.charAt(0).toUpperCase() + status.slice(1)} distribution for fund ID ${updated.fundId}`,
+        createdAt: new Date(),
+      })
+      .returning();
 
-    await tx.insert(activityLogs).values({
-      ...log,
-      createdAt: new Date(),
-    });
+    // Fetch the fund to get the fund manager and investors
+    const [fund] = await tx
+      .select({
+        fundManagerId: funds.fundManagerId,
+        investorIds: sql<string[]>`jsonb_path_query_array(${funds.investors}, '$.investorId')`,
+      })
+      .from(funds)
+      .where(eq(funds.id, updated.fundId));
+
+    // Prepare user IDs to notify (fund manager and all investors, including the performer)
+    const usersToNotify = [fund.fundManagerId, ...fund.investorIds];
+
+    // Insert user_notifications for each relevant user
+    if (usersToNotify.length > 0) {
+      await tx.insert(userNotifications).values(
+        usersToNotify.map((userId) => ({
+          userId,
+          activityLogId: activityLog.id,
+          isRead: false,
+          isDeleted: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })),
+      );
+    }
 
     return updated;
   });
@@ -196,6 +254,7 @@ export const update = async (id: string, data: Partial<DistributionCreate>, user
       entityType: 'distribution',
       entityId: id,
       action: 'updated',
+      fundId: updated.fundId, // Use fundId from updated capital call
       performedBy: userId,
       description: `Updated distribution for fund ID ${updated.fundId}`,
     };

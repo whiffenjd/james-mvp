@@ -71,6 +71,20 @@
       "when": 1752588344774,
       "tag": "0009_awesome_slyde",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1753259444738,
+      "tag": "0010_milky_starjammers",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1753261301449,
+      "tag": "0011_bored_pestilence",
+      "breakpoints": true
     }
   ]
 }

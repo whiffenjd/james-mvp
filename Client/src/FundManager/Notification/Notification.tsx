@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Trash2, Bell, DollarSign, FileText, TrendingUp } from 'lucide-react';
+import { ChevronDown, Bell, DollarSign, FileText, TrendingUp, Trash } from 'lucide-react';
 import {
     useGetNotifications,
     useMarkNotificationAsRead,
@@ -177,10 +177,9 @@ export default function NotificationsScreen() {
     };
 
     return (
-        <div className='w-full mx-auto  !overflow-hidden'>
+        <div className='w-full mx-auto !overflow-hidden'>
             {/* Header */}
             <div className='flex justify-between items-center'>
-
                 <h1 className='text-2xl font-semibold text-theme-primary-text mb-6'>Notifications</h1>
                 {filteredNotifications.some(notification => !notification.isRead) && (
                     <button
@@ -200,8 +199,8 @@ export default function NotificationsScreen() {
             </div>
 
             {/* Tabs and Filter */}
-            <div className='flex items-center justify-between mb-6 border-b border-gray-400'>
-                <div className='flex space-x-1'>
+            <div className='flex items-center justify-between  mb-6 border-b border-gray-400 '>
+                <div className='flex space-x-1 -mb-2'>
                     {tabs.map((tab) => (
                         <button
                             key={tab}
@@ -211,7 +210,7 @@ export default function NotificationsScreen() {
                             }}
                             className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === tab
                                 ? 'border-b-2 border-theme-sidebar-accent'
-                                : 'text-theme-secondary-text hover:text-theme-primary-text hover:bg-gray-50'
+                                : 'text-theme-secondary-text hover:text-theme-primary-text hover:border-b-2 hover:border-theme-sidebar-accent'
                                 }`}
                         >
                             {tab}
@@ -220,10 +219,11 @@ export default function NotificationsScreen() {
                 </div>
 
                 {/* Custom Dropdown */}
-                <div className='relative' ref={dropdownRef}>
+
+                <div className='relative mb-2' ref={dropdownRef}>
                     <button
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className='flex items-center gap-2 px-4 py-2 border border-gray-400 rounded-lg  hover:bg-gray-50 transition-colors'
+                        className='flex items-center gap-2 px-3 py-2 border border-gray-400 rounded-lg hover:bg-gray-50 transition-colors'
                     >
                         <span className='text-sm text-theme-primary-text'>{selectedType}</span>
                         <ChevronDown
@@ -287,7 +287,7 @@ export default function NotificationsScreen() {
 
                         return (
                             <div key={dateGroup}>
-                                <h2 className='text-sm font-medium text-theme-secondary-text mb-3'>
+                                <h2 className='text-sm  font-medium text-theme-primary-text mb-3'>
                                     {dateGroup}
                                 </h2>
                                 <div className='space-y-2'>
@@ -305,7 +305,7 @@ export default function NotificationsScreen() {
                                             >
                                                 {/* Icon */}
                                                 <div
-                                                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${getIconColorForEntityType(notification.entityType)
+                                                    className={`flex-shrink-0 w-10  h-10 rounded-full flex items-center justify-center ${getIconColorForEntityType(notification.entityType)
                                                         }`}
                                                 >
                                                     {getIconForEntityType(notification.entityType)}
@@ -322,7 +322,7 @@ export default function NotificationsScreen() {
                                                 <div className='flex items-center gap-3 flex-shrink-0'>
                                                     <button
                                                         onClick={() => handleVisitFund(navigate, notification.id, user?.role, notification?.fundId)}
-                                                        className="text-theme-sidebar-accent transition-colors"
+                                                        className="text-sm text-theme-sidebar-accent transition-colors"
                                                         disabled={isDeleting}
                                                     >
                                                         Visit Fund
@@ -356,15 +356,15 @@ export default function NotificationsScreen() {
                                                     <div className="relative mt-1">
                                                         {isDeleting ? (
                                                             <span className="text-gray-400 opacity-70 blur-[1px]">
-                                                                <Trash2 className='w-4 h-4' />
+                                                                <Trash className='w-4 h-4' />
                                                             </span>
                                                         ) : (
                                                             <button
                                                                 onClick={() => handleDelete(notification.id)}
-                                                                className='text-gray-400 hover:text-red-500 transition-colors'
+                                                                className='hover:text-red-800  text-red-500 transition-colors'
                                                                 disabled={isMarkingAsRead}
                                                             >
-                                                                <Trash2 className='w-4 h-4' />
+                                                                <Trash className='w-4 h-4' />
                                                             </button>
                                                         )}
                                                     </div>

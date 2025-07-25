@@ -100,7 +100,7 @@ export default function NotificationsScreen() {
 
     const {
         data: notificationsData,
-        isLoading,
+        isPending,
         refetch,
     } = useGetNotifications(queryParams);
 
@@ -254,7 +254,7 @@ export default function NotificationsScreen() {
             </div>
 
             {/* Notifications List */}
-            {isLoading ? (
+            {isPending ? (
                 <div className='space-y-4 py-6'>
                     {Array.from({ length: 5 }).map((_, index) => (
                         <div
@@ -403,7 +403,7 @@ export default function NotificationsScreen() {
             )}
 
             {/* Empty State */}
-            {!isLoading && notifications.length === 0 && (
+            {!isPending && notifications.length === 0 && (
                 <div className='text-center py-12'>
                     <Bell className='w-12 h-12 text-gray-300 mx-auto mb-4' />
                     <p className='text-theme-secondary-text'>No notifications found</p>

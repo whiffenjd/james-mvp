@@ -2,6 +2,7 @@ import { db } from '../db/DbConnection';
 import { fundReports, activityLogs, UsersTable, funds, userNotifications } from '../db/schema';
 import { CreateFundReportSchema } from '../validators/fundReport.schema';
 import { and, eq, sql } from 'drizzle-orm';
+import { triggerEmailNotifications } from './emailNotification.service';
 
 export const create = async (data: {
   fundId: string;
@@ -47,17 +48,26 @@ export const create = async (data: {
       })
       .returning();
 
-    // Fetch the fund to get the fund manager and investors
+    // Fetch the fund to get the fund manager, investors, and fund name
     const [fund] = await tx
       .select({
+        name: funds.name,
         fundManagerId: funds.fundManagerId,
         investorIds: sql<string[]>`jsonb_path_query_array(${funds.investors}, '$.investorId')`,
       })
       .from(funds)
       .where(eq(funds.id, data.fundId));
 
+    // Fetch creator's name for email notifications
+    const [creator] = await tx
+      .select({
+        name: UsersTable.name,
+      })
+      .from(UsersTable)
+      .where(eq(UsersTable.id, data.createdBy));
+
     // Prepare user IDs to notify (fund manager and all investors, including the creator)
-    const usersToNotify = [fund.fundManagerId, ...fund.investorIds];
+    const usersToNotify = [...fund.investorIds];
 
     // Insert user_notifications for each relevant user
     if (usersToNotify.length > 0) {
@@ -71,6 +81,18 @@ export const create = async (data: {
           updatedAt: new Date(),
         })),
       );
+
+      // Trigger email notifications asynchronously
+      triggerEmailNotifications({
+        userIds: usersToNotify,
+        notificationData: {
+          entityType: 'fund_report',
+          action: 'created',
+          fundName: fund.name,
+          performedByName: creator.name,
+        },
+        createdBy: data.createdBy,
+      });
     }
 
     return fundReport;

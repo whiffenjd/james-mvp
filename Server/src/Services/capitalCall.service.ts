@@ -4,6 +4,7 @@ import { db } from '../db/DbConnection';
 import { capitalCalls } from '../db/schema/CapitalCall';
 import { activityLogs } from '../db/schema/ActivityLogs';
 import { funds, userNotifications, UsersTable } from '../db/schema';
+import { triggerEmailNotifications } from './emailNotification.service';
 
 export const create = async (data: CapitalCallCreate) => {
   return db.transaction(async (tx) => {
@@ -47,17 +48,27 @@ export const create = async (data: CapitalCallCreate) => {
       })
       .returning();
 
-    // Fetch the fund to get the fund manager and investors
+    // Fetch the fund to get the fund manager, investors, and fund name
     const [fund] = await tx
       .select({
+        name: funds.name, // Add fund name for email notifications
         fundManagerId: funds.fundManagerId,
         investorIds: sql<string[]>`jsonb_path_query_array(${funds.investors}, '$.investorId')`,
       })
       .from(funds)
       .where(eq(funds.id, data.fundId));
 
+    // Fetch creator's name for email notifications
+    const [creator] = await tx
+      .select({
+        name: UsersTable.name,
+      })
+      .from(UsersTable)
+      .where(eq(UsersTable.id, data.createdBy));
+
     // Prepare user IDs to notify (fund manager and investors, excluding the creator)
-    const usersToNotify = [fund.fundManagerId, ...fund.investorIds];
+    const usersToNotify = [data.investorId];
+
     // Insert user_notifications for each relevant user
     if (usersToNotify.length > 0) {
       await tx.insert(userNotifications).values(
@@ -70,6 +81,19 @@ export const create = async (data: CapitalCallCreate) => {
           updatedAt: new Date(),
         })),
       );
+
+      // Trigger email notifications asynchronously (non-blocking)
+      triggerEmailNotifications({
+        userIds: usersToNotify,
+        notificationData: {
+          entityType: 'capital_call',
+          action: 'created',
+          fundName: fund.name,
+          performedByName: creator.name,
+          amount: parsedAmount,
+        },
+        createdBy: data.createdBy,
+      });
     }
 
     return capitalCall;
@@ -160,17 +184,26 @@ export const updateStatus = async (id: string, status: 'approved' | 'rejected', 
       })
       .returning();
 
-    // Fetch the fund to get the fund manager and investors
+    // Fetch the fund to get the fund manager, investors, and fund name
     const [fund] = await tx
       .select({
+        name: funds.name,
         fundManagerId: funds.fundManagerId,
         investorIds: sql<string[]>`jsonb_path_query_array(${funds.investors}, '$.investorId')`,
       })
       .from(funds)
       .where(eq(funds.id, updated.fundId));
 
+    // Fetch performer's name for email notifications
+    const [performer] = await tx
+      .select({
+        name: UsersTable.name,
+      })
+      .from(UsersTable)
+      .where(eq(UsersTable.id, userId));
+
     // Prepare user IDs to notify (fund manager and investors, excluding the performer)
-    const usersToNotify = [fund.fundManagerId, ...fund.investorIds];
+    const usersToNotify = [fund.fundManagerId];
 
     // Insert user_notifications for each relevant user
     if (usersToNotify.length > 0) {
@@ -184,6 +217,18 @@ export const updateStatus = async (id: string, status: 'approved' | 'rejected', 
           updatedAt: new Date(),
         })),
       );
+      // Trigger email notifications asynchronously
+      triggerEmailNotifications({
+        userIds: usersToNotify,
+        notificationData: {
+          entityType: 'capital_call',
+          action: status,
+          fundName: fund.name,
+          performedByName: performer.name,
+          amount: updated.amount,
+        },
+        createdBy: userId,
+      });
     }
 
     return updated;

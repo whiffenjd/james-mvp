@@ -117,7 +117,7 @@ export const FundTransactionViewModal: React.FC<FundTransactionViewModalProps> =
                     <button
                         onClick={onApprove}
                         disabled={isLoading}
-                        className="px-6 py-2 bg-theme-sidebar-accent text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2 bg-theme-sidebar-accent text-white rounded-lg hover:opacity-90 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isLoading ? 'Processing...' : 'Approved'}
                     </button>

@@ -131,10 +131,11 @@ export const getNotifications = async (
   return {
     data: notifications.map((n) => ({
       id: n.id,
-      description:
-        n.targetUserId === userId
-          ? personalizeDescription(n, true)
-          : personalizeDescription(n, false),
+      // description:
+      //   n.targetUserId === userId
+      //     ? personalizeDescription(n, true)
+      //     : personalizeDescription(n, false),
+      description: personalizeDescription(n),
       timeAgo: formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }),
       timestamp: n.createdAt.toISOString(),
       entityType: n.entityType,
@@ -238,47 +239,84 @@ export const deleteNotification = async (userId: string, notificationId: string)
     );
 };
 
-// Helper function to personalize notification descriptions
-function personalizeDescription(notification: any, isTargetUser: boolean): string {
+function personalizeDescription(notification: any): string {
   const { description, entityType, action, fundName, performedByName, amount, targetUserName } =
     notification;
 
   if (entityType === 'capital_call') {
     if (action === 'created') {
-      return isTargetUser
-        ? `You were requested to invest $${amount} in ${fundName}`
-        : `${targetUserName || 'An investor'} was requested to invest $${amount} in ${fundName} by ${performedByName}`;
+      // Only shown to the investor being called
+      return `You were requested to invest $${amount} in ${fundName}`;
     }
-    if (action === 'approved') {
-      return isTargetUser
-        ? `You approved a capital call of $${amount} for ${fundName}`
-        : `${targetUserName || 'An investor'} approved a capital call of $${amount} for ${fundName}`;
-    }
-    if (action === 'rejected') {
-      return isTargetUser
-        ? `You rejected a capital call of $${amount} for ${fundName}`
-        : `${targetUserName || 'An investor'} rejected a capital call of $${amount} for ${fundName}`;
+    if (action === 'approved' || action === 'rejected') {
+      // Only shown to fund manager (isTargetUser will be true for fund manager)
+      const actionText = action === 'approved' ? 'approved' : 'rejected';
+      return `${targetUserName || 'An investor'} ${actionText} a capital call of $${amount} for ${fundName}`;
     }
   }
+
   if (entityType === 'distribution') {
     if (action === 'created') {
-      return isTargetUser
-        ? `You received a distribution of $${amount} from ${fundName}`
-        : `${targetUserName || 'An investor'} received a distribution of $${amount} from ${fundName} by ${performedByName}`;
+      // Only shown to the investor receiving distribution
+      return `You received a distribution of $${amount} from ${fundName}`;
     }
-    if (action === 'approved') {
-      return isTargetUser
-        ? `You approved a distribution of $${amount} for ${fundName}`
-        : `${targetUserName || 'An investor'} approved a distribution of $${amount} for ${fundName}`;
-    }
-    if (action === 'rejected') {
-      return isTargetUser
-        ? `You rejected a distribution of $${amount} for ${fundName}`
-        : `${targetUserName || 'An investor'} rejected a distribution of $${amount} for ${fundName}`;
+    if (action === 'approved' || action === 'rejected') {
+      // Only shown to fund manager
+      const actionText = action === 'approved' ? 'approved' : 'rejected';
+      return `${targetUserName || 'An investor'} ${actionText} a distribution of $${amount} for ${fundName}`;
     }
   }
+
   if (entityType === 'fund_report') {
+    // Shown to all relevant users as before
     return `${performedByName} uploaded a fund report for ${fundName}`;
   }
+
   return description; // Fallback to original description
 }
+
+// Helper function to personalize notification descriptions
+//
+// function personalizeDescription(notification: any, isTargetUser: boolean): string {
+//   const { description, entityType, action, fundName, performedByName, amount, targetUserName } =
+//     notification;
+
+//   if (entityType === 'capital_call') {
+//     if (action === 'created') {
+//       return isTargetUser
+//         ? `You were requested to invest $${amount} in ${fundName}`
+//         : `${targetUserName || 'An investor'} was requested to invest $${amount} in ${fundName} by ${performedByName}`;
+//     }
+//     if (action === 'approved') {
+//       return isTargetUser
+//         ? `You approved a capital call of $${amount} for ${fundName}`
+//         : `${targetUserName || 'An investor'} approved a capital call of $${amount} for ${fundName}`;
+//     }
+//     if (action === 'rejected') {
+//       return isTargetUser
+//         ? `You rejected a capital call of $${amount} for ${fundName}`
+//         : `${targetUserName || 'An investor'} rejected a capital call of $${amount} for ${fundName}`;
+//     }
+//   }
+//   if (entityType === 'distribution') {
+//     if (action === 'created') {
+//       return isTargetUser
+//         ? `You received a distribution of $${amount} from ${fundName}`
+//         : `${targetUserName || 'An investor'} received a distribution of $${amount} from ${fundName} by ${performedByName}`;
+//     }
+//     if (action === 'approved') {
+//       return isTargetUser
+//         ? `You approved a distribution of $${amount} for ${fundName}`
+//         : `${targetUserName || 'An investor'} approved a distribution of $${amount} for ${fundName}`;
+//     }
+//     if (action === 'rejected') {
+//       return isTargetUser
+//         ? `You rejected a distribution of $${amount} for ${fundName}`
+//         : `${targetUserName || 'An investor'} rejected a distribution of $${amount} for ${fundName}`;
+//     }
+//   }
+//   if (entityType === 'fund_report') {
+//     return `${performedByName} uploaded a fund report for ${fundName}`;
+//   }
+//   return description; // Fallback to original description
+// }

@@ -7,11 +7,17 @@ interface TableHeaderProps<T> {
     sortKey: string | null
     sortDirection: "asc" | "desc" | null
     onSort: (key: string) => void
+    useThemeStyles?: boolean;
+
 }
 
-export function TableHeader<T>({ columns, hasActions, sortKey, sortDirection, onSort }: TableHeaderProps<T>) {
+export function TableHeader<T>({ columns, hasActions, sortKey, sortDirection, onSort, useThemeStyles = true }: TableHeaderProps<T>) {
+    const baseBgClass = useThemeStyles ? "bg-theme-card" : "bg-theme-card";
+    const borderClass = useThemeStyles ? "border-theme-sidebar-accent" : "border-primary";
+    const textClass = useThemeStyles ? "text-theme-sidebar-accent" : "text-primary";
+
     return (
-        <div className="bg-theme-card border rounded-md border-theme-sidebar-accent w-full box-border">
+        <div className={`${baseBgClass} border rounded-md ${borderClass} w-full box-border`}>
             <div
                 className="grid gap-4 px-6 py-4 items-center w-full"
                 style={{
@@ -23,7 +29,7 @@ export function TableHeader<T>({ columns, hasActions, sortKey, sortDirection, on
                     <div
                         key={index}
                         className={`
-              text-sm font-semibold text-theme-sidebar-accent uppercase tracking-wider overflow-hidden
+              text-sm font-semibold ${textClass} uppercase tracking-wider overflow-hidden
               ${column.align === "center" ? "text-center" : ""}
               ${column.align === "right" ? "text-right" : "text-left"}
               ${column.sortable ? "cursor-pointer select-none" : ""}
@@ -49,7 +55,7 @@ export function TableHeader<T>({ columns, hasActions, sortKey, sortDirection, on
                     </div>
                 ))}
                 {hasActions && (
-                    <div className="text-sm font-semibold text-theme-sidebar-accent uppercase tracking-wider text-right">
+                    <div className={`text-sm font-semibold ${textClass}  uppercase tracking-wider text-right`}>
                         Actions
                     </div>
                 )}

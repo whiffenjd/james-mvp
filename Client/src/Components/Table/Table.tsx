@@ -18,6 +18,8 @@ export function Table<T = any>({
     loading = false,
     emptyMessage = "No data available",
     className = "",
+    useThemeStyles = true,
+
 }: TableProps<T>) {
     const [sortKey, setSortKey] = useState<string | null>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
@@ -38,35 +40,39 @@ export function Table<T = any>({
     };
 
     const hasActions = actions.length > 0;
+    const baseBgClass = useThemeStyles ? "bg-theme-card" : "bg-theme-card";
+    const borderClass = useThemeStyles ? "border-theme-sidebar-accent" : "border-primary";
+
 
     return (
         <div className={`space-y-4 w-full ${className}`}>
             {/* Floating Header */}
-            <div className="bg-theme-card shadow-sm rounded-md overflow-hidden w-full">
+            <div className={`${baseBgClass} shadow-sm rounded-md overflow-hidden w-full`}>
                 <TableHeader
                     columns={columns}
                     hasActions={hasActions}
                     sortKey={sortKey}
                     sortDirection={sortDirection}
                     onSort={handleSort}
+                    useThemeStyles={useThemeStyles}
                 />
             </div>
 
             {/* Floating Rows */}
             <div className="space-y-3">
                 {loading ? (
-                    <div className="bg-theme-card shadow-sm rounded-md border border-theme-sidebar-accent">
+                    <div className={`${baseBgClass} shadow-sm rounded-md border ${borderClass}`}>
                         <LoadingSpinner />
                     </div>
                 ) : data.length === 0 ? (
-                    <div className="bg-theme-card shadow-sm rounded-md border border-theme-sidebar-accent">
+                    <div className={`${baseBgClass} shadow-sm rounded-md border ${borderClass}`}>
                         <EmptyState message={emptyMessage} />
                     </div>
                 ) : (
                     data.map((row, index) => (
                         <div
                             key={index}
-                            className="bg-theme-card shadow-sm rounded-md border border-theme-sidebar-accent overflow-hidden hover:shadow-md transition-shadow"
+                            className={`${baseBgClass} shadow-sm rounded-md border ${borderClass} overflow-hidden hover:shadow-md transition-shadow`}
                         >
                             <TableRow row={row} columns={columns} actions={actions} index={index} />
                         </div>
@@ -75,8 +81,8 @@ export function Table<T = any>({
             </div>
 
             {pagination && onPageChange && (
-                <div className="bg-theme-card shadow-sm rounded-md border border-theme-sidebar-accent overflow-hidden">
-                    <Pagination pagination={pagination} onPageChange={onPageChange} />
+                <div className={`${baseBgClass} shadow-sm rounded-md border ${borderClass} overflow-hidden`}>
+                    <Pagination pagination={pagination} onPageChange={onPageChange} useThemeStyles={useThemeStyles} />
                 </div>
             )}
         </div>

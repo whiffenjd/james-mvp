@@ -39,6 +39,9 @@ import FundsAndReportingInvestors from "./Investor/Funds and Reporting/FundsAndR
 import InvestorsProject from "./Investor/Funds and Reporting/project";
 import SubscriptionDocuments from "./Investor/Subscription Documents/SubscriptionDocuments";
 import NotificationsScreen from "./FundManager/Notification/Notification";
+import AdminUsersPage from "./Admin/Users/UsersPage";
+
+
 
 function RedirectBasedOnRole() {
   const { user } = useAuth();
@@ -73,14 +76,16 @@ function App() {
           {/* Admin routes - NO THEMING */}
           <Route element={<AdminRoute />}>
             <Route
-              path="/admin/dashboard"
+              path="/admin"
               element={
                 <div className="admin-dashboard min-h-screen bg-gray-50">
                   <AdminLayout />
                 </div>
               }
             >
-              <Route index element={<AdminDashboard />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsersPage />} />
+
               {/* Add more nested admin routes here */}
             </Route>
           </Route>

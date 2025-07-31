@@ -4,9 +4,14 @@ import type { PaginationInfo } from "../../types/table"
 interface PaginationProps {
     pagination: PaginationInfo
     onPageChange: (page: number) => void
+    useThemeStyles?: boolean;
+
 }
 
-export function Pagination({ pagination, onPageChange }: PaginationProps) {
+export function Pagination({ pagination, onPageChange, useThemeStyles = true }: PaginationProps) {
+    const baseBgClass = useThemeStyles ? "bg-theme-card" : "bg-theme-card";
+    const borderClass = useThemeStyles ? "border-theme-sidebar-accent" : "border-primary";
+    const textClass = useThemeStyles ? "text-theme-sidebar-accent" : "text-primary";
     const { currentPage, totalPages, totalItems, itemsPerPage } = pagination
 
     const startItem = (currentPage - 1) * itemsPerPage + 1
@@ -53,7 +58,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
                 <button
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="px-3 py-2 text-sm font-medium text-theme-secondary-text bg-white  border border-theme-sidebar-accent rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`px-3 py-2 text-sm font-medium text-theme-secondary-text bg-white  border ${borderClass} rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                     Previous
                 </button>
@@ -66,7 +71,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
                         className={`
               px-3 py-2 text-sm font-medium rounded-md
               ${page === currentPage
-                                ? "border border-theme-sidebar-accent  text-theme-sidebar-accent"
+                                ? `border ${borderClass}  text-theme-sidebar-accent`
                                 : page === "..."
                                     ? "text-slate-400 cursor-default"
                                     : "text-theme-secondary-text bg-white border border-slate-300 hover:bg-slate-50"
@@ -80,7 +85,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
                 <button
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-2 text-sm font-medium text-theme-secondary-text bg-white border border-theme-sidebar-accent rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`px-3 py-2 text-sm font-medium text-theme-secondary-text bg-white border ${borderClass} rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                     Next
                 </button>

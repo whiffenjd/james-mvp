@@ -16,6 +16,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: JwtPayload;
+      fundManager?: any; // or specify the type of fundManager if you know it
     }
   }
 }

@@ -33,6 +33,9 @@ export interface TableProps<T = any> {
   loading?: boolean;
   emptyMessage?: string;
   className?: string;
+
+  /** Optional flag to control whether to use theme styles (default: true) */
+  useThemeStyles?: boolean;
 }
 
 export type SortDirection = "asc" | "desc" | null;

@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { signupInvestor } from '../Controllers/InvestorAuthControllers';
 const investorAuthRouter = Router();
 import express from 'express';
+import { subdomainMiddleware } from '../Middlewares/subdomain.middleware';
 /**
  * @swagger
  * tags:
@@ -100,6 +101,10 @@ import express from 'express';
  *                   type: string
  *                   example: "Internal server error"
  */
-investorAuthRouter.post('/investorSignup', signupInvestor as unknown as express.RequestHandler);
+investorAuthRouter.post(
+  '/investorSignup',
+  subdomainMiddleware,
+  signupInvestor as unknown as express.RequestHandler,
+);
 
 export default investorAuthRouter;

@@ -9,6 +9,9 @@
 body {
   font-family: poppins, sans-serif;
 }
+body.sidebar-open {
+  overflow: hidden;
+}
 
 input[type="radio"] {
   padding: 5px;

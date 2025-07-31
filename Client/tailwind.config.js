@@ -11,8 +11,8 @@ export default {
       },
       colors: {
         bgDark: "#2c2c2e",
-        bgPrimary: "#2FB5B4",
-        primary: "#2FB5B4",
+        bgPrimary: "#017776",
+        primary: "#017776",
         secondary: "#F4F4F5",
         // Theme-based colors using CSS variables
         "theme-dashboard": "var(--dashboard-bg)",

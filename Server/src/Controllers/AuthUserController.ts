@@ -6,12 +6,18 @@ import { UserTokens } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { deleteCache } from '../Utils/Caching';
 import { deleteUserTokenByType } from '../Utils/DeleteTokenByType';
-
-export const login = async (req: Request, res: Response) => {
+export type CustomRequest = Request & {
+  cache: any;
+  credentials: any;
+  destination: any;
+  integrity: any;
+  // Add other missing properties here
+};
+export const login = async (req: CustomRequest, res: Response) => {
   try {
     const { email, password, role } = req.body;
 
-    const result = await loginUser(email, password, role);
+    const result = await loginUser(req, email, password, role);
     res.status(200).json({
       success: true,
       message: 'Login successful',

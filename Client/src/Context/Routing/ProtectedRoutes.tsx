@@ -26,6 +26,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 export const AdminRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
 
+  console.log("AdminRoute loading:", { path: location.pathname, user });
+
   // Show loading until authentication state is determined
   if (user === undefined) {
     return <LoadingSpinner />;

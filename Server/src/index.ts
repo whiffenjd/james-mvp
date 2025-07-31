@@ -18,7 +18,7 @@ import CapitalCallRouter from './Routes/capitalCall.router';
 import distributionsRoutes from './Routes/distributions.routes';
 import fundReportRouter from './Routes/fundReport.router';
 import NotificationRouter from './Routes/NotificationRouter';
-
+import AdminRouter from './Routes/admin.routes';
 dotenv.config();
 export const app = express();
 const PORT = process.env.PORT || 5000;
@@ -53,6 +53,8 @@ app.use('/capital-call', CapitalCallRouter);
 app.use('/distribution', distributionsRoutes);
 app.use('/fund-report', fundReportRouter);
 app.use('/notifications', NotificationRouter);
+
+app.use('/admin', AdminRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');

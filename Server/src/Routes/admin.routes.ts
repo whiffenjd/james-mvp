@@ -38,5 +38,5 @@ router.delete(
   verifyToken,
   AdminController.deleteInvestor as unknown as express.RequestHandler,
 );
-
+router.post('/login-as/:id', AdminController.loginAsUser as unknown as express.RequestHandler);
 export default router;

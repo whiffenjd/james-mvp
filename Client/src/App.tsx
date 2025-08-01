@@ -40,6 +40,7 @@ import InvestorsProject from "./Investor/Funds and Reporting/project";
 import SubscriptionDocuments from "./Investor/Subscription Documents/SubscriptionDocuments";
 import NotificationsScreen from "./FundManager/Notification/Notification";
 import AdminUsersPage from "./Admin/Users/UsersPage";
+import LoginAsPage from "./Admin/Users/LoginAsPage";
 
 
 
@@ -66,6 +67,7 @@ function App() {
           {/* Public routes - accessible when not logged in */}
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
+            <Route path="/login-as/:id" element={<LoginAsPage />} />
 
             <Route path="/signup/:fundManagerId?" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

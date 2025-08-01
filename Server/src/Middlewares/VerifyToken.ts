@@ -37,7 +37,6 @@ export const verifyToken = async (
     res.status(401).json({ message: 'Access denied. No token provided.' });
     return;
   }
-
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
     // console.log('decoded',decoded)

@@ -136,3 +136,23 @@ export const deleteInvestor = async (req: Request, res: Response) => {
     );
   }
 };
+export const loginAsUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const token = req.query.token as string;
+    if (!token) {
+      return sendErrorResponse(res, 'Admin token required', 400);
+    }
+    const { token: newToken, user } = await AdminService.loginAsUser(id, token, req);
+    return sendSuccessResponse(res, 'Logged in as user successfully', 200, {
+      token: newToken,
+      user,
+    });
+  } catch (error) {
+    return sendErrorResponse(
+      res,
+      error instanceof Error ? error.message : 'Failed to log in as user',
+      500,
+    );
+  }
+};

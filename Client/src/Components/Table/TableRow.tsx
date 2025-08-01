@@ -6,9 +6,12 @@ interface TableRowProps<T> {
     columns: TableColumn<T>[]
     actions?: TableAction<T>[]
     index: number
+    useThemeStyles?: boolean;
+
 }
 
-export function TableRow<T>({ row, columns, actions, index }: TableRowProps<T>) {
+export function TableRow<T>({ row, columns, actions, index, useThemeStyles = true }: TableRowProps<T>) {
+    const buttonClass = useThemeStyles ? "bg-theme-sidebar-accent" : "bg-primary";
     const getNestedValue = (obj: any, path: string) => {
         return path.split(".").reduce((current, key) => current?.[key], obj);
     };
@@ -56,7 +59,7 @@ export function TableRow<T>({ row, columns, actions, index }: TableRowProps<T>) 
                     inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium
                     transition-transform duration-200 ease-in-out
                     ${action.variant === "primary"
-                                            ? "bg-theme-sidebar-accent text-white"
+                                            ? `${buttonClass} text-white`
                                             : action.variant === "danger"
                                                 ? "bg-red-600 text-white"
                                                 : "bg-slate-200 text-slate-700"

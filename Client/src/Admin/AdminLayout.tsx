@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import { LayoutGrid } from "lucide-react";
+import { LayoutGrid, Users } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
 import { FiMenu, FiX } from 'react-icons/fi';
 import { defaultTheme } from "../Context/ThemeContext";
@@ -56,8 +56,8 @@ const AdminLayout = () => {
     },
     {
       id: "View",
-      icon: <LayoutGrid size={22} />,
-      label: "View",
+      icon: <Users size={22} />,
+      label: "Users ",
       path: "/admin/users", // This should match your index route
     },
   ];

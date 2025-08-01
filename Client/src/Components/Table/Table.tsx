@@ -74,7 +74,8 @@ export function Table<T = any>({
                             key={index}
                             className={`${baseBgClass} shadow-sm rounded-md border ${borderClass} overflow-hidden hover:shadow-md transition-shadow`}
                         >
-                            <TableRow row={row} columns={columns} actions={actions} index={index} />
+                            <TableRow row={row} columns={columns} actions={actions} index={index} useThemeStyles={useThemeStyles}
+                            />
                         </div>
                     ))
                 )}

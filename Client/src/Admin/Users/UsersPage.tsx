@@ -7,6 +7,7 @@ import { formatDateToDDMMYYYY } from "../../utils/dateUtils";
 import toast from "react-hot-toast";
 import { defaultTheme } from "../../Context/ThemeContext";
 import { FundManagerModal } from "./fund-manager-modal";
+import { useAuth } from "../../Context/AuthContext";
 
 const TABS = [
   { label: "Fund Managers", value: "fundManagers" },
@@ -14,6 +15,7 @@ const TABS = [
 ];
 
 function AdminUsersPage() {
+  const { token } = useAuth()
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState<"fundManagers" | "investors">("fundManagers");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -50,7 +52,7 @@ function AdminUsersPage() {
       key: "name",
       header: "Name",
       sortable: false,
-      width: "20vh",
+      width: "15vh",
       align: "left",
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -62,7 +64,7 @@ function AdminUsersPage() {
       key: "email",
       header: "Email Address",
       sortable: false,
-      width: "35vh",
+      width: "25vh",
       align: "left",
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -74,7 +76,7 @@ function AdminUsersPage() {
       key: "created_at",
       header: "Created At",
       sortable: false,
-      width: "20vh",
+      width: "15vh",
       align: "left",
       render: (value: string) => {
         const formattedDate = formatDateToDDMMYYYY(value);
@@ -105,7 +107,7 @@ function AdminUsersPage() {
       key: "subdomain",
       header: "Subdomain",
       sortable: false,
-      width: "10vh",
+      width: "15vh",
       align: "left",
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -118,8 +120,20 @@ function AdminUsersPage() {
   // Actions
   const actions: TableAction<AdminUser>[] = [
     {
+      label: "View Details",
+      variant: "primary",
+      onClick: (row) => {
+        const userId = row.id;
+        const subdomain = row.subdomain || 'www';
+        const baseUrl = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173';
+        const loginAsUrl = `${baseUrl.replace('://', `://${subdomain}.`)}/login-as/${userId}?token=${encodeURIComponent(token)}`;
+        console.log(loginAsUrl);
+        window.open(loginAsUrl, '_blank');
+      },
+    },
+    {
       label: "",
-      variant: "secondary",
+      variant: "primary",
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -224,10 +238,10 @@ function AdminUsersPage() {
 
         {showDeleteModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
+            <div className="bg-white rounded-xl shadow-lg p-6 max-w-lg w-full">
               <h3 className="text-lg font-semibold mb-2">Delete {selectedTab === "fundManagers" ? "Fund Manager" : "Investor"}</h3>
               <p className="text-gray-700 mb-4">
-                Are you sure you want to delete this {selectedTab === "fundManagers" ? "fund manager" : "investor"}? This action cannot be undone.
+                Are you sure you want to delete this {selectedTab === "fundManagers" ? "fund manager" : "investor"}?. All the related data to this user will be deleted as well. This action cannot be undone.
               </p>
               <div className="flex gap-2 justify-end">
                 <button

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import axiosPrivate from "../../AxiosInstances/PrivateAxiosInstance";
 import axios from "axios";
+import axiosPublic from "../../AxiosInstances/PublicAxiosInstance";
 
 // Types for API responses
 export type AdminUser = {
@@ -38,6 +39,27 @@ export type FundManagerResponse = {
   email: string;
   subdomain: string;
   createdAt: string;
+};
+
+export type LoginAsResponse = {
+  token: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    isEmailVerified: boolean;
+    isActive: boolean;
+    metadata: Record<string, any>;
+    selectedTheme?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    isOnboarded?: boolean;
+    onboardingStatus?: {
+      status: "pending" | "approved" | "rejected";
+      rejectionNote?: string | null;
+    } | null;
+  };
 };
 
 // Hook to check subdomain availability
@@ -120,11 +142,19 @@ export const useDeleteFundManager = () => {
       await axiosPrivate.delete(`/admin/fund-managers/${id}`);
     },
     onSuccess: () => {
-      toast.success("Fund manager deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["fundManagers"] });
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to delete fund manager");
+      let errorMessage = "Failed to create fund manager";
+
+      if (axios.isAxiosError(error)) {
+        errorMessage =
+          error.response?.data?.message || error.message || errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
     },
   });
 };
@@ -159,11 +189,47 @@ export const useDeleteInvestor = () => {
       await axiosPrivate.delete(`/admin/investors/${id}`);
     },
     onSuccess: () => {
-      toast.success("Investor deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["investors"] });
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to delete investor");
+      let errorMessage = "Failed to create fund manager";
+
+      if (axios.isAxiosError(error)) {
+        errorMessage =
+          error.response?.data?.message || error.message || errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
     },
   });
+};
+
+// Hook to log in as a user
+export const useLoginAsUser = () => {
+  return useMutation<LoginAsResponse, Error, { userId: string; token: string }>(
+    {
+      mutationFn: async ({ userId, token }) => {
+        const response = await axiosPublic.post(
+          `/admin/login-as/${userId}`,
+          {},
+          { params: { token } }
+        );
+        return response.data.data;
+      },
+      onError: (error) => {
+        let errorMessage = "Failed to create fund manager";
+
+        if (axios.isAxiosError(error)) {
+          errorMessage =
+            error.response?.data?.message || error.message || errorMessage;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        toast.error(errorMessage);
+      },
+    }
+  );
 };

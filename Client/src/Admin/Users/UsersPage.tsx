@@ -52,7 +52,7 @@ function AdminUsersPage() {
       key: "name",
       header: "Name",
       sortable: false,
-      width: "15vh",
+      width: "10vh",
       align: "left",
       render: (value: string) => (
         <div className="truncate" title={value}>

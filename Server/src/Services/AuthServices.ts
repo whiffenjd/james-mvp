@@ -30,7 +30,6 @@ export const registerInvestor = async (
   if (existingUser) {
     throw new Error('An account with this email already exists.');
   }
-  console.log('req.fuindManager', req);
   // Step 2: Determine referral ID
   let finalReferralId: string | null = null;
   if (req.fundManager) {

@@ -11,6 +11,7 @@ export type AdminUser = {
   created_at: string;
   projectCount: number;
   investorCount: number;
+  subdomain: string;
 };
 
 export type PaginatedAdminUsers = {

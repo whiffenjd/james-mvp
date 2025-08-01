@@ -89,7 +89,7 @@ function AdminUsersPage() {
       key: "projectCount",
       header: "Projects",
       sortable: false,
-      width: "20vh",
+      width: "15vh",
       align: "left",
       render: (value: number) => <div>{value}</div>,
     },
@@ -97,9 +97,21 @@ function AdminUsersPage() {
       key: "investorCount",
       header: "Investors",
       sortable: false,
-      width: "20vh",
+      width: "15vh",
       align: "left",
       render: (value: number) => <div>{value}</div>,
+    },
+    {
+      key: "subdomain",
+      header: "Subdomain",
+      sortable: false,
+      width: "10vh",
+      align: "left",
+      render: (value: string) => (
+        <div className="truncate" title={value}>
+          {value}
+        </div>
+      ),
     },
   ];
 

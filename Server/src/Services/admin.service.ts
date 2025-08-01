@@ -1,4 +1,4 @@
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, inArray } from 'drizzle-orm';
 import { db } from '../db/DbConnection';
 import { UsersTable, funds } from '../db/schema';
 import bcrypt from 'bcryptjs';
@@ -96,6 +96,7 @@ export const getFundManagers = async (page: number, limit: number) => {
       created_at: UsersTable.createdAt,
       projectCount: sql`COUNT(DISTINCT ${funds.id})::integer`,
       investorCount: sql`COALESCE(SUM(jsonb_array_length(${funds.investors})::integer), 0)`,
+      subdomain: UsersTable.subdomain,
     })
     .from(UsersTable)
     .leftJoin(funds, eq(funds.fundManagerId, sql`${UsersTable.id}::text`))
@@ -138,38 +139,78 @@ export const deleteFundManager = async (userId: string) => {
 export const getInvestors = async (page: number, limit: number) => {
   const offset = (page - 1) * limit;
 
-  const baseQuery = db
+  // First get all investors with their referral IDs
+  const investorsWithReferrals = await db
     .select({
       id: UsersTable.id,
       name: UsersTable.name,
       email: UsersTable.email,
       created_at: UsersTable.createdAt,
-      projectCount: sql`COUNT(DISTINCT ${funds.id})::integer`,
-      investorCount: sql`COALESCE(SUM(jsonb_array_length(${funds.investors})::integer), 0)`,
+      referralId: UsersTable.referral, // Make sure this is the correct column name
     })
     .from(UsersTable)
-    .leftJoin(
-      funds,
-      sql`${UsersTable.id}::text IN (
-        SELECT elem->>'investorId'
-        FROM jsonb_array_elements(${funds.investors}) AS elem
-      )`,
-    )
     .where(and(eq(UsersTable.role, 'investor'), eq(UsersTable.isActive, true)))
-    .groupBy(UsersTable.id);
+    .limit(limit)
+    .offset(offset);
 
-  const [data, [{ count }]] = await Promise.all([
-    baseQuery.limit(limit).offset(offset),
-    db
-      .select({ count: sql`count(*)::integer` })
-      .from(UsersTable)
-      .where(and(eq(UsersTable.role, 'investor'), eq(UsersTable.isActive, true))),
-  ]);
+  // Get all unique referral IDs
+  const referralIds = investorsWithReferrals
+    .map((investor) => investor.referralId)
+    .filter(Boolean) as string[]; // Remove null/undefined and type assert
+
+  // Fetch subdomains for these referrals in one query
+  const referrals =
+    referralIds.length > 0
+      ? await db
+          .select({
+            id: UsersTable.id,
+            subdomain: UsersTable.subdomain,
+          })
+          .from(UsersTable)
+          .where(inArray(UsersTable.id, referralIds))
+      : [];
+
+  // Create a map of referralId -> subdomain for quick lookup
+  const referralMap = new Map(referrals.map((ref) => [ref.id, ref.subdomain]));
+
+  // Now get the counts and join with funds
+  const investorsWithCounts = await Promise.all(
+    investorsWithReferrals.map(async (investor) => {
+      const counts = await db
+        .select({
+          projectCount: sql`COUNT(DISTINCT ${funds.id})::integer`.as('projectCount'),
+          investorCount: sql`COALESCE(SUM(jsonb_array_length(${funds.investors})::integer), 0)`.as(
+            'investorCount',
+          ),
+        })
+        .from(funds).where(sql`${investor.id}::text IN (
+          SELECT elem->>'investorId'
+          FROM jsonb_array_elements(${funds.investors}) AS elem
+        )`);
+
+      return {
+        ...investor,
+        projectCount: counts[0]?.projectCount || 0,
+        investorCount: counts[0]?.investorCount || 0,
+        subdomain: investor.referralId ? referralMap.get(investor.referralId) : null,
+      };
+    }),
+  );
+
+  // Get total count
+  const [{ count }] = await db
+    .select({ count: sql`count(*)::integer` })
+    .from(UsersTable)
+    .where(and(eq(UsersTable.role, 'investor'), eq(UsersTable.isActive, true)));
 
   const totalItems = count || 0;
   const totalPages = Math.ceil(totalItems / limit);
 
-  return { data, totalItems, totalPages };
+  return {
+    data: investorsWithCounts,
+    totalItems,
+    totalPages,
+  };
 };
 
 export const deleteInvestor = async (userId: string) => {

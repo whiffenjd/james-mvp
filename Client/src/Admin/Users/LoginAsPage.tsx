@@ -40,7 +40,7 @@ function LoginAsPage() {
                 });
                 navigate("/dashboard");
             },
-            onError: (error: any) => {
+            onError: () => {
                 navigate("/admin/users");
             },
         });

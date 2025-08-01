@@ -3,6 +3,7 @@ import type React from "react"
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useCheckSubdomain, useCreateFundManager } from "../../API/Endpoints/Admin/admin"
+import { Eye, EyeOff } from "lucide-react"
 
 
 interface FundManagerModalProps {
@@ -17,6 +18,8 @@ export function FundManagerModal({ isOpen, onClose }: FundManagerModalProps) {
         password: "",
         subdomain: "",
     })
+    const [showPassword, setShowPassword] = useState(false)
+
     const [subdomainStatus, setSubdomainStatus] = useState<{
         isChecking: boolean
         isAvailable: boolean | null
@@ -148,20 +151,26 @@ export function FundManagerModal({ isOpen, onClose }: FundManagerModalProps) {
                         />
                     </div>
 
-                    <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                            Password
-                        </label>
+                    <div className="relative">
                         <input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             id="password"
                             name="password"
                             value={formData.password}
                             onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
                             required
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            className="absolute right-2 top-2.5 text-gray-500 hover:text-gray-700"
+                            tabIndex={-1}
+                        >
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
                     </div>
+
 
                     <div>
                         <label htmlFor="subdomain" className="block text-sm font-medium text-gray-700 mb-1">

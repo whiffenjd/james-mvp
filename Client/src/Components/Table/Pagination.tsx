@@ -9,9 +9,7 @@ interface PaginationProps {
 }
 
 export function Pagination({ pagination, onPageChange, useThemeStyles = true }: PaginationProps) {
-    const baseBgClass = useThemeStyles ? "bg-theme-card" : "bg-theme-card";
     const borderClass = useThemeStyles ? "border-theme-sidebar-accent" : "border-primary";
-    const textClass = useThemeStyles ? "text-theme-sidebar-accent" : "text-primary";
     const { currentPage, totalPages, totalItems, itemsPerPage } = pagination
 
     const startItem = (currentPage - 1) * itemsPerPage + 1

@@ -30,8 +30,7 @@ export function FundManagerModal({ isOpen, onClose }: FundManagerModalProps) {
     const { checkSubdomain } = useCheckSubdomain();
     const { mutate: createFundManager, isPending: isCreating } = useCreateFundManager()
     // Create a ref to store the debounce timer
-    const debounceTimer = useRef<NodeJS.Timeout>()
-
+    const debounceTimer = useRef<ReturnType<typeof setTimeout>>(null);
     const checkSubdomainAvailability = async (subdomain: string) => {
         if (!subdomain || subdomain.length < 3) {
             setSubdomainStatus({ isChecking: false, isAvailable: null, error: null });

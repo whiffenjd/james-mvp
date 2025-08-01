@@ -81,7 +81,7 @@ export function Table<T = any>({
                 )}
             </div>
 
-            {pagination && onPageChange && (
+            {pagination && data.length != 0 && onPageChange && (
                 <div className={`${baseBgClass} shadow-sm rounded-md border ${borderClass} overflow-hidden`}>
                     <Pagination pagination={pagination} onPageChange={onPageChange} useThemeStyles={useThemeStyles} />
                 </div>

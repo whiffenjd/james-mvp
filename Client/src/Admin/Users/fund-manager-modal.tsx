@@ -152,6 +152,9 @@ export function FundManagerModal({ isOpen, onClose }: FundManagerModalProps) {
                     </div>
 
                     <div className="relative">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                            Password
+                        </label>
                         <input
                             type={showPassword ? "text" : "password"}
                             id="password"
@@ -164,12 +167,13 @@ export function FundManagerModal({ isOpen, onClose }: FundManagerModalProps) {
                         <button
                             type="button"
                             onClick={() => setShowPassword((prev) => !prev)}
-                            className="absolute right-2 top-2.5 text-gray-500 hover:text-gray-700"
+                            className="absolute right-2 top-11 -translate-y-1/2 text-gray-500 hover:text-gray-700 p-0 flex items-center"
                             tabIndex={-1}
                         >
                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
                     </div>
+
 
 
                     <div>

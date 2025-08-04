@@ -72,6 +72,7 @@ export const dashboardAssetsApi = {
     const response = await axiosPrivate.get(
       "/dashboard/assets/get-website-assets"
     );
+    console.log("assets returned",response.data)
     return response.data;
   },
 

@@ -121,10 +121,6 @@ export const loginUser = async (
     throw new Error('Invalid credentials');
   }
 
-  if (!user.isEmailVerified) {
-    throw new Error('Email not verified');
-  }
-
   // For investors, check subdomain matches their referral fund manager
   if (
     (user.role === 'investor' && user.referral) ||
@@ -158,6 +154,10 @@ export const loginUser = async (
         throw new Error('Fund managers can only log in via their own subdomain');
       }
     }
+  }
+
+  if (!user.isEmailVerified) {
+    throw new Error('Email not verified');
   }
 
   await deleteUserTokenByType(user.id, email, 'userAuth');

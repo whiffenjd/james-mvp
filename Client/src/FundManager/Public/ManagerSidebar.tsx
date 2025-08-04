@@ -58,9 +58,18 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
 
   // Force refetch assets when user role changes and user is fund manager
   useEffect(() => {
+    let timeout: number | null = null;
     if (userRole === "fundManager" && user?.id) {
+      // Initial immediate fetch
       refetchAssets?.();
+      // Delayed fetch after 1.5 seconds
+      timeout = setTimeout(() => {
+        refetchAssets?.();
+      }, 1500);
     }
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
   }, [userRole, user?.id, refetchAssets]);
 
   const handleItemClick = (item: MenuItem) => {
@@ -118,6 +127,14 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
   const DefaultLogo = () => (
     <img src="/assets/logo.png" alt="" className="object-contain h-8" />
   );
+  useEffect(() => {
+    console.log("ManagerSidebar rendered with logo:", logo, "and projectName:", projectName);
+    console.log("isLoading:", isLoading);
+    console.log("dashboardassets", dashboardAssets)
+    console.log("dashboardassets", assetsLoading)
+
+  }, [isLoading, logo, projectName]);
+
 
   return (
     <div className="w-full max-w-[302px] min-h-[calc(100vh-96px)] overflow-hidden ">
@@ -142,9 +159,8 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                         if (parent) {
                           parent.innerHTML = `
                             <div class="w-full h-full bg-theme-sidebar-accent/10 flex items-center justify-center">
-                              <span class="text-theme-sidebar-accent text-xs font-semibold">${
-                                projectName?.charAt(0) || "P"
-                              }</span>
+                              <span class="text-theme-sidebar-accent text-xs font-semibold">${projectName?.charAt(0) || "P"
+                            }</span>
                             </div>
                           `;
                         }
@@ -211,11 +227,10 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
           {menuItems.map((item) => (
             <button
               key={item.id}
-              className={`flex items-center w-full px-4 py-4 rounded-[10px] transition-colors text-sm font-poppins font-normal ${
-                activeItem === item.id
-                  ? "bg-theme-sidebar-accent text-white"
-                  : "text-theme-sidebar-accent hover:bg-theme-sidebar-accent hover:text-white"
-              }`}
+              className={`flex items-center w-full px-4 py-4 rounded-[10px] transition-colors text-sm font-poppins font-normal ${activeItem === item.id
+                ? "bg-theme-sidebar-accent text-white"
+                : "text-theme-sidebar-accent hover:bg-theme-sidebar-accent hover:text-white"
+                }`}
               onClick={() => handleItemClick(item)}
             >
               <span className="mr-3 text-current">{item.icon}</span>

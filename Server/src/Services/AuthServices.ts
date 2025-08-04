@@ -155,13 +155,14 @@ export const loginUser = async (
       }
     }
   }
-
+  //Check email verfication
   if (!user.isEmailVerified) {
     throw new Error('Email not verified');
   }
 
   await deleteUserTokenByType(user.id, email, 'userAuth');
 
+  //check invsetor onboarding
   let onboardingStatus = null;
   if (user.role === 'investor') {
     const [onboarding] = await db
@@ -209,74 +210,6 @@ export const loginUser = async (
     user: userWithOnboarding,
   };
 };
-// export const loginUser = async (
-//   email: string,
-//   password: string,
-//   role: 'admin' | 'fundManager' | 'investor',
-// ) => {
-//   const user = await db.query.UsersTable.findFirst({
-//     where: eq(UsersTable.email, email),
-//   });
-
-//   if (!user || !(await bcrypt.compare(password, user.password))) {
-//     throw new Error('Invalid credentials');
-//   }
-
-//   if (!user.isEmailVerified) {
-//     throw new Error('Email not verified');
-//   }
-
-//   await deleteUserTokenByType(user.id, email, 'userAuth');
-
-//   // If user is an investor, fetch onboarding status
-//   let onboardingStatus = null;
-//   if (user.role === 'investor') {
-//     const onboarding = await db.query.InvestorOnboardingTable.findFirst({
-//       where: eq(InvestorOnboardingTable.userId, user.id),
-//       columns: {
-//         status: true,
-//         rejectionNote: true,
-//       },
-//     });
-//     if (onboarding) {
-//       onboardingStatus = {
-//         status: onboarding.status,
-//         rejectionNote: onboarding.rejectionNote,
-//       };
-//     }
-//   }
-
-//   const { password: _password, ...userWithoutPassword } = user;
-
-//   // Add onboardingStatus if applicable
-//   const userWithOnboarding = {
-//     ...userWithoutPassword,
-//     onboardingStatus,
-//   };
-
-//   // Sign and store new token
-//   const { token, expiresAt } = signToken({ id: user.id, role: user.role });
-//   await db.insert(UserTokens).values({
-//     userId: user.id,
-//     email: user.email,
-//     token,
-//     expiresAt,
-//     type: 'userAuth',
-//     userRole: user.role,
-//   });
-//   await db
-//     .update(UsersTable)
-//     .set({
-//       lastLoginAt: new Date(),
-//     })
-//     .where(eq(UsersTable.id, user.id));
-//   deleteCache(`userProfile:${user.id}`);
-
-//   return {
-//     token,
-//     user: userWithOnboarding,
-//   };
-// };
 
 export const getUserProfileByRole = async (id: string, role: Role): Promise<User | null> => {
   const [user] = await db.select().from(UsersTable).where(eq(UsersTable.id, id));

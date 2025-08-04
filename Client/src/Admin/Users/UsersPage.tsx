@@ -107,14 +107,20 @@ function AdminUsersPage() {
       key: "subdomain",
       header: "Subdomain",
       sortable: false,
-      width: "15vh",
+      width: "18vh",
       align: "left",
-      render: (value: string) => (
-        <div className="truncate" title={value}>
-          {value}
-        </div>
-      ),
-    },
+      render: (value: string) => {
+        const baseDomain = import.meta.env.VITE_FRONTEND_URL.replace(/^https?:\/\//, "");
+        const fullDomain = `${value}.${baseDomain}`;
+
+        return (
+          <div className="truncate" title={fullDomain}>
+            {fullDomain}
+          </div>
+        );
+      },
+    }
+
   ];
 
   // Actions

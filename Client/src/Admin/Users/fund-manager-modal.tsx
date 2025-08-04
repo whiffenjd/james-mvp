@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { useCheckSubdomain, useCreateFundManager } from "../../API/Endpoints/Admin/admin"
 import { Eye, EyeOff } from "lucide-react"
 
-
+const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
 interface FundManagerModalProps {
     isOpen: boolean
     onClose: () => void
@@ -175,33 +175,37 @@ export function FundManagerModal({ isOpen, onClose }: FundManagerModalProps) {
                     </div>
 
 
-
                     <div>
                         <label htmlFor="subdomain" className="block text-sm font-medium text-gray-700 mb-1">
                             Subdomain
                         </label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                id="subdomain"
-                                name="subdomain"
-                                value={formData.subdomain}
-                                onChange={handleInputChange}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${subdomainStatus.isAvailable === false
-                                    ? "border-red-300"
-                                    : subdomainStatus.isAvailable === true
-                                        ? "border-green-300"
-                                        : "border-gray-300"
-                                    }`}
-                                placeholder="your-subdomain"
-                                required
-                            />
-                            {subdomainStatus.isChecking && (
-                                <div className="absolute right-3 top-2.5">
-                                    <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-                                </div>
-                            )}
-                        </div>
+
+                        <input
+                            type="text"
+                            id="subdomain"
+                            name="subdomain"
+                            value={formData.subdomain}
+                            onChange={handleInputChange}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${subdomainStatus.isAvailable === false
+                                ? "border-red-300"
+                                : subdomainStatus.isAvailable === true
+                                    ? "border-green-300"
+                                    : "border-gray-300"
+                                }`}
+                            placeholder="your-subdomain"
+                            required
+                        />
+
+                        {/* Full URL Preview */}
+                        <p className="mt-2 text-sm text-gray-600">
+                            Site will be available at:{" "}
+                            <span className="font-medium text-gray-800">
+                                https://{formData.subdomain || "your-subdomain"}.
+                                {import.meta.env.VITE_FRONTEND_URL.replace(/^https?:\/\//, '')}
+                            </span>
+                        </p>
+
+                        {/* Availability & Errors */}
                         {subdomainStatus.isAvailable === true && (
                             <p className="text-sm text-green-600 mt-1">✓ Subdomain is available</p>
                         )}
@@ -210,6 +214,8 @@ export function FundManagerModal({ isOpen, onClose }: FundManagerModalProps) {
                         )}
                         {subdomainStatus.error && <p className="text-sm text-red-600 mt-1">{subdomainStatus.error}</p>}
                     </div>
+
+
 
                     <div className="flex gap-3 pt-4">
                         <button

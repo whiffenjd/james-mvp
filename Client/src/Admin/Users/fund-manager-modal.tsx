@@ -4,8 +4,6 @@ import type React from "react"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useCheckSubdomain, useCreateFundManager } from "../../API/Endpoints/Admin/admin"
 import { Eye, EyeOff } from "lucide-react"
-
-const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
 interface FundManagerModalProps {
     isOpen: boolean
     onClose: () => void

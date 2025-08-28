@@ -1,41 +1,66 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
+import fetch from 'node-fetch';
 
-dotenv.config();
+const tenantId = process.env.OAUTH_TENANT_ID!;
+const clientId = process.env.OAUTH_CLIENT_ID!;
+const clientSecret = process.env.OAUTH_CLIENT_SECRET!;
+const senderUpn = process.env.SENDER_UPN!;
 
-// Check if SMTP_FROM exists and format it properly
-const fromAddress = process.env.SMTP_FROM || "";
+async function getAccessToken() {
+  const url = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+  const params = new URLSearchParams();
+  params.append('grant_type', 'client_credentials');
+  params.append('client_id', clientId);
+  params.append('client_secret', clientSecret);
+  params.append('scope', 'https://graph.microsoft.com/.default');
 
-// Validate that we have a proper from address format
-if (!fromAddress.includes("@")) {
-  console.warn(
-    "WARNING: SMTP_FROM environment variable is missing or improperly formatted!"
-  );
-  console.warn(
-    "Format should be 'Name <email@example.com>' or just 'email@example.com'"
-  );
+  const res = await fetch(url, { method: 'POST', body: params });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Token error: ${JSON.stringify(data)}`);
+  return data.access_token as string;
 }
 
-import SMTPTransport from "nodemailer/lib/smtp-transport";
+export const transporter = {
+  async sendMail(options: {
+    from: string;
+    to: string | string[];
+    subject: string;
+    html?: string;
+    text?: string;
+  }) {
+    const token = await getAccessToken();
 
-export const transporter = nodemailer.createTransport(
-  new SMTPTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: Boolean(process.env.SMTP_SECURE === "true"),
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-    // Note: Removed 'defaults' as it is not a valid property of SMTPTransport.Options
-  })
-);
+    const recipients = (Array.isArray(options.to) ? options.to : [options.to]).map((addr) => ({
+      emailAddress: { address: addr },
+    }));
 
-// Verify connection configuration
-transporter.verify(function (error, success) {
-  if (error) {
-    console.error("SMTP Connection Error:", error);
-  } else {
-    console.log("SMTP Server is ready to take our messages");
-  }
-});
+    const mail = {
+      message: {
+        subject: options.subject,
+        body: {
+          contentType: options.html ? 'HTML' : 'Text',
+          content: options.html || options.text || '',
+        },
+        toRecipients: recipients,
+        from: { emailAddress: { address: senderUpn } }, // Graph only accepts a valid tenant user
+      },
+      saveToSentItems: true,
+    };
+
+    const url = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(senderUpn)}/sendMail`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(mail),
+    });
+
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Graph sendMail failed: ${res.status} ${res.statusText}\n${body}`);
+    }
+
+    console.log('✅ Mail sent via Microsoft Graph');
+  },
+};

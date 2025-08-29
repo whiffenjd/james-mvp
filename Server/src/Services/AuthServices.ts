@@ -2,7 +2,6 @@ import { and, desc, eq, lt, or } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { InvestorOnboardingTable, OtpTable, themes, UsersTable } from '../db/schema';
 import { db } from '../db/DbConnection';
-import { transporter } from '../configs/Nodemailer';
 import { signToken } from './jwtService';
 import { UserTokens } from '../db/schema/UserTokens';
 import { generateOTP } from '../Utils/Otp';
@@ -12,6 +11,7 @@ import { otpTemplate } from '../Utils/OtpEmailVerifyTemplate';
 import { deleteUserTokenByType } from '../Utils/DeleteTokenByType';
 import { Role, User } from '../Types/User';
 import { CustomRequest } from '../Controllers/AuthUserController';
+import { GraphMailer } from '../configs/Nodemailer';
 
 export const registerInvestor = async (
   req: CustomRequest,
@@ -94,8 +94,8 @@ export const registerInvestor = async (
   deleteCache('allUsers');
 
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"Investment Portal" <${process.env.SMTP_USER}>`,
+    await GraphMailer.sendMail({
+      from: process.env.SENDER_UPN!,
       to: email,
       subject: 'Verify your email',
       html: otpTemplate(otp, name),

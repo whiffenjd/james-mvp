@@ -1,7 +1,7 @@
 import { eq, inArray } from 'drizzle-orm';
 import { db } from '../db/DbConnection';
 import { UsersTable } from '../db/schema';
-import { transporter } from '../configs/Nodemailer';
+import { GraphMailer } from '../configs/Nodemailer';
 
 interface NotificationData {
   entityType: string;
@@ -191,8 +191,8 @@ async function sendEmailNotifications({
                 : 'Notification'
         } Update`;
 
-        await transporter.sendMail({
-          from: `"Investment Portal" <${process.env.SMTP_USER}>`,
+        await GraphMailer.sendMail({
+          from: process.env.SENDER_UPN!,
           to: user.email,
           subject: subject,
           html: emailHtml,

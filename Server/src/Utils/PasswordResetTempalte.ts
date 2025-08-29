@@ -54,11 +54,10 @@ export const resetTemplate = (otp: string, resetLink: string, name: string): str
       display: inline-block;
       padding: 14px 30px;
       background-color: #2e8b57; /* Sea Green */
-      color: white;
+      color: white !important; /* Force white text */
       text-decoration: none;
       border-radius: 6px;
       font-weight: 600;
-    
       font-size: 16px;
       transition: background-color 0.3s ease;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -153,15 +152,6 @@ export const resetTemplate = (otp: string, resetLink: string, name: string): str
       <div class="button-container">
         <a class="reset-link" href="${resetLink}">Reset My Password</a>
       </div>
-  
-        <a class="reset-link2" href="${resetLink}">${resetLink}</a>
-
-      
-      <div class="otp-container">
-        <span class="otp-label">Your Email:</span>
-        <div class="otp-code">${otp}</div>
-      </div>
-      
       
     </div>
     <div class="footer">

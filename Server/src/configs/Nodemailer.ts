@@ -1,25 +1,10 @@
+// graphMailer.ts
 import fetch from 'node-fetch';
+import { AuthService } from './msalAuthService';
 
-const tenantId = process.env.OAUTH_TENANT_ID!;
-const clientId = process.env.OAUTH_CLIENT_ID!;
-const clientSecret = process.env.OAUTH_CLIENT_SECRET!;
 const senderUpn = process.env.SENDER_UPN!;
 
-async function getAccessToken() {
-  const url = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-  const params = new URLSearchParams();
-  params.append('grant_type', 'client_credentials');
-  params.append('client_id', clientId);
-  params.append('client_secret', clientSecret);
-  params.append('scope', 'https://graph.microsoft.com/.default');
-
-  const res = await fetch(url, { method: 'POST', body: params });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Token error: ${JSON.stringify(data)}`);
-  return data.access_token as string;
-}
-
-export const transporter = {
+export const GraphMailer = {
   async sendMail(options: {
     from: string;
     to: string | string[];
@@ -27,7 +12,7 @@ export const transporter = {
     html?: string;
     text?: string;
   }) {
-    const token = await getAccessToken();
+    const token = await AuthService.getAccessToken();
 
     const recipients = (Array.isArray(options.to) ? options.to : [options.to]).map((addr) => ({
       emailAddress: { address: addr },
@@ -41,12 +26,13 @@ export const transporter = {
           content: options.html || options.text || '',
         },
         toRecipients: recipients,
-        from: { emailAddress: { address: senderUpn } }, // Graph only accepts a valid tenant user
+        from: { emailAddress: { address: senderUpn } }, // must be valid tenant user
       },
       saveToSentItems: true,
     };
 
     const url = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(senderUpn)}/sendMail`;
+
     const res = await fetch(url, {
       method: 'POST',
       headers: {

@@ -2,11 +2,11 @@ import { desc, eq } from 'drizzle-orm';
 
 import { OtpTable, UsersTable } from '../db/schema';
 import { db } from '../db/DbConnection';
-import { transporter } from '../configs/Nodemailer';
 import { deleteOldOtps } from '../Utils/DeleteOldOtps';
 import { deleteCache } from '../Utils/Caching';
 import { otpTemplate } from '../Utils/OtpEmailVerifyTemplate';
 import { generateOTP } from '../Utils/Otp';
+import { GraphMailer } from '../configs/Nodemailer';
 
 export const verifyInvestorOtp = async (email: string, otp: string) => {
   const [storedOtp] = await db
@@ -57,8 +57,8 @@ export const resendInvestorOtp = async (email: string) => {
     isUsed: false,
   });
 
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM,
+  await GraphMailer.sendMail({
+    from: process.env.SENDER_UPN!,
     to: email,
     subject: 'Resend OTP - Verify your email',
     html: otpTemplate(otp, user.name),

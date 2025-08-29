@@ -1,4 +1,4 @@
-import { transporter } from '../configs/Nodemailer';
+import { GraphMailer } from '../configs/Nodemailer';
 import { otpTemplate } from './OtpEmailVerifyTemplate';
 import { resetTemplate } from './PasswordResetTempalte';
 import dotenv from 'dotenv';
@@ -7,10 +7,10 @@ dotenv.config();
 export const sendResetPasswordEmail = async (email: string, token: string, name: string) => {
   const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}&email=${email}`;
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"Investment Portal" <${process.env.SMTP_USER}>`,
+    await GraphMailer.sendMail({
+      from: process.env.SENDER_UPN!, // Graph requires this to be a valid tenant user
       to: email,
-      subject: 'Verify your email',
+      subject: 'Reset your password',
       html: resetTemplate(email, resetLink, name),
     });
   } catch (error) {

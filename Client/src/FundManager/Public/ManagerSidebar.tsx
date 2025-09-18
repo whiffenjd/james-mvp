@@ -35,8 +35,6 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
   // Clear cache when user changes (login/logout)
   useEffect(() => {
     const currentUserId = user?.id;
-
-    // Clear cache when user changes or logs out
     if (!currentUserId) {
       clearUserCache();
     }
@@ -50,7 +48,6 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
         (item.path === "/fundmanager/dashboard" &&
           currentPath === "/fundmanager/dashboard")
     );
-
     if (currentItem) {
       setActiveItem(currentItem.id);
     }
@@ -60,9 +57,7 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
   useEffect(() => {
     let timeout: number | null = null;
     if (userRole === "fundManager" && user?.id) {
-      // Initial immediate fetch
       refetchAssets?.();
-      // Delayed fetch after 1.5 seconds
       timeout = setTimeout(() => {
         refetchAssets?.();
       }, 1500);
@@ -86,7 +81,6 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
           isLoading: true,
         };
       }
-
       if (assetsError || !dashboardAssets?.data) {
         return {
           logo: null,
@@ -94,14 +88,12 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
           isLoading: false,
         };
       }
-
       return {
         logo: dashboardAssets.data.logoUrl,
         projectName: dashboardAssets.data.projectName,
         isLoading: false,
       };
     }
-
     return {
       logo: null,
       projectName: null,
@@ -127,17 +119,16 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
   const DefaultLogo = () => (
     <img src="/assets/logo.png" alt="" className="object-contain h-8" />
   );
+
   useEffect(() => {
     console.log("ManagerSidebar rendered with logo:", logo, "and projectName:", projectName);
     console.log("isLoading:", isLoading);
-    console.log("dashboardassets", dashboardAssets)
-    console.log("dashboardassets", assetsLoading)
-
+    console.log("dashboardassets", dashboardAssets);
+    console.log("assetsLoading", assetsLoading);
   }, [isLoading, logo, projectName]);
 
-
   return (
-    <div className="w-full max-w-[302px] min-h-[calc(100vh-96px)] overflow-hidden ">
+    <div className="w-full max-w-[302px] h-[calc(100vh-96px)]">
       <div className="bg-theme-card p-6 flex flex-col h-full rounded-[40px]">
         <div className="flex items-center mt-6 mb-10 gap-3">
           <div className="flex-shrink-0">
@@ -148,7 +139,7 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                 ) : logo ? (
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                     <img
-                      key={`${logo}-${user?.id}`} // Force re-render when logo or user changes
+                      key={`${logo}-${user?.id}`}
                       src={logo}
                       alt="Project Logo"
                       className="w-full h-full object-contain"
@@ -159,8 +150,7 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                         if (parent) {
                           parent.innerHTML = `
                             <div class="w-full h-full bg-theme-sidebar-accent/10 flex items-center justify-center">
-                              <span class="text-theme-sidebar-accent text-xs font-semibold">${projectName?.charAt(0) || "P"
-                            }</span>
+                              <span class="text-theme-sidebar-accent text-xs font-semibold">${projectName?.charAt(0) || "P"}</span>
                             </div>
                           `;
                         }
@@ -199,7 +189,7 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
                 <LoadingSkeleton />
               ) : (
                 <h3
-                  key={`${projectName}-${user?.id}`} // Force re-render when project name or user changes
+                  key={`${projectName}-${user?.id}`}
                   className="text-theme-primary font-semibold text-sm leading-tight truncate"
                 >
                   {projectName}
@@ -223,13 +213,13 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
           </div>
         )}
 
-        <div className="flex-1 space-y-4">
+        <div className="flex-1 space-y-4 overflow-y-auto">
           {menuItems.map((item) => (
             <button
               key={item.id}
               className={`flex items-center w-full px-4 py-4 rounded-[10px] transition-colors text-sm font-poppins font-normal ${activeItem === item.id
-                ? "bg-theme-sidebar-accent text-white"
-                : "text-theme-sidebar-accent hover:bg-theme-sidebar-accent hover:text-white"
+                  ? "bg-theme-sidebar-accent text-white"
+                  : "text-theme-sidebar-accent hover:bg-theme-sidebar-accent hover:text-white"
                 }`}
               onClick={() => handleItemClick(item)}
             >
@@ -239,7 +229,9 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
           ))}
         </div>
 
-        <div className="h-32"></div>
+        {/* Removed the h-32 spacer */}
+        {/* Optionally add a smaller padding if needed */}
+        <div className="mt-4"></div>
       </div>
     </div>
   );

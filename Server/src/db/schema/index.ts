@@ -10,3 +10,4 @@ export * from './ActivityLogs';
 export * from './distribution';
 export * from './fundReports';
 export * from './UserNotifications';
+export * from './TaxReports';

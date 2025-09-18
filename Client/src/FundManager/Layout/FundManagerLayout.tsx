@@ -56,6 +56,12 @@ const FundManagerLayout = () => {
       path: "funds", // This matches your nested route
     },
     {
+      id: "tax",
+      icon: <CircleDollarSign size={22} />,
+      label: "Tax Reports",
+      path: "tax", // This matches your nested route
+    },
+    {
       id: "settings",
       icon: <Settings size={22} />,
       label: "Settings",

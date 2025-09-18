@@ -19,6 +19,8 @@ import distributionsRoutes from './Routes/distributions.routes';
 import fundReportRouter from './Routes/fundReport.router';
 import NotificationRouter from './Routes/NotificationRouter';
 import AdminRouter from './Routes/admin.routes';
+import taxReportRouter from './Routes/taxReport.route';
+
 dotenv.config();
 export const app = express();
 const PORT = process.env.PORT || 5000;
@@ -53,6 +55,7 @@ app.use('/capital-call', CapitalCallRouter);
 app.use('/distribution', distributionsRoutes);
 app.use('/fund-report', fundReportRouter);
 app.use('/notifications', NotificationRouter);
+app.use('/tax-report', taxReportRouter);
 
 app.use('/admin', AdminRouter);
 

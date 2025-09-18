@@ -41,6 +41,8 @@ import SubscriptionDocuments from "./Investor/Subscription Documents/Subscriptio
 import NotificationsScreen from "./FundManager/Notification/Notification";
 import AdminUsersPage from "./Admin/Users/UsersPage";
 import LoginAsPage from "./Admin/Users/LoginAsPage";
+import TaxReportsPage from "./FundManager/Tax and Reports/TaxReports";
+
 
 
 
@@ -109,8 +111,8 @@ function App() {
               <Route index element={<FundManagerDashboard />} />
               <Route path="investors" element={<InvestorsPage />} />
               <Route path="funds" element={<FundsAndReporting />} />
+              <Route path="tax" element={<TaxReportsPage />} />
               <Route path="project/:id" element={<Project />} />
-
               <Route path="settings" element={<DashboardSettings />} />
               <Route path="notifications" element={<NotificationsScreen />} />
 
@@ -140,6 +142,8 @@ function App() {
             >
               <Route index element={<InvestorDashboard />} />
               <Route path="funds" element={<FundsAndReportingInvestors />} />
+              <Route path="tax" element={<TaxReportsPage />} />
+
               <Route path="project/:id" element={<InvestorsProject />} />
               <Route
                 path="subscription-documents"

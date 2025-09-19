@@ -30,6 +30,7 @@ const SubscriptionDocuments = () => {
   const [fundsData, setFundsData] = useState<InvestorFundSummary[]>([]);
   const [pdfSrc, setPdfSrc] = useState<string | null>(null);
   const { user } = useAuth();
+
   const [signature, setSignature] = useState<string | null>(null);
   const [currentFund, setCurrentFund] = useState<InvestorFundSummary | null>(null);
   const [loading, setLoading] = useState(false);
@@ -76,7 +77,6 @@ const SubscriptionDocuments = () => {
       setSignature(null);
     }
   };
-
 
   const handleMouseDown = (index: number, type: "signature" | "date") => (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -365,7 +365,6 @@ const SubscriptionDocuments = () => {
   const clearAllPages = () => {
     setPlacements([]);
   };
-
   const columns = [
     {
       title: "Project Name",
@@ -385,8 +384,24 @@ const SubscriptionDocuments = () => {
     {
       title: "Details",
       key: "action",
-      render: (row: InvestorFundSummary) =>
-        row.investors[0].status === true ? (
+      render: (row: InvestorFundSummary) => {
+        const isSigned = row.investors[0].status === true;
+
+        if (user?.role === "fundManager") {
+          return isSigned ? (
+            <button
+              onClick={() => handleAgreement(row)}
+              className="bg-theme-sidebar-accent text-white px-4 py-3 rounded-[10px] cursor-pointer min-w-[130px]"
+            >
+              Signed
+            </button>
+          ) : (
+            <span className="text-sm text-gray-600">Document Pending</span>
+          );
+        }
+
+        // Investor view
+        return isSigned ? (
           <button
             onClick={() => handleAgreement(row)}
             className="bg-theme-sidebar-accent text-white px-4 py-3 rounded-[10px] cursor-pointer min-w-[130px]"
@@ -400,9 +415,12 @@ const SubscriptionDocuments = () => {
           >
             Sign Now
           </button>
-        ),
+        );
+      },
     },
   ];
+
+
   const [showSignaturePad, setShowSignaturePad] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
 

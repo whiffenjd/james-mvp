@@ -45,9 +45,6 @@ const FundReports = () => {
     }
   }, [fund]);
   const investors = fundData?.investors || [];
-  console.log("Fund Investors:", investors);
-
-
 
   const [fetchFormData, setFetchFormData] = useState<FetchFormData>({
     year: '',

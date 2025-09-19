@@ -134,6 +134,13 @@
       "when": 1758284782382,
       "tag": "0018_unique_azazel",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1758288614928,
+      "tag": "0019_strong_molten_man",
+      "breakpoints": true
     }
   ]
 }

@@ -71,7 +71,6 @@ export const useCheckSubdomain = () => {
       const data = await queryClient.fetchQuery({
         queryKey: ["checkSubdomain", subdomain],
         queryFn: async () => {
-          console.log("calling subdomain checker", subdomain);
           const response = await axiosPrivate.get("/admin/check-subdomain", {
             params: { subdomain },
           });

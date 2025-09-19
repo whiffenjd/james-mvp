@@ -84,7 +84,6 @@ export const useKycDocuments = (params: UseKycDocumentsParams = {}) =>
       params.investorName ?? null,
     ],
     queryFn: async () => {
-      console.log("Fetching KYC documents with params:", params);
       const res = await axiosPrivate.get("/kyc-documents", {
         params,
       });

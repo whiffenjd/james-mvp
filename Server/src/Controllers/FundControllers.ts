@@ -252,23 +252,28 @@ export default class FundController {
   }
   static async getInvestorAllFunds(req: Request, res: Response): Promise<Response> {
     try {
-      const investorId = req.user?.id as string;
+      const userId = req.user?.id as string;
+      const role = req.user?.role as string;
 
-      if (!investorId) {
-        return FundCreationUpdateHelper.sendErrorResponse(res, 'Missing investorId in query', 400);
+      if (!userId || !role) {
+        return FundCreationUpdateHelper.sendErrorResponse(
+          res,
+          'Missing userId or role in request',
+          400,
+        );
       }
 
-      const data = await FundService.getAllFundsForInvestor(investorId);
+      const data = await FundService.getAllFundsForInvestor(userId, role);
 
       return FundCreationUpdateHelper.sendSuccessResponse(
         res,
-        'Fetched funds for investor',
+        'Fetched funds successfully',
         200,
         data,
       );
     } catch (error) {
-      console.error('getAllInvestorFunds Error:', error);
-      return FundCreationUpdateHelper.sendErrorResponse(res, 'Failed to fetch investor funds', 500);
+      console.error('getInvestorAllFunds Error:', error);
+      return FundCreationUpdateHelper.sendErrorResponse(res, 'Failed to fetch funds', 500);
     }
   }
 

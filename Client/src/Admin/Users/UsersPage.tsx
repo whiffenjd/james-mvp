@@ -133,7 +133,7 @@ function AdminUsersPage() {
         const subdomain = row.subdomain || 'www';
         const baseUrl = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173';
         const loginAsUrl = `${baseUrl.replace('://', `://${subdomain}.`)}/login-as/${userId}?token=${encodeURIComponent(token!)}`;
-        console.log(loginAsUrl);
+
         window.open(loginAsUrl, '_blank');
       },
     },

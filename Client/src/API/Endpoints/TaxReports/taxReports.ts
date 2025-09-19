@@ -69,7 +69,6 @@ export const useTaxReports = (params: UseTaxReportsParams = {}) =>
       params.quarter ?? null,
     ],
     queryFn: async () => {
-      console.log("Fetching tax reports with params:", params);
       // Map quarter values from Q1-Q4 to Quarter1-Quarter4
       const mappedParams = {
         ...params,

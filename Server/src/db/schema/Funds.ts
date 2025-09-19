@@ -7,8 +7,8 @@ export const funds = pgTable('funds', {
   fundType: text('fund_type').notNull(),
   targetGeographies: text('target_geographies').notNull(),
   targetSectors: text('target_sectors').notNull(),
-  targetMOIC: numeric('target_moic').notNull(),
-  targetIRR: numeric('target_irr').notNull(),
+  targetMOIC: text('target_moic').notNull(), // changed to text
+  targetIRR: text('target_irr').notNull(), // changed to text
   minimumInvestment: numeric('minimum_investment').notNull(),
   fundManagerId: text('fund_manager_id').notNull(),
   fundLifetime: text('fund_lifetime').notNull(),

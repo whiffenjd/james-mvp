@@ -16,7 +16,6 @@ export interface Investor {
   documentUrl?: string;
   documentName?: string;
   addedAt: string;
-  
 }
 
 export interface FundCreateRequest {
@@ -26,8 +25,8 @@ export interface FundCreateRequest {
   fundType: string;
   targetGeographies: string;
   targetSectors: string;
-  targetMOIC: number;
-  targetIRR: number;
+  targetMOIC: string; // changed to string
+  targetIRR: string; // changed to string
   minimumInvestment: number;
   fundLifetime: string;
   fundDescription: string;

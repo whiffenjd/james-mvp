@@ -118,6 +118,10 @@ function App() {
               <Route path="project/:id" element={<Project />} />
               <Route path="settings" element={<DashboardSettings />} />
               <Route path="notifications" element={<NotificationsScreen />} />
+              <Route
+                path="subscription-documents"
+                element={<SubscriptionDocuments />}
+              />
 
               {/* <Route path="funds" element={<FundTestComponent />} /> */}
 

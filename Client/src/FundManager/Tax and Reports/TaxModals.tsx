@@ -299,11 +299,6 @@ export const ViewModal: React.FC<ViewModalProps> = ({
                             </div>
                         </div>
                     </div>
-
-
-
-
-
                     {/* Document Preview */}
                     <div className="border-2 border-dashed border-gray-200 rounded-xl p-4">
                         <h4 className="font-medium text-theme-primary-text mb-3">

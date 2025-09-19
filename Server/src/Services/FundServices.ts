@@ -9,6 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 export default class FundService {
   static async create(data: FundCreateRequest) {
+    console.log('FundService.create data:', data);
     try {
       const [insertedFund] = await db.insert(funds).values(data).returning();
 
@@ -216,32 +217,53 @@ export default class FundService {
     return { message: 'Fund and associated documents deleted successfully' };
   }
   // FundService.ts
-  static async getAllFundsForInvestor(investorId: string): Promise<any[]> {
+  static async getAllFundsForInvestor(userId: string, role: string): Promise<any[]> {
     const result = await db.select().from(funds);
 
-    // Only include funds where this investor exists
-    const matchingFunds = result.filter((fund) =>
-      (Array.isArray(fund.investors) ? fund.investors : []).some(
-        (inv: any) => inv.investorId === investorId,
-      ),
-    );
-
-    // Return only that investor’s data within each matched fund
-    return matchingFunds.map((fund) => {
-      const matchedInvestor = (fund.investors || []).filter(
-        (inv: any) => inv.investorId === investorId,
+    if (role === 'investor') {
+      // Only include funds where this investor exists
+      const matchingFunds = result.filter((fund) =>
+        (Array.isArray(fund.investors) ? fund.investors : []).some(
+          (inv: any) => inv.investorId === userId,
+        ),
       );
 
-      return {
+      // Return only that investor’s data within each matched fund
+      return matchingFunds.map((fund) => {
+        const matchedInvestor = (fund.investors || []).filter(
+          (inv: any) => inv.investorId === userId,
+        );
+
+        return {
+          id: fund.id,
+          name: fund.name,
+          fundSize: fund.fundSize,
+          fundType: fund.fundType,
+          fundDescription: fund.fundDescription,
+          investors: matchedInvestor,
+          documents: fund.documents || [],
+          createdAt: fund.createdAt,
+        };
+      });
+    }
+
+    if (role === 'fundManager') {
+      // Include all funds created by this fund manager
+      const managerFunds = result.filter((fund) => fund.fundManagerId === userId);
+
+      return managerFunds.map((fund) => ({
         id: fund.id,
         name: fund.name,
         fundSize: fund.fundSize,
         fundType: fund.fundType,
         fundDescription: fund.fundDescription,
-        investors: matchedInvestor,
+        investors: fund.investors || [],
+        documents: fund.documents || [],
         createdAt: fund.createdAt,
-      };
-    });
+      }));
+    }
+
+    return [];
   }
 
   static async updateInvestor(fundId: string, investors: Investor[]): Promise<void> {

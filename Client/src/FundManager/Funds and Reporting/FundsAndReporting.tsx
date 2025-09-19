@@ -79,14 +79,14 @@ const FundsAndReporting: React.FC = () => {
 
                   {/* Project Details */}
                   <div className="space-y-4 mb-8">
-                    <div className="flex items-start gap-3">
+                    {/* <div className="flex items-start gap-3">
                       <div className="min-w-[20px]">
                         <img src="/assets/projectName.png" alt="project icon" />
                       </div>
                       <span className="text-sm lg:text-base font-medium text-theme-secondary-text">
                         {fund?.fundType}
                       </span>
-                    </div>
+                    </div> */}
 
                     <div className="flex items-start gap-3 ">
                       <div className="min-w-[20px]">

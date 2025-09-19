@@ -9,6 +9,7 @@ import type {
   FundDocument,
 } from "../../../Redux/features/Funds/fundsSlice";
 import { HistoryTimeline } from "../../../Components/HistoryTimeline";
+import { useAuth } from "../../../Context/AuthContext";
 
 const Overview = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +20,7 @@ const Overview = () => {
   const [selectedPdf, setSelectedPdf] = useState("");
   const [currentDocIndex, setCurrentDocIndex] = useState(0);
   const documents = fundData?.documents || [];
+  const { user } = useAuth()
 
   const openPdfModal = (pdfUrl: string | undefined, index: number = 0) => {
     if (pdfUrl) {
@@ -49,9 +51,13 @@ const Overview = () => {
 
   useEffect(() => {
     if (fund) {
-      setFundData(fund?.result);
+      setFundData({
+        ...fund?.result,
+        fundSize: "1234567288888888", // 🔹 Test with a very large number
+      });
     }
   }, [fund, isLoading]);
+
 
   if (isLoading) {
     return <BasicLoader />;
@@ -149,57 +155,78 @@ const Overview = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className=" border rounded-lg p-4 text-center">
-              <div className="flex items-center justify-start my-3  gap-4">
-                <div className="text-lg text-theme-secondary-text font-medium">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Fundraising Documents */}
+            <div className="border rounded-lg p-6 text-center min-h-[200px] flex flex-col justify-between">
+              <div className="flex items-center justify-start mb-4 gap-4">
+                <div className="text-sm text-theme-secondary-text font-medium">
                   Fundraising Documents
                 </div>
               </div>
-
               <button
                 onClick={() => openPdfModal(fundData?.documents[0]?.fileUrl, 0)}
-                className="bg-theme-sidebar-accent text-white px-4 py-2 rounded-md text-sm font-medium transition-colors mt-8 mb-8"
+                className="bg-theme-sidebar-accent text-white px-4 py-3 rounded-md text-sm font-medium transition-colors w-full max-w-[200px] mx-auto"
                 disabled={!fundData?.documents?.length}
               >
-                View Docs ({fundData?.documents?.length})
+                View Docs ({fundData?.documents?.length || 0})
               </button>
             </div>
-            {/* All Investors */}
-            <div className=" border rounded-lg p-4 text-center">
-              <div className="flex items-center justify-start my-3  gap-4">
-                <div className="w-12 h-12 bg-theme-sidebar-accent rounded-full flex items-center justify-center ">
-                  <Users className="w-6 h-6 text-white" />
+            {user?.role !== "investor" && (
+              <>
+                {/* All Investors */}
+                <div className="border rounded-lg p-6 text-center min-h-[200px] flex flex-col justify-between">
+                  <div className="flex items-center justify-start mb-4 gap-4">
+                    <div className="w-8 h-8 bg-theme-sidebar-accent rounded-full flex items-center justify-center flex-shrink-0">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-sm text-theme-secondary-text font-medium">
+                      All Investors
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <div className="text-2xl font-bold text-theme-sidebar-accent bg-gray-100 rounded-lg p-4 min-w-[80px] mx-auto inline-block">
+                      {fundData?.investors?.length || 0}
+                    </div>
+                    <div className="h-3 w-3 bg-gray-100 absolute left-1/2 transform -translate-x-1/2 rotate-45 -bottom-1.5" />
+                  </div>
+
                 </div>
-                <div className="text-lg text-theme-secondary-text font-medium">
-                  All Investors
+
+                {/* Required Funds */}
+                <div className="border rounded-lg p-6 text-center min-h-[200px] flex flex-col justify-between">
+                  <div className="flex items-center justify-start mb-4 gap-4">
+                    <div className="w-8 h-8 bg-theme-sidebar-accent rounded-full flex items-center justify-center flex-shrink-0">
+                      <TrendingUp className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-sm text-theme-secondary-text font-medium">
+                      Required Funds
+                    </div>
+                  </div>
+
+                  {/* Fund Size with Tooltip */}
+                  <div className="relative group flex justify-center">
+                    <div
+                      className="text-2xl font-bold text-theme-sidebar-accent bg-gray-100 rounded-lg p-4 min-w-[100px] max-w-[200px] mx-auto inline-block truncate text-center cursor-pointer"
+                    >
+                      {(fundData?.fundSize || 0).toString().slice(0, 7)}
+                      {(fundData?.fundSize?.toString().length || 0) > 7 ? "..." : ""}
+                    </div>
+
+                    {/* Tooltip with spacing above */}
+                    <span
+                      className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-gray-700 text-sm bg-white px-3 py-1 rounded-lg shadow transition-all duration-500 whitespace-nowrap"
+                    >
+                      {fundData?.fundSize?.toString() || "0"}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <div className="text-2xl font-bold text-gray-900  mt-8 mb-8 bg-gray-100 rounded-[10px] p-4 w-[50%] mx-auto relative  text-theme-sidebar-accent">
-                <div className="h-3 w-3 bg-gray-100  absolute left-3 rotate-45 bottom-[-6px]" />
 
-                {fundData?.investors?.length || 0}
-              </div>
-            </div>
-
-            <div className=" border rounded-lg p-4 text-center">
-              <div className="flex items-center justify-start my-3  gap-4">
-                <div className="w-12 h-12 bg-theme-sidebar-accent rounded-full flex items-center justify-center ">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-lg text-theme-secondary-text font-medium">
-                  Total Funds Needed
-                </div>
-              </div>
-
-              <div className="text-2xl font-bold text-gray-900  mt-8 mb-8 bg-gray-100 rounded-[10px] p-4 w-[50%] min-w-[50%] mx-auto relative  text-theme-sidebar-accent">
-                <div className="h-3 w-3 bg-gray-100  absolute left-3 rotate-45 bottom-[-6px]" />
-
-                {fundData?.fundSize || 0}
-              </div>
-            </div>
+              </>
+            )}
           </div>
+
         </div>
       </div>
 

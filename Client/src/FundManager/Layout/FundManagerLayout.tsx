@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import { Bell, CircleDollarSign, LayoutGrid, Settings } from "lucide-react";
+import { Bell, CircleDollarSign, Files, LayoutGrid, Settings } from "lucide-react";
 import { useAuth } from "../../Context/AuthContext";
 import { useTheme } from "../../Context/ThemeContext";
 import ManagerSidebar from "../Public/ManagerSidebar";
@@ -66,6 +66,12 @@ const FundManagerLayout = () => {
       icon: <CircleDollarSign size={22} />,
       label: "AML/KYC Documents",
       path: "documents", // This matches your nested route
+    },
+    {
+      id: "Subscription_Documents",
+      icon: <Files size={22} />,
+      label: "Subscription Documents",
+      path: "subscription-documents",
     },
     {
       id: "settings",

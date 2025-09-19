@@ -120,12 +120,7 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
     <img src="/assets/logo.png" alt="" className="object-contain h-8" />
   );
 
-  useEffect(() => {
-    console.log("ManagerSidebar rendered with logo:", logo, "and projectName:", projectName);
-    console.log("isLoading:", isLoading);
-    console.log("dashboardassets", dashboardAssets);
-    console.log("assetsLoading", assetsLoading);
-  }, [isLoading, logo, projectName]);
+
 
   return (
     <div className="w-full max-w-[302px] h-[calc(100vh-96px)]">
@@ -218,8 +213,8 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
             <button
               key={item.id}
               className={`flex items-center w-full px-4 py-4 rounded-[10px] transition-colors text-sm font-poppins font-normal ${activeItem === item.id
-                  ? "bg-theme-sidebar-accent text-white"
-                  : "text-theme-sidebar-accent hover:bg-theme-sidebar-accent hover:text-white"
+                ? "bg-theme-sidebar-accent text-white"
+                : "text-theme-sidebar-accent hover:bg-theme-sidebar-accent hover:text-white"
                 }`}
               onClick={() => handleItemClick(item)}
             >

@@ -29,7 +29,7 @@ const FundsAndReportingInvestors: React.FC = () => {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
         <h1 className="text-xl font-semibold text-gray-800 mb-4 sm:mb-0 font-poppins">
-          Fund Creation
+          Funds
         </h1>
       </div>
 
@@ -58,14 +58,14 @@ const FundsAndReportingInvestors: React.FC = () => {
 
                   {/* Project Details */}
                   <div className="space-y-4 mb-8">
-                    <div className="flex items-start gap-3">
+                    {/* <div className="flex items-start gap-3">
                       <div className="min-w-[20px]">
                         <img src="/assets/projectName.png" alt="project icon" />
                       </div>
                       <span className="text-sm lg:text-base font-medium text-theme-secondary-text">
                         {fund.fundType}
                       </span>
-                    </div>
+                    </div> */}
 
                     <div className="flex items-start gap-3 ">
                       <div className="min-w-[20px]">
@@ -85,14 +85,6 @@ const FundsAndReportingInvestors: React.FC = () => {
 
                   {/* Fund Statistics */}
                   <div className="space-y-4 mb-8">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm lg:text-base font-medium text-gray-700">
-                        Total Investors
-                      </span>
-                      <span className="text-sm lg:text-base font-semibold text-gray-800">
-                        {fund.investorCount}
-                      </span>
-                    </div>
 
                     <div className="flex justify-between items-center">
                       <span className="text-sm lg:text-base font-medium text-gray-700">

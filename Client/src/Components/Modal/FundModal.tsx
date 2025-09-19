@@ -77,7 +77,7 @@ interface FundModalProps {
 
 const FundModal: React.FC<FundModalProps> = ({
   isOpen = true,
-  onClose = () => {},
+  onClose = () => { },
   initialData = null,
   mode = "create",
 }) => {
@@ -293,19 +293,14 @@ const FundModal: React.FC<FundModalProps> = ({
       return false;
     }
 
-    // Validate investors
-    if (investors.length === 0) {
-      toast.error("At least one investor is required");
-      return false;
-    }
-
-    // Validate investor documents
-    for (const investor of investors) {
-      if (!investor.files || investor.files.length === 0) {
-        toast.error(`Document required for investor ${investor.name}`);
-        return false;
-      }
-    }
+    //TODO : WHILE REMOVING INVESTOR REQUIREMENT, I HAVE COMMENTED THE REQUIREMENT FOR INVESTOR DOCS AS WELL
+    // // Validate investor documents
+    // for (const investor of investors) {
+    //   if (!investor.files || investor.files.length === 0) {
+    //     toast.error(`Document required for investor ${investor.name}`);
+    //     return false;
+    //   }
+    // }
 
     return Object.keys(errors).length === 0;
   };
@@ -493,7 +488,7 @@ const FundModal: React.FC<FundModalProps> = ({
               </div>
               <div>
                 <input
-                  type="number"
+                  type="text"
                   placeholder="Target MOIC"
                   value={formData?.targetMOIC}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -504,7 +499,7 @@ const FundModal: React.FC<FundModalProps> = ({
               </div>
               <div>
                 <input
-                  type="number"
+                  type="text"
                   placeholder="Target IRR"
                   value={formData?.targetIRR}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -558,9 +553,8 @@ const FundModal: React.FC<FundModalProps> = ({
             <div className="grid grid-cols-2 gap-4">
               {/* Upload Area */}
               <div
-                className={`bg-gray-50 max-h-[300px] border rounded-[10px] p-8 text-center relative min-h-[300px] flex flex-col items-center justify-center border-dashed transition-all ${
-                  dragActive ? "border-theme-sidebar-accent bg-gray-100" : ""
-                }`}
+                className={`bg-gray-50 max-h-[300px] border rounded-[10px] p-8 text-center relative min-h-[300px] flex flex-col items-center justify-center border-dashed transition-all ${dragActive ? "border-theme-sidebar-accent bg-gray-100" : ""
+                  }`}
                 onDragEnter={(e) => {
                   e.preventDefault();
                   setDragActive(true);
@@ -786,11 +780,10 @@ const FundModal: React.FC<FundModalProps> = ({
                 <div className="relative">
                   {files.length === 0 ? (
                     <div
-                      className={`w-full h-full border-2 border-dashed rounded-[10px] transition-colors ${
-                        dragActive
-                          ? "border-theme-sidebar-accent bg-gray-50"
-                          : "border-gray-300 bg-gray-50"
-                      } flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100`}
+                      className={`w-full h-full border-2 border-dashed rounded-[10px] transition-colors ${dragActive
+                        ? "border-theme-sidebar-accent bg-gray-50"
+                        : "border-gray-300 bg-gray-50"
+                        } flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100`}
                       onDragEnter={handleDrag}
                       onDragLeave={handleDrag}
                       onDragOver={handleDrag}

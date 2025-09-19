@@ -7,4 +7,5 @@ export const CreateFundReportSchema = z.object({
   documentUrl: z.string().url(), // Assuming S3 URL will be validated as a URL
   year: z.string().regex(/^\d{4}$/, 'Year must be a 4-digit number'),
   quarter: z.string().regex(/^(Q[1-4])$/, 'Quarter must be Q1, Q2, Q3, or Q4'),
+  investorIds: z.array(z.string().uuid()).optional(), // New field
 });

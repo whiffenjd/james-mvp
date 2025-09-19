@@ -20,6 +20,7 @@ import fundReportRouter from './Routes/fundReport.router';
 import NotificationRouter from './Routes/NotificationRouter';
 import AdminRouter from './Routes/admin.routes';
 import taxReportRouter from './Routes/taxReport.route';
+import kycDocumentReporter from './Routes/kycDocuments.route';
 
 dotenv.config();
 export const app = express();
@@ -56,6 +57,7 @@ app.use('/distribution', distributionsRoutes);
 app.use('/fund-report', fundReportRouter);
 app.use('/notifications', NotificationRouter);
 app.use('/tax-report', taxReportRouter);
+app.use('/kyc-documents', kycDocumentReporter);
 
 app.use('/admin', AdminRouter);
 

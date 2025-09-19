@@ -85,14 +85,32 @@ export async function updateOnboardingStatus(
   onboardingId: string,
   data: UpdateOnboardingStatusRequest,
 ) {
-  // Start a transaction to update both tables
   const result = await db.transaction(async (tx) => {
+    // Fetch existing onboarding to access formData
+    const [existing] = await tx
+      .select({ formData: InvestorOnboardingTable.formData })
+      .from(InvestorOnboardingTable)
+      .where(eq(InvestorOnboardingTable.userId, onboardingId));
+
+    if (!existing) {
+      throw new Error('Onboarding record not found');
+    }
+
     // Update onboarding status
     const [onboarding] = await tx
       .update(InvestorOnboardingTable)
       .set({
         status: data.status,
         rejectionNote: data.rejectionNote,
+        // ✅ if approved, also update documentStatus
+        formData:
+          data.status === 'approved'
+            ? {
+                ...existing.formData,
+                documentStatus: 'approved',
+                documentNote: null,
+              }
+            : existing.formData,
         updatedAt: new Date(),
       })
       .where(eq(InvestorOnboardingTable.userId, onboardingId))

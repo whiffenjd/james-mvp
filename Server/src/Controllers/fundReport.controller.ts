@@ -11,7 +11,6 @@ export const createFundReport = async (req: Request, res: Response) => {
       return sendErrorResponse(res, 'Only fund managers can create fund reports', 403);
     }
 
-    // Handle file upload to S3
     if (!req.file) {
       return sendErrorResponse(res, 'Document file is required', 400);
     }
@@ -21,6 +20,7 @@ export const createFundReport = async (req: Request, res: Response) => {
     const parsed = CreateFundReportSchema.safeParse({
       ...req.body,
       documentUrl,
+      investorIds: req.body.investorIds ? JSON.parse(req.body.investorIds) : undefined, // Handle JSON string if sent
     });
     if (!parsed.success) {
       return sendErrorResponse(res, parsed.error.message, 400);
@@ -37,7 +37,6 @@ export const createFundReport = async (req: Request, res: Response) => {
     );
   }
 };
-
 export const getFundReportsByFund = async (req: Request, res: Response) => {
   try {
     const { id: userId, role } = req.user!;
@@ -47,17 +46,14 @@ export const getFundReportsByFund = async (req: Request, res: Response) => {
     const year = req.query.year as string | undefined;
     const quarter = req.query.quarter as string | undefined;
 
-    // // Role check (optional, adjust based on requirements)
-    // if (role !== 'fundManager' && role !== 'admin') {
-    //   return sendErrorResponse(res, 'Unauthorized access to fund reports', 403);
-    // }
-
     const { data, totalItems, totalPages, currentPage } = await getByFund(
       fundId,
       page,
       limit,
       year,
       quarter,
+      userId,
+      role,
     );
     return sendSuccessResponse(res, 'Fund reports retrieved successfully', 200, {
       results: data,

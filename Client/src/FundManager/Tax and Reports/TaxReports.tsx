@@ -81,7 +81,7 @@ function TaxReportsPage() {
             key: "projectName",
             header: "Project Name",
             sortable: false,
-            width: "20vh",
+            width: "25vh",
             align: "left",
             render: (value: string) => (
                 <div className="truncate" title={value}>
@@ -93,14 +93,14 @@ function TaxReportsPage() {
             key: "year",
             header: "Year",
             sortable: false,
-            width: "10vh",
+            width: "20vh",
             align: "left",
         },
         {
             key: "quarter",
             header: "Quarter",
             sortable: false,
-            width: "15vh",
+            width: "20vh",
             align: "left",
             render: (value: string) => (
                 <div className="truncate">{value.replace("Quarter", "Q")}</div>
@@ -111,7 +111,7 @@ function TaxReportsPage() {
             key: "createdAt",
             header: "Created At",
             sortable: false,
-            width: "15vh",
+            width: "20vh",
             align: "left",
             render: (value: string) => (
                 <div className="truncate">{formatDateToDDMMYYYY(value)}</div>
@@ -355,86 +355,7 @@ function TaxReportsPage() {
                 onClose={() => setShowViewModal(false)}
                 report={viewReport}
             />
-            {/* Upload/Edit Modal */}
-            {/* {showUploadModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
-                        <h3 className="text-lg font-semibold mb-2">
-                            {editingReport ? "Edit Tax Report" : "Upload Tax Report"}
-                        </h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Project Name</label>
-                                <input
-                                    type="text"
-                                    value={formData.projectName}
-                                    onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Year</label>
-                                <input
-                                    type="text"
-                                    value={formData.year}
-                                    onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Quarter</label>
-                                <select
-                                    value={formData.quarter}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, quarter: e.target.value as any })
-                                    }
-                                    className="w-full px-3 py-2 border rounded-md"
-                                >
-                                    <option value="Quarter1">Quarter 1</option>
-                                    <option value="Quarter2">Quarter 2</option>
-                                    <option value="Quarter3">Quarter 3</option>
-                                    <option value="Quarter4">Quarter 4</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Document</label>
-                                <input
-                                    type="file"
-                                    onChange={(e) => setFormData({ ...formData, document: e.target.files?.[0] || null })}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                    required={!editingReport}
-                                />
-                            </div>
-                        </div>
-                        <div className="flex gap-2 justify-end mt-4">
-                            <button
-                                onClick={() => {
-                                    setShowUploadModal(false);
-                                    setEditingReport(null);
-                                    setFormData({ projectName: "", year: "", quarter: "Quarter1", document: null });
-                                }}
-                                className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-70"
-                                disabled={createTaxReport.isPending || updateTaxReport.isPending}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleFormSubmit}
-                                className="px-4 py-2 bg-theme-sidebar-accent text-white rounded font-medium disabled:opacity-70"
-                                disabled={createTaxReport.isPending || updateTaxReport.isPending}
-                            >
-                                {createTaxReport.isPending || updateTaxReport.isPending
-                                    ? "Submitting..."
-                                    : editingReport
-                                        ? "Update"
-                                        : "Upload"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )} */}
+
         </div>
     );
 }

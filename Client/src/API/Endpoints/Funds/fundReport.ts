@@ -23,6 +23,7 @@ export type CreateFundReportPayload = {
   year: string;
   quarter: string;
   document: File; // For file upload
+  investorIds?: string[]; // New field
 };
 
 export type PaginatedFundReports = {
@@ -75,6 +76,9 @@ export const useCreateFundReport = (userId: string) => {
       formData.append("year", payload.year);
       formData.append("quarter", payload.quarter);
       formData.append("document", payload.document);
+      if (payload.investorIds?.length) {
+        formData.append("investorIds", JSON.stringify(payload.investorIds));
+      }
 
       const response = await axiosPrivate.post(
         "/fund-report/create",

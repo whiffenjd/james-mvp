@@ -57,6 +57,12 @@ const InvestorLayout = () => {
       path: "tax", // This matches your nested route
     },
     {
+      id: "documents",
+      icon: <CircleDollarSign size={22} />,
+      label: "AML/KYC Documents",
+      path: "documents", // This matches your nested route
+    },
+    {
       id: "Subscription_Documents",
       icon: <Files size={22} />,
       label: "Subscription Documents",

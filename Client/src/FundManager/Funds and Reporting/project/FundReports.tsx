@@ -1,23 +1,28 @@
-import React, { useState, useRef } from 'react';
-import { Upload, FileText, Download, Eye, X } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Upload, FileText, Download, Eye, X, ChevronDown } from 'lucide-react';
 import { Table, type PaginationInfo, type TableAction, type TableColumn } from '../../../Components/Table';
-import { useCreateFundReport, useGetFundReports, type FundReport } from '../../../API/Endpoints/Funds/fundReport';
+import { useCreateFundReport, useGetFundReports, type CreateFundReportPayload, type FundReport } from '../../../API/Endpoints/Funds/fundReport';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../../Context/AuthContext';
 import ReportDetailsModal from '../../../Components/Modal/ReportDetailsModal';
 import { EnhancedYearQuarterDropdowns } from '../../../Components/Modal/EnhancedYearQuarterDropdowns';
+import type { FundDetail } from '../../../Redux/features/Funds/fundsSlice';
+import { useAppSelector } from '../../../Redux/hooks';
 
 interface FormData {
   projectName: string;
   description: string;
   year: string;
   quarter: string;
+  investorIds?: string[];      // Will be sent to backend
+  selectedInvestors: string[]; // For UI selection
 }
 interface FetchFormData {
 
   year: string;
   quarter: string;
 }
+
 
 const FundReports = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,12 +34,28 @@ const FundReports = () => {
     projectName: '',
     description: '',
     year: new Date().getFullYear().toString(),
-    quarter: 'Q1'
+    quarter: 'Q1',
+    selectedInvestors: [] as string[], // New field
   });
+  const [fundData, setFundData] = useState<FundDetail | null>(null);
+  const fund = useAppSelector((state) => state.funds.currentFund);
+  useEffect(() => {
+    if (fund) {
+      setFundData(fund?.result);
+    }
+  }, [fund]);
+  const investors = fundData?.investors || [];
+  console.log("Fund Investors:", investors);
+
+
+
   const [fetchFormData, setFetchFormData] = useState<FetchFormData>({
     year: '',
     quarter: '',
   });
+
+
+
   const itemsPerPage = 5;
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,7 +71,16 @@ const FundReports = () => {
     ...(fetchFormData.year ? { year: fetchFormData.year } : {}),
     ...(fetchFormData.quarter ? { quarter: fetchFormData.quarter } : {}),
   });
-
+  const [isInvestorDropdownOpen, setIsInvestorDropdownOpen] = useState(false);
+  const investorDropdownRef = useRef<HTMLDivElement>(null);
+  const handleInvestorSelect = (id: string) => {
+    setFormData((prev) => {
+      const selectedInvestors = prev.selectedInvestors.includes(id)
+        ? prev.selectedInvestors.filter((investorId) => investorId !== id)
+        : [...prev.selectedInvestors, id];
+      return { ...prev, selectedInvestors };
+    });
+  };
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
@@ -100,13 +130,14 @@ const FundReports = () => {
 
     setIsLoading(true);
 
-    const payload = {
+    const payload: CreateFundReportPayload = {
       fundId: id,
       projectName: formData.projectName,
       description: formData.description,
       year: formData.year,
       quarter: formData.quarter,
-      document: selectedFile
+      document: selectedFile,
+      investorIds: formData.selectedInvestors.length ? formData.selectedInvestors : undefined,
     };
 
     createFundReport(payload, {
@@ -115,21 +146,21 @@ const FundReports = () => {
           projectName: '',
           description: '',
           year: new Date().getFullYear().toString(),
-          quarter: 'Q1'
+          quarter: 'Q1',
+          selectedInvestors: [], // Reset
         });
         setSelectedFile(null);
         setIsLoading(false);
       },
       onError: () => {
         setIsLoading(false);
-      }
+      },
     });
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-GB');
   };
-
   const handleViewReport = (report: FundReport) => {
     setSelectedReport(report);
     setIsModalOpen(true);
@@ -288,6 +319,18 @@ const FundReports = () => {
       [name]: value,
     }));
   };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        investorDropdownRef.current &&
+        !investorDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsInvestorDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   return (
     <div className="w-full">
       <div className="">
@@ -407,6 +450,81 @@ const FundReports = () => {
                     formData={formData}
                     handleInputChange={handleInputChange}
                   />
+                  <div>
+                    <label className="block text-sm font-medium text-theme-sidebar-accent mb-2">
+                      Investors
+                    </label>
+                    <div className="relative" ref={investorDropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => setIsInvestorDropdownOpen(!isInvestorDropdownOpen)}
+                        className="w-full px-4 py-3.5 border border-gray-300 rounded-xl outline-none
+        focus:ring-2 focus:ring-theme-sidebar-accent focus:border-theme-sidebar-accent
+        bg-white text-gray-700 shadow-sm
+        hover:border-theme-sidebar-accent hover:shadow-md transition-all duration-200
+        flex items-center justify-between font-medium"
+                      >
+                        <span
+                          className={
+                            formData.selectedInvestors.length ? 'text-gray-900' : 'text-gray-500'
+                          }
+                        >
+                          {formData.selectedInvestors.length
+                            ? investors
+                              .filter((inv) =>
+                                formData.selectedInvestors.includes(inv.investorId)
+                              )
+                              .map((inv) => inv.name)
+                              .join(', ') || 'Select Investors'
+                            : 'All Investors'}
+                        </span>
+                        <ChevronDown
+                          className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${isInvestorDropdownOpen ? 'rotate-180' : ''
+                            }`}
+                        />
+                      </button>
+                      {isInvestorDropdownOpen && (
+                        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                          <div className="py-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFormData({ ...formData, selectedInvestors: [] });
+                                setIsInvestorDropdownOpen(false);
+                              }}
+                              className={`w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors duration-150 font-medium ${formData.selectedInvestors.length === 0
+                                ? 'text-theme-sidebar-accent bg-gray-200 border-r-2'
+                                : 'text-gray-700'
+                                }`}
+                            >
+                              All Investors
+                            </button>
+                            {investors.map((investor) => (
+                              <div key={investor.investorId} className="flex items-center px-4 py-3">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.selectedInvestors.includes(investor.investorId)}
+                                  onChange={() => handleInvestorSelect(investor.investorId)}
+                                  className="mr-2 accent-theme-sidebar-accent"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleInvestorSelect(investor.investorId)}
+                                  className={`w-full text-left transition-colors duration-150 font-medium ${formData.selectedInvestors.includes(investor.investorId)
+                                    ? 'text-theme-sidebar-accent'
+                                    : 'text-gray-700'
+                                    }`}
+                                >
+                                  {investor.name}
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
@@ -428,7 +546,6 @@ const FundReports = () => {
             formData={fetchFormData}
             handleInputChange={handleFetchInputChange}
           />
-
           {/* Clear Filter Icon */}
           {(fetchFormData.year || fetchFormData.quarter) && (
             <button

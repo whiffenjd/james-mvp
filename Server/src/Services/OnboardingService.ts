@@ -9,7 +9,6 @@ import {
 import { UsersTable } from '../db/schema';
 
 export const startOnboarding = async (userId: string, payload: CreateOnboardingRequest) => {
-  // Insert onboarding row (if not exists), otherwise throw/conflict
   const [existing] = await db
     .select()
     .from(InvestorOnboardingTable)
@@ -17,11 +16,24 @@ export const startOnboarding = async (userId: string, payload: CreateOnboardingR
 
   if (existing) throw new Error('Onboarding already started.');
 
+  let documentStatus = 'pending_upload';
+  if (payload.formData.investorType === 'individual') {
+    if (payload.formData.kycDocumentUrl && payload.formData.proofOfAddressUrl) {
+      documentStatus = 'submitted';
+    }
+  } else if (payload.formData.entityDocuments?.length) {
+    documentStatus = 'submitted';
+  }
+
   const [created] = await db
     .insert(InvestorOnboardingTable)
     .values({
       userId,
-      formData: payload?.formData,
+      formData: {
+        ...payload.formData,
+        documentStatus,
+        documentNote: null,
+      },
       status: 'pending',
     })
     .returning();
@@ -30,13 +42,21 @@ export const startOnboarding = async (userId: string, payload: CreateOnboardingR
 };
 
 export const updateOnboarding = async (userId: string, payload: UpdateOnboardingRequest) => {
-  // Update onboarding data for this user
   const [existing] = await db
     .select()
     .from(InvestorOnboardingTable)
     .where(eq(InvestorOnboardingTable.userId, userId));
 
   if (!existing) throw new Error('Onboarding not found.');
+
+  let documentStatus = 'pending_upload';
+  if (payload.formData.investorType === 'individual') {
+    if (payload.formData.kycDocumentUrl && payload.formData.proofOfAddressUrl) {
+      documentStatus = 'submitted';
+    }
+  } else if (payload.formData.entityDocuments?.length) {
+    documentStatus = 'submitted';
+  }
 
   const [updated] = await db
     .update(InvestorOnboardingTable)
@@ -48,9 +68,11 @@ export const updateOnboarding = async (userId: string, payload: UpdateOnboarding
         ...(typeof payload.formData === 'object' && payload.formData !== null
           ? payload.formData
           : {}),
+        documentStatus,
+        documentNote: null,
       },
-      status: 'pending', // Reset status to pending as user has updated , would be under review
-      rejectionNote: null, // Clear rejection note
+      status: 'pending',
+      rejectionNote: null,
       updatedAt: new Date(),
     })
     .where(eq(InvestorOnboardingTable.userId, userId))

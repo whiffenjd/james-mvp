@@ -263,8 +263,9 @@ export const ViewModal: React.FC<ViewModalProps> = ({
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {/* Project Info */}
-                    <div className="bg-theme-card-hover rounded-xl p-4 space-y-3">
-                        <div className="flex items-center gap-3">
+                    <div className="bg-theme-card-hover rounded-xl p-4 flex items-center gap-40">
+                        {/* Project */}
+                        <div className="flex items-center gap-5">
                             <FileText className="w-5 h-5 text-theme-sidebar-accent" />
                             <div>
                                 <h4 className="font-semibold text-theme-primary-text">
@@ -273,27 +274,35 @@ export const ViewModal: React.FC<ViewModalProps> = ({
                                 <p className="text-sm text-theme-secondary-text">Project Name</p>
                             </div>
                         </div>
+
+                        {/* Year */}
+                        <div className="flex items-center gap-5">
+                            <Calendar className="w-6 h-6 text-theme-sidebar-accent" />
+                            <div>
+                                <h4 className="font-semibold text-theme-primary-text">
+                                    {report.year}
+                                </h4>
+                                <p className="text-sm text-theme-secondary-text">Year</p>
+                            </div>
+                        </div>
+
+                        {/* Quarter */}
+                        <div className="flex items-center gap-5">
+                            <div className="w-6 h-6 bg-theme-sidebar-accent rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                {formatQuarter(report.quarter).replace('Q', '')}
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-theme-primary-text">
+                                    {formatQuarter(report.quarter)}
+                                </h4>
+                                <p className="text-sm text-theme-secondary-text">Quarter</p>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Time Period */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-theme-card-hover rounded-xl p-4 text-center">
-                            <Calendar className="w-6 h-6 text-theme-sidebar-accent mx-auto mb-2" />
-                            <p className="text-2xl font-bold text-theme-primary-text">
-                                {report.year}
-                            </p>
-                            <p className="text-sm text-theme-secondary-text">Year</p>
-                        </div>
-                        <div className="bg-theme-card-hover rounded-xl p-4 text-center">
-                            <div className="w-6 h-6 bg-theme-sidebar-accent rounded-full mx-auto mb-2 flex items-center justify-center text-white text-sm font-bold">
-                                {formatQuarter(report.quarter).replace("Q", "")}
-                            </div>
-                            <p className="text-2xl font-bold text-theme-primary-text">
-                                {formatQuarter(report.quarter)}
-                            </p>
-                            <p className="text-sm text-theme-secondary-text">Quarter</p>
-                        </div>
-                    </div>
+
+
+
 
                     {/* Document Preview */}
                     <div className="border-2 border-dashed border-gray-200 rounded-xl p-4">

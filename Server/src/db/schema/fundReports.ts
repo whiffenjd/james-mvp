@@ -19,6 +19,6 @@ export const fundReports = pgTable('fund_reports', {
 
   year: text('year').notNull(),
   quarter: text('quarter').notNull(),
-
+  investorIds: text('investor_ids').array(),
   createdAt: timestamp('created_at').defaultNow(),
 });

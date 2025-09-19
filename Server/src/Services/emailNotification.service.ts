@@ -12,59 +12,11 @@ interface NotificationData {
   targetUserName?: string;
   description?: string;
 }
-
 interface EmailNotificationParams {
   userIds: string[];
   notificationData: NotificationData;
   createdBy: string;
 }
-
-// Personalize description function
-// THIS IS FOR ALL INVESTORS NOTIFICATION
-// function personalizeDescription(notification: NotificationData, isTargetUser: boolean): string {
-//   const { description, entityType, action, fundName, performedByName, amount, targetUserName } =
-//     notification;
-
-//   if (entityType === 'capital_call') {
-//     if (action === 'created') {
-//       return isTargetUser
-//         ? `You were requested to invest $${amount} in ${fundName}`
-//         : `${targetUserName || 'An investor'} was requested to invest $${amount} in ${fundName} by ${performedByName}`;
-//     }
-//     if (action === 'approved') {
-//       return isTargetUser
-//         ? `You approved a capital call of $${amount} for ${fundName}`
-//         : `${targetUserName || 'An investor'} approved a capital call of $${amount} for ${fundName}`;
-//     }
-//     if (action === 'rejected') {
-//       return isTargetUser
-//         ? `You rejected a capital call of $${amount} for ${fundName}`
-//         : `${targetUserName || 'An investor'} rejected a capital call of $${amount} for ${fundName}`;
-//     }
-//   }
-//   if (entityType === 'distribution') {
-//     if (action === 'created') {
-//       return isTargetUser
-//         ? `You received a distribution of $${amount} from ${fundName}`
-//         : `${targetUserName || 'An investor'} received a distribution of $${amount} from ${fundName} by ${performedByName}`;
-//     }
-//     if (action === 'approved') {
-//       return isTargetUser
-//         ? `You approved a distribution of $${amount} for ${fundName}`
-//         : `${targetUserName || 'An investor'} approved a distribution of $${amount} for ${fundName}`;
-//     }
-//     if (action === 'rejected') {
-//       return isTargetUser
-//         ? `You rejected a distribution of $${amount} for ${fundName}`
-//         : `${targetUserName || 'An investor'} rejected a distribution of $${amount} for ${fundName}`;
-//     }
-//   }
-//   if (entityType === 'fund_report') {
-//     return `${performedByName} uploaded a fund report for ${fundName}`;
-//   }
-//   return description || 'New notification'; // Fallback to original description
-// }
-
 //THIS IS ONLY FOR THE TARGET USER
 function personalizeDescription(notification: any): string {
   const { description, entityType, action, fundName, performedByName, amount, targetUserName } =

@@ -1,0 +1,1 @@
+ALTER TABLE "fund_reports" ADD COLUMN "investor_ids" text[];

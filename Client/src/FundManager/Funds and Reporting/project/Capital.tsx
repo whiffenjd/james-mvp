@@ -313,7 +313,7 @@ const Capital = () => {
   };
 
   return (
-    <div className=" rounded-lg ">
+    <div className="">
       {/* <div className="w-full" style={{ maxWidth: "calc(100% - 20rem)" }}> */}
       <Table
         data={data?.data || []}

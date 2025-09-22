@@ -52,7 +52,7 @@ function AdminUsersPage() {
       key: "name",
       header: "Name",
       sortable: false,
-      width: "10vh",
+
       align: "left",
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -64,7 +64,7 @@ function AdminUsersPage() {
       key: "email",
       header: "Email Address",
       sortable: false,
-      width: "25vh",
+
       align: "left",
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -76,7 +76,7 @@ function AdminUsersPage() {
       key: "created_at",
       header: "Created At",
       sortable: false,
-      width: "15vh",
+
       align: "left",
       render: (value: string) => {
         const formattedDate = formatDateToDDMMYYYY(value);
@@ -91,7 +91,7 @@ function AdminUsersPage() {
       key: "projectCount",
       header: "Projects",
       sortable: false,
-      width: "15vh",
+
       align: "left",
       render: (value: number) => <div>{value}</div>,
     },
@@ -99,7 +99,7 @@ function AdminUsersPage() {
       key: "investorCount",
       header: "Investors",
       sortable: false,
-      width: "15vh",
+
       align: "left",
       render: (value: number) => <div>{value}</div>,
     },
@@ -107,7 +107,7 @@ function AdminUsersPage() {
       key: "subdomain",
       header: "Subdomain",
       sortable: false,
-      width: "18vh",
+
       align: "left",
       render: (value: string) => {
         const baseDomain = import.meta.env.VITE_FRONTEND_URL.replace(/^https?:\/\//, "");

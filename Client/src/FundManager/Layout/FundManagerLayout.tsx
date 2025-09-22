@@ -1,4 +1,4 @@
-// FundManagerLayout.tsx (Updated)
+// FundManagerLayout.tsx (Fixed)
 import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
@@ -17,6 +17,7 @@ const FundManagerLayout = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { data, isLoading } = useGetUnreadCount(user?.id);
   const unreadCount = data?.unreadCount || 0;
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -41,31 +42,31 @@ const FundManagerLayout = () => {
       id: "dashboard",
       icon: <LayoutGrid size={22} />,
       label: "Dashboard",
-      path: "/fundmanager/dashboard", // This should match your index route
+      path: "/fundmanager/dashboard",
     },
     {
       id: "investors",
       icon: <CircleDollarSign size={22} />,
       label: "Investors",
-      path: "investors", // This matches your nested route
+      path: "investors",
     },
     {
       id: "Funds",
       icon: <CircleDollarSign size={22} />,
       label: "Funds and Reporting",
-      path: "funds", // This matches your nested route
+      path: "funds",
     },
     {
       id: "tax",
       icon: <CircleDollarSign size={22} />,
       label: "Tax Reports",
-      path: "tax", // This matches your nested route
+      path: "tax",
     },
     {
       id: "documents",
       icon: <CircleDollarSign size={22} />,
       label: "AML/KYC Documents",
-      path: "documents", // This matches your nested route
+      path: "documents",
     },
     {
       id: "Subscription_Documents",
@@ -77,7 +78,7 @@ const FundManagerLayout = () => {
       id: "settings",
       icon: <Settings size={22} />,
       label: "Settings",
-      path: "settings", // This matches your nested route
+      path: "settings",
     },
     {
       id: "notifications",
@@ -98,14 +99,20 @@ const FundManagerLayout = () => {
 
   return (
     <div
-      className="h-full px-7 py-12 flex gap-9"
+      className="h-full min-h-screen px-7 py-12 flex gap-9"
       style={{ backgroundColor: currentTheme.dashboardBackground }}
     >
-      <ManagerSidebar menuItems={menuItems} userRole="fundManager" />
+      {/* Sidebar - Fixed width, no flex shrinking */}
+      <div className="flex-shrink-0">
+        <ManagerSidebar menuItems={menuItems} userRole="fundManager" />
+      </div>
+
+      {/* Main content area - Takes remaining space but constrained */}
       <div
-        className="w-full h-[calc(100vh-96px)] rounded-[40px] flex flex-col"
+        className="flex-1 min-w-0 h-[calc(100vh-96px)] rounded-[40px] flex flex-col overflow-hidden"
         style={{ backgroundColor: currentTheme.cardBackground }}
       >
+        {/* Header */}
         <header className="w-full flex justify-between items-center py-7 px-9 relative flex-shrink-0">
           <h3
             className="text-xl font-semibold"
@@ -158,8 +165,12 @@ const FundManagerLayout = () => {
             </div>
           </div>
         </header>
-        <div className="flex-1 overflow-auto px-9 pb-9">
-          <Outlet />
+
+        {/* Content area with proper constraints */}
+        <div className="flex-1 min-w-0 overflow-hidden px-9 pb-9">
+          <div className="w-full h-full max-w-full min-w-0 overflow-auto">
+            <Outlet />
+          </div>
         </div>
       </div>
     </div>

@@ -60,7 +60,7 @@ function InvestorsPage() {
             key: "name",
             header: "Investor Name",
             sortable: false,
-            width: "20vh",
+
             align: "left",
             render: (value: string) => (
                 <div className="truncate" title={value}>
@@ -72,7 +72,7 @@ function InvestorsPage() {
             key: "email",
             header: "Email Address",
             sortable: false,
-            width: "35vh",
+
             align: "left",
             render: (value: string) => (
                 <div className="truncate" title={value}>
@@ -84,7 +84,7 @@ function InvestorsPage() {
             key: "lastLoginAt",
             header: "Last Activity",
             sortable: false,
-            width: "20vh",
+
             align: "left",
             render: (value: string) => {
                 const formattedDate = formatDateToDDMMYYYY(value);
@@ -98,7 +98,7 @@ function InvestorsPage() {
         {
             key: "status",
             header: "Status",
-            width: "15vh",
+
             align: "left",
             render: (value: "pending" | "approved" | "rejected" | "complete_later") => (
                 <div className="truncate">

@@ -82,7 +82,7 @@ const FundModal: React.FC<FundModalProps> = ({
   initialData = null,
   mode = "create",
 }) => {
-  console.log("Initial Data in FundModal:", initialData);
+
   const [formData, setFormData] = useState<any>({
     name: initialData?.name || "",
     fundSize: initialData?.fundSize || "",

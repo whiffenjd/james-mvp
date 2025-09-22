@@ -94,13 +94,13 @@ function Documents() {
         reupload_requested: "bg-red-100 text-red-700",
     };
 
-    // Define columns
+
+    // Define columns - NO WIDTH NEEDED!
     const columns: TableColumn<KycDocumentRow>[] = [
         {
             key: "investorName",
             header: "Investor Name",
             sortable: false,
-            width: "20vh",
             align: "left",
             render: (value: string) => (
                 <div className="truncate" title={value}>
@@ -108,23 +108,21 @@ function Documents() {
                 </div>
             ),
         },
-        {
-            key: "formData.investorType",
-            header: "Investor Type",
-            sortable: false,
-            width: "20vh",
-            align: "left",
-            render: (value: string) => (
-                <div className="truncate">
-                    {value.charAt(0).toUpperCase() + value.slice(1)}
-                </div>
-            ),
-        },
+        // {
+        //     key: "formData.investorType",
+        //     header: "Investor Type",
+        //     sortable: false,
+        //     align: "left",
+        //     render: (value: string) => (
+        //         <div className="truncate">
+        //             {value.charAt(0).toUpperCase() + value.slice(1)}
+        //         </div>
+        //     ),
+        // },
         {
             key: "formData.documentStatus",
             header: "Document Status",
             sortable: false,
-            width: "30vh",
             align: "left",
             render: (value: KycDocumentRow["formData"]["documentStatus"]) => (
                 <span
@@ -138,7 +136,6 @@ function Documents() {
             key: "createdAt",
             header: "Created At",
             sortable: false,
-            width: "20vh",
             align: "left",
             render: (value: string) => (
                 <div className="truncate">{formatDateToDDMMYYYY(value)}</div>
@@ -146,7 +143,7 @@ function Documents() {
         },
     ];
 
-    // Actions (role-based)
+    // Actions - Keep exactly as they are!
     const actions: TableAction<KycDocumentRow>[] = [
         {
             label: "View",
@@ -192,7 +189,7 @@ function Documents() {
         ...(isInvestor
             ? [
                 {
-                    label: "Upload Documents", // static, but we’ll adjust behavior inside
+                    label: "Upload Documents",
                     variant: "primary" as const,
                     onClick: (row: KycDocumentRow) => {
                         setFormData({
@@ -205,21 +202,20 @@ function Documents() {
                         setShowUploadModal(true);
                     },
                     show: (row: KycDocumentRow) =>
-                        row.formData.documentStatus === "reupload_requested" || row.formData.documentStatus === "pending_upload",
+                        row.formData.documentStatus === "reupload_requested" ||
+                        row.formData.documentStatus === "pending_upload",
                 },
             ]
             : []),
     ];
 
-
-    // Pagination info
+    // Pagination info - Keep exactly as it is!
     const paginationInfo: PaginationInfo = {
         currentPage,
         totalPages,
         totalItems,
         itemsPerPage: 5,
     };
-
     // Handlers
     const handlePageChange = (page: number) => setCurrentPage(page);
 

@@ -111,10 +111,12 @@ const InvestorLayout = () => {
         backgroundColor: currentTheme?.dashboardBackground,
       }}
     >
-      <ManagerSidebar menuItems={menuItems} userRole="investor" />
+      <div className="flex-shrink-0">
 
+        <ManagerSidebar menuItems={menuItems} userRole="investor" />
+      </div>
       <div
-        className="w-full h-[calc(100vh-96px)] rounded-[40px] transition-colors duration-300"
+        className="flex-1 min-w-0 h-[calc(100vh-96px)] rounded-[40px] flex flex-col overflow-hidden"
         style={{ backgroundColor: themeStyles.cardBg }}
       >
         <header className="w-full flex justify-between items-center py-7 px-9 relative">
@@ -178,8 +180,10 @@ const InvestorLayout = () => {
         </header>
 
         {/* Outlet with theme context */}
-        <div className="px-9 pb-7 h-[calc(100%-88px)] overflow-auto">
-          <Outlet />
+        <div className="flex-1 min-w-0 overflow-hidden px-9 pb-9">
+          <div className="w-full h-full max-w-full min-w-0 overflow-auto">
+            <Outlet />
+          </div>
         </div>
       </div>
     </div>

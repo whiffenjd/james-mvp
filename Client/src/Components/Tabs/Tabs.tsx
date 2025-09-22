@@ -1,11 +1,8 @@
-
 import { Users, TrendingUp, BarChart3, FileText } from "lucide-react";
-
 import Distribution from "../../FundManager/Funds and Reporting/project/Distribution";
 import Overview from "../../FundManager/Funds and Reporting/project/Overview";
 import FundReports from "../../FundManager/Funds and Reporting/project/FundReports";
 import Capital from "../../FundManager/Funds and Reporting/project/Capital";
-
 
 // Define tab type as a union of string literals
 export const tabIds = [
@@ -45,7 +42,7 @@ interface TabContentProps {
 // Tabs Component
 const Tabs = ({ activeTab, onTabChange }: TabsProps) => {
   return (
-    <>
+    <div className="w-full max-w-full overflow-hidden">
       <div className="mb-6">
         <div className="flex flex-wrap gap-7 font-poppins">
           {tabConfigs.map((tab) => {
@@ -55,8 +52,8 @@ const Tabs = ({ activeTab, onTabChange }: TabsProps) => {
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 rounded-[10px] text-sm font-medium transition-colors duration-200 ${activeTab === tab.id
-                  ? "bg-theme-sidebar-accent text-white"
-                  : "bg-white text-theme-sidebar-accent border border-theme-sidebar-accent"
+                    ? "bg-theme-sidebar-accent text-white"
+                    : "bg-white text-theme-sidebar-accent border border-theme-sidebar-accent"
                   } min-w-[190px] flex items-center justify-center`}
               >
                 <Icon className="w-4 h-4" />
@@ -67,7 +64,7 @@ const Tabs = ({ activeTab, onTabChange }: TabsProps) => {
         </div>
       </div>
       <TabContent activeTab={activeTab} />
-    </>
+    </div>
   );
 };
 
@@ -91,6 +88,10 @@ const TabContent = ({ activeTab }: TabContentProps) => {
   };
 
   return (
-    <div className="transition-all duration-200">{renderTabContent()}</div>
+    <div className="transition-all duration-200 w-full max-w-full overflow-hidden">
+      <div className="w-full max-w-full overflow-hidden">
+        {renderTabContent()}
+      </div>
+    </div>
   );
 };

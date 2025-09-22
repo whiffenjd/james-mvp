@@ -204,7 +204,7 @@ const FundReports = () => {
       key: 'projectName',
       header: 'Project Name',
       sortable: false,
-      width: '25vh',
+
       align: 'left',
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -216,7 +216,6 @@ const FundReports = () => {
       key: 'createdByName',
       header: 'Created By',
       sortable: false,
-      width: '20vh',
       align: 'left',
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -228,7 +227,6 @@ const FundReports = () => {
       key: 'year',
       header: 'Year',
       sortable: false,
-      width: '15vh',
       align: 'left',
       render: (value: number | string) => (
         <div className="truncate" title={value.toString()}>
@@ -240,7 +238,6 @@ const FundReports = () => {
       key: 'quarter',
       header: 'Quarter',
       sortable: false,
-      width: '15vh',
       align: 'left',
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -252,7 +249,6 @@ const FundReports = () => {
       key: 'createdAt',
       header: 'Created Date',
       sortable: false,
-      width: '20vh',
       align: 'left',
       render: (value: string) => {
         const formattedDate = formatDate(value);

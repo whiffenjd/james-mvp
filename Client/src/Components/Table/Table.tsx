@@ -1,5 +1,5 @@
+// Table.tsx
 "use client"
-
 import { useState } from "react"
 import type { TableProps, SortDirection } from "../../types/table"
 import { TableHeader } from "./TableHeader"
@@ -19,21 +19,17 @@ export function Table<T = any>({
     emptyMessage = "No data available",
     className = "",
     useThemeStyles = true,
-
 }: TableProps<T>) {
     const [sortKey, setSortKey] = useState<string | null>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
     const handleSort = (key: string) => {
         let newDirection: SortDirection = "asc";
-
         if (sortKey === key) {
             newDirection = sortDirection === "asc" ? "desc" : sortDirection === "desc" ? null : "asc";
         }
-
         setSortKey(newDirection ? key : null);
         setSortDirection(newDirection);
-
         if (onSort && newDirection) {
             onSort(key, newDirection);
         }
@@ -43,11 +39,17 @@ export function Table<T = any>({
     const baseBgClass = useThemeStyles ? "bg-theme-card" : "bg-theme-card";
     const borderClass = useThemeStyles ? "border-theme-sidebar-accent" : "border-primary";
 
+    // Calculate grid template columns dynamically
+    // Give actions column a fixed width, other columns share remaining space equally
+    const dataColumns = columns.length;
+    const gridColumns = hasActions
+        ? `repeat(${dataColumns}, 1fr) minmax(200px, auto)`
+        : `repeat(${dataColumns}, 1fr)`;
 
     return (
-        <div className={`space-y-4 w-full ${className}`}>
+        <div className={`space-y-4 w-full max-w-full overflow-hidden ${className}`}>
             {/* Floating Header */}
-            <div className={`${baseBgClass} shadow-sm rounded-md overflow-hidden w-full`}>
+            <div className={`${baseBgClass} shadow-sm rounded-md overflow-x-auto w-full`}>
                 <TableHeader
                     columns={columns}
                     hasActions={hasActions}
@@ -55,11 +57,12 @@ export function Table<T = any>({
                     sortDirection={sortDirection}
                     onSort={handleSort}
                     useThemeStyles={useThemeStyles}
+                    gridColumns={gridColumns}
                 />
             </div>
 
             {/* Floating Rows */}
-            <div className="space-y-3">
+            <div className="space-y-3 w-full max-w-full overflow-hidden">
                 {loading ? (
                     <div className={`${baseBgClass} shadow-sm rounded-md border ${borderClass}`}>
                         <LoadingSpinner />
@@ -72,9 +75,15 @@ export function Table<T = any>({
                     data.map((row, index) => (
                         <div
                             key={index}
-                            className={`${baseBgClass} shadow-sm rounded-md border ${borderClass} overflow-hidden hover:shadow-md transition-shadow`}
+                            className={`${baseBgClass} shadow-sm rounded-md border ${borderClass} overflow-x-auto hover:shadow-md transition-shadow w-full`}
                         >
-                            <TableRow row={row} columns={columns} actions={actions} index={index} useThemeStyles={useThemeStyles}
+                            <TableRow
+                                row={row}
+                                columns={columns}
+                                actions={actions}
+                                index={index}
+                                useThemeStyles={useThemeStyles}
+                                gridColumns={gridColumns}
                             />
                         </div>
                     ))

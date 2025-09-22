@@ -1,3 +1,4 @@
+// TableRow.tsx
 "use client"
 import type { TableColumn, TableAction } from "../../types/table"
 
@@ -6,22 +7,30 @@ interface TableRowProps<T> {
     columns: TableColumn<T>[]
     actions?: TableAction<T>[]
     index: number
-    useThemeStyles?: boolean;
-
+    useThemeStyles?: boolean
+    gridColumns: string
 }
 
-export function TableRow<T>({ row, columns, actions, index, useThemeStyles = true }: TableRowProps<T>) {
+export function TableRow<T>({
+    row,
+    columns,
+    actions,
+    index,
+    useThemeStyles = true,
+    gridColumns
+}: TableRowProps<T>) {
     const buttonClass = useThemeStyles ? "bg-theme-sidebar-accent" : "bg-primary";
+
     const getNestedValue = (obj: any, path: string) => {
         return path.split(".").reduce((current, key) => current?.[key], obj);
     };
 
     return (
         <div
-            className="grid gap-4 px-6 py-4 items-center w-full"
+            className="grid gap-4 px-4 py-4 items-center w-full min-w-0"
             style={{
-                gridTemplateColumns: columns.map(col => col.width || '1fr').join(' ') + (actions && actions.length > 0 ? ' auto' : ''),
-                boxSizing: 'border-box',
+                gridTemplateColumns: gridColumns,
+                minWidth: '800px', // Ensure minimum width for proper layout
             }}
         >
             {columns.map((column, colIndex) => {
@@ -31,15 +40,17 @@ export function TableRow<T>({ row, columns, actions, index, useThemeStyles = tru
                     <div
                         key={colIndex}
                         className={`
-              text-sm text-slate-900 overflow-hidden
-              ${column.align === "center" ? "text-center" : ""}
-              ${column.align === "right" ? "text-right" : "text-left"}
-            `}
+                            text-sm text-slate-900 min-w-0
+                            ${column.align === "center" ? "text-center" : ""}
+                            ${column.align === "right" ? "text-right" : "text-left"}
+                        `}
                     >
                         {column.render ? (
-                            column.render(value, row, index)
+                            <div className="min-w-0">
+                                {column.render(value, row, index)}
+                            </div>
                         ) : (
-                            <div className="truncate" title={value}>
+                            <div className="truncate min-w-0" title={String(value || '')}>
                                 {value}
                             </div>
                         )}
@@ -47,7 +58,7 @@ export function TableRow<T>({ row, columns, actions, index, useThemeStyles = tru
                 );
             })}
             {actions && actions.length > 0 && (
-                <div className="text-sm text-right">
+                <div className="text-sm text-right min-w-0">
                     <div className="flex items-center gap-2 justify-end">
                         {actions
                             .filter((action) => !action.show || action.show(row))
@@ -56,19 +67,19 @@ export function TableRow<T>({ row, columns, actions, index, useThemeStyles = tru
                                     key={actionIndex}
                                     onClick={() => action.onClick(row, index)}
                                     className={`
-                    inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium
-                    transition-transform duration-200 ease-in-out
-                    ${action.variant === "primary"
+                                        inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium
+                                        transition-transform duration-200 ease-in-out flex-shrink-0 whitespace-nowrap
+                                        ${action.variant === "primary"
                                             ? `${buttonClass} text-white`
                                             : action.variant === "danger"
                                                 ? "bg-red-600 text-white"
                                                 : "bg-slate-200 text-slate-700"
                                         }
-                    hover:scale-105
-                  `}
+                                        hover:scale-105
+                                    `}
                                 >
                                     {action.icon}
-                                    {action.label}
+                                    <span>{action.label}</span>
                                 </button>
                             ))}
                     </div>

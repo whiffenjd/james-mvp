@@ -35,7 +35,7 @@ const Distribution = () => {
       key: 'InvestorName',
       header: 'Investor Name',
       sortable: false,
-      width: '20vh',
+
       align: 'left',
       render: (value: string) => {
         const shortValue = value?.split('-')[0];
@@ -50,7 +50,7 @@ const Distribution = () => {
       key: 'InvestorEmail',
       header: 'Investor Email',
       sortable: false,
-      width: '25vh',
+
       align: 'left',
       render: (value: string) => {
         const shortValue = value?.split('-')[0];
@@ -66,7 +66,7 @@ const Distribution = () => {
       key: 'amount',
       header: 'Amount',
       sortable: false,
-      width: '10vh',
+
       align: 'left',
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -78,7 +78,7 @@ const Distribution = () => {
       key: 'date',
       header: 'Date',
       sortable: false,
-      width: '15vh',
+
       align: 'left',
       render: (value: string) => {
         const formattedDate = formatDateToDDMMYYYY(value);
@@ -93,7 +93,7 @@ const Distribution = () => {
       key: 'recipientName',
       header: 'Recipient',
       sortable: false,
-      width: '20vh',
+
       align: 'left',
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -104,7 +104,7 @@ const Distribution = () => {
     {
       key: 'status',
       header: 'Status',
-      width: '15vh',
+
       align: 'left',
       render: (value: 'pending' | 'approved' | 'rejected') => (
         <div className="truncate">

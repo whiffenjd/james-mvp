@@ -82,7 +82,6 @@ function TaxReportsPage() {
             key: "projectName",
             header: "Project Name",
             sortable: false,
-            width: "25vh",
             align: "left",
             render: (value: string) => (
                 <div className="truncate" title={value}>
@@ -94,14 +93,13 @@ function TaxReportsPage() {
             key: "year",
             header: "Year",
             sortable: false,
-            width: "20vh",
             align: "left",
         },
         {
             key: "quarter",
             header: "Quarter",
             sortable: false,
-            width: "20vh",
+
             align: "left",
             render: (value: string) => (
                 <div className="truncate">{value.replace("Quarter", "Q")}</div>
@@ -112,7 +110,7 @@ function TaxReportsPage() {
             key: "createdAt",
             header: "Created At",
             sortable: false,
-            width: "20vh",
+
             align: "left",
             render: (value: string) => (
                 <div className="truncate">{formatDateToDDMMYYYY(value)}</div>

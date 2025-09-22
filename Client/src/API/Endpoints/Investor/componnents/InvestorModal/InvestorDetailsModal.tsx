@@ -206,7 +206,7 @@ export function InvestorDetailsModal({
                     </div>
                     <span className="text-sm text-gray-900">
                       {formData?.highNetWorthQualification?.incomeQualified ===
-                      "true"
+                        "true"
                         ? "Yes"
                         : "No"}
                       {formData?.highNetWorthQualification?.incomeAmount &&
@@ -330,12 +330,12 @@ export function InvestorDetailsModal({
               </div>
               <span className="text-sm text-gray-900">
                 {formData?.entityDetails?.entityType ===
-                "investment_professional"
+                  "investment_professional"
                   ? "Investment Professional"
                   : formData?.entityDetails?.entityType ===
                     "high_net_worth_company"
-                  ? "High Net Worth Company"
-                  : "Other"}
+                    ? "High Net Worth Company"
+                    : "Other"}
               </span>
             </div>
 
@@ -557,6 +557,7 @@ export function InvestorDetailsModal({
         </div>
 
         {/* Footer */}
+        {/* Footer */}
         {data?.data && (
           <div className="p-6 border-t border-gray-200">
             {/* Approved */}
@@ -596,8 +597,8 @@ export function InvestorDetailsModal({
               </div>
             )}
 
-            {/* Pending: Approve/Reject buttons */}
-            {data.data.status === "pending" && (
+            {/* Pending or Complete Later: Approve/Reject buttons */}
+            {(data.data.status === "pending" || data.data.status === "complete_later") && (
               <div className="flex flex-row gap-3">
                 <button
                   onClick={() => setShowApproveConfirm(true)}

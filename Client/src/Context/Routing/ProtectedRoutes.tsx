@@ -87,7 +87,6 @@ export const FundManagerRoute: React.FC<ProtectedRouteProps> = ({
 export const InvestorRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
-
   // Show loading until authentication state is determined
   if (user === undefined) {
     return <LoadingSpinner />;
@@ -111,12 +110,24 @@ export const InvestorRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (
-    user?.isOnboarded !== true
+    user?.isOnboarded !== true &&
+    user?.onboardingStatus?.status !== "complete_later"
   ) {
     if (!location.pathname.includes("/investor/onboarding")) {
       return <Navigate to="/investor/onboarding" replace />;
     }
   }
+
+  // if (
+  //   user?.onboardingStatus?.status !== 'approved' &&
+  //   user?.onboardingStatus?.status !== 'complete_later'
+  // ) {
+  //   if (!location.pathname.includes('/investor/onboarding')) {
+  //     return <Navigate to="/investor/onboarding" replace />;
+  //   }
+  // } else if (user?.onboardingStatus?.status === 'complete_later') {
+  //   return <Navigate to="/investor/onboarding" replace />;
+  // }
 
 
   return children ? <>{children}</> : <Outlet />;

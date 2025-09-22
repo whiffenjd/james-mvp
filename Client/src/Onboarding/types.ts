@@ -15,6 +15,8 @@ export interface InvestorOnboardingPayload {
   declarationAccepted?: boolean;
   signature?: string;
   signatureDate?: string;
+  documentStatus?: "pending_upload" | "submitted";
+  documentNote?: string | null;
   [key: string]: any;
 }
 

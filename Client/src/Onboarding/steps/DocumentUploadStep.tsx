@@ -11,6 +11,7 @@ import {
 } from "../../API/Endpoints/Onboarding/useInvestorOnboarding";
 import toast from "react-hot-toast";
 import { DocumentPreviewModal } from '../../Components/DocumentPreviewModal';
+import { useNavigate } from "react-router-dom";
 interface FileInputBlockProps {
     label: string;
     desc: string;
@@ -30,7 +31,7 @@ export function DocumentUploadStep() {
 
     const { mutateAsync: uploadDocuments, status: uploadeDocumentStatus } = useDocumentUpload();
     const isUploading = uploadeDocumentStatus === 'pending';
-
+    const navigate = useNavigate()
     const { mutateAsync: deleteDocument } = useDocumentDelete();
     const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File | null }>({});
     const [uploadedFiles, setUploadedFiles] = useState<Array<{ key: string; url: string }>>([]);
@@ -84,18 +85,16 @@ export function DocumentUploadStep() {
         handleFileSelect(type, null);
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (completeLater: boolean = false) => {
         try {
+
             let documentUrls = {
                 kycDocumentUrl: '',
-                proofOfAddressUrl: ''
+                proofOfAddressUrl: '',
             };
 
-            // Only upload if files are selected
-            if (selectedFiles.kyc || selectedFiles.address) {
+            if (!completeLater && (selectedFiles.kyc || selectedFiles.address)) {
                 const formData = new FormData();
-
-                // Only append files that are selected
                 if (selectedFiles.kyc) {
                     formData.append('documents', selectedFiles.kyc);
                 }
@@ -103,27 +102,23 @@ export function DocumentUploadStep() {
                     formData.append('documents', selectedFiles.address);
                 }
 
-                const uploadResponse = await toast.promise(
-                    uploadDocuments(formData),
-                    {
-                        loading: 'Uploading documents...',
-                        success: 'Documents uploaded successfully',
-                        error: 'Failed to upload documents'
-                    }
-                );
+                const uploadResponse = await toast.promise(uploadDocuments(formData), {
+                    loading: 'Uploading documents...',
+                    success: 'Documents uploaded successfully',
+                    error: 'Failed to upload documents',
+                });
 
                 if (uploadResponse.success) {
-                    setUploadedFiles(uploadResponse.data.map(doc => ({
+                    setUploadedFiles(uploadResponse.data.map((doc) => ({
                         key: doc.key,
-                        url: doc.url
+                        url: doc.url,
                     })));
 
-                    // Map uploaded files to correct URLs
                     const uploadedDocs = uploadResponse.data;
                     if (selectedFiles.kyc && selectedFiles.address) {
                         documentUrls = {
                             kycDocumentUrl: uploadedDocs[0]?.url || '',
-                            proofOfAddressUrl: uploadedDocs[1]?.url || ''
+                            proofOfAddressUrl: uploadedDocs[1]?.url || '',
                         };
                     } else if (selectedFiles.kyc) {
                         documentUrls.kycDocumentUrl = uploadedDocs[0]?.url || '';
@@ -131,74 +126,65 @@ export function DocumentUploadStep() {
                         documentUrls.proofOfAddressUrl = uploadedDocs[0]?.url || '';
                     }
 
-                    // Set existing documents immediately after successful upload
                     setExistingDocuments({
-                        kyc: documentUrls.kycDocumentUrl ? {
-                            url: documentUrls.kycDocumentUrl,
-                            filename: documentUrls.kycDocumentUrl.split('/').pop() || 'KYC Document'
-                        } : undefined,
-                        address: documentUrls.proofOfAddressUrl ? {
-                            url: documentUrls.proofOfAddressUrl,
-                            filename: documentUrls.proofOfAddressUrl.split('/').pop() || 'Proof of Address'
-                        } : undefined
+                        kyc: documentUrls.kycDocumentUrl
+                            ? { url: documentUrls.kycDocumentUrl, filename: documentUrls.kycDocumentUrl.split('/').pop() || 'KYC Document' }
+                            : undefined,
+                        address: documentUrls.proofOfAddressUrl
+                            ? { url: documentUrls.proofOfAddressUrl, filename: documentUrls.proofOfAddressUrl.split('/').pop() || 'Proof of Address' }
+                            : undefined,
                     });
                 }
             }
 
-            // Wait for form data update to complete
-            await new Promise<void>(resolve => {
+            await new Promise<void>((resolve) => {
                 updateFormData(documentUrls);
                 setTimeout(resolve, 100);
             });
 
-            // Submit onboarding with updated form data
-            try {
-                const updatedFormData = {
-                    ...state.formData,
-                    ...documentUrls
-                };
+            const updatedFormData = {
+                ...state.formData,
+                ...documentUrls,
+            };
 
-                const onboardingPromise = user?.onboardingStatus?.status === 'rejected'
-                    ? updateOnboarding({ formData: updatedFormData })
-                    : startOnboarding({ formData: updatedFormData });
+            const onboardingPromise =
+                user?.onboardingStatus?.status === 'rejected' || user?.onboardingStatus?.status === 'complete_later'
+                    ? updateOnboarding({ formData: updatedFormData, completeLater })
+                    : startOnboarding({ formData: updatedFormData, completeLater });
 
-                const response = await toast.promise(onboardingPromise, {
-                    loading: 'Submitting onboarding information...',
-                    success: 'Onboarding submitted successfully',
-                    error: 'Failed to submit onboarding'
+            const response = await toast.promise(onboardingPromise, {
+                loading: completeLater ? 'Submitting without documents' : 'Submitting onboarding information...',
+                success: completeLater ? 'Submitting without documents' : 'Onboarding submitted successfully',
+                error: 'Failed to submit onboarding',
+            });
+
+            updateOnboardingStatus(completeLater ? 'complete_later' : 'pending');
+
+            setUploadedFiles([]);
+            setSelectedFiles({});
+
+            dispatch({ type: 'RESET_FORM' });
+
+            if (response.data?.formData) {
+                await new Promise<void>((resolve) => {
+                    updateFormData(response.data.formData);
+                    setTimeout(resolve, 100);
                 });
-
-                // Update onboarding status to pending
-                updateOnboardingStatus('pending');
-
-                // Reset files
-                setUploadedFiles([]);
-                setSelectedFiles({});
-
-                // Clear form data and reset to initial state
-                dispatch({ type: 'RESET_FORM' });
-
-                // Load new onboarding data
-                if (response.data?.formData) {
-                    await new Promise<void>(resolve => {
-                        updateFormData(response.data.formData);
-                        setTimeout(resolve, 100);
-                    });
-                }
-            } catch (error) {
-                // Clean up uploaded files on failure
-                if (uploadedFiles.length > 0) {
-                    await Promise.all(
-                        uploadedFiles.map(file =>
-                            deleteDocument(file.key).catch(err =>
-                                console.error(`Failed to delete file ${file.key}:`, err)
-                            )
-                        )
-                    );
-                }
-                throw error;
             }
+            if (completeLater) {
+                navigate("/investor/dashboard");
+            }
+
         } catch (error) {
+            if (uploadedFiles.length > 0) {
+                await Promise.all(
+                    uploadedFiles.map((file) =>
+                        deleteDocument(file.key).catch((err) =>
+                            console.error(`Failed to delete file ${file.key}:`, err)
+                        )
+                    )
+                );
+            }
             console.error('Error in submission:', error);
             toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
         }
@@ -395,30 +381,37 @@ export function DocumentUploadStep() {
                             fileKey="address"
                         />
                     </div>
-                    <div className="flex space-x-4">
-                        <button
-                            type="button"
-                            onClick={prevStep}
-                            disabled={isUploading || isStarting || isUpdating}
-                            className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        >
-                            Back
-                        </button>
-                        <button
-                            onClick={handleSubmit}
-                            disabled={
-                                isUploading ||
-                                isStarting ||
-                                isUpdating ||
-                                user?.onboardingStatus?.status === 'pending' // Only disable during pending state
-                            }
-                            className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            {(isUploading || isStarting || isUpdating) && (
-                                <Loader2 className="animate-spin h-4 w-4" />
-                            )}
-                            {user?.onboardingStatus?.status === 'rejected' ? 'Update' : 'Submit'}
-                        </button>
+                    <div className="space-y-6">
+
+                        {/* Other form fields and steps */}
+                        <div className="flex space-x-4">
+                            <button
+                                type="button"
+                                onClick={prevStep}
+                                disabled={isUploading || isStarting || isUpdating}
+                                className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            >
+                                Back
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleSubmit(false)}
+                                disabled={isUploading || isStarting || isUpdating || user?.onboardingStatus?.status === 'pending'}
+                                className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {(isUploading || isStarting || isUpdating) && <Loader2 className="animate-spin h-4 w-4" />}
+                                {user?.onboardingStatus?.status === 'rejected' ? 'Update' : 'Submit'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleSubmit(true)}
+                                disabled={isUploading || isStarting || isUpdating || user?.onboardingStatus?.status === 'pending'}
+                                className="flex-1 bg-[#797979] text-white py-3 px-4 rounded-lg  transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {(isUploading || isStarting || isUpdating) && <Loader2 className="animate-spin h-4 w-4" />}
+                                Complete Later
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,1 @@
+ALTER TABLE "funds" ADD COLUMN "currency" text DEFAULT 'USD' NOT NULL;

@@ -16,6 +16,7 @@ interface FormData {
   fundLifetime: string;
   fundDescription: string;
   id?: string;
+  currency: string; // Added currency to form data
   investors?: Investor[];
   documents?: Document[];
 }
@@ -81,6 +82,7 @@ const FundModal: React.FC<FundModalProps> = ({
   initialData = null,
   mode = "create",
 }) => {
+  console.log("Initial Data in FundModal:", initialData);
   const [formData, setFormData] = useState<any>({
     name: initialData?.name || "",
     fundSize: initialData?.fundSize || "",
@@ -91,6 +93,7 @@ const FundModal: React.FC<FundModalProps> = ({
     targetIRR: initialData?.targetIRR || "",
     minimumInvestment: initialData?.minimumInvestment || "",
     fundLifetime: initialData?.fundLifetime || "",
+    currency: initialData?.currency || 'USD', // Initialize with USD
     fundDescription: initialData?.fundDescription || "",
   });
 
@@ -124,6 +127,28 @@ const FundModal: React.FC<FundModalProps> = ({
     }
   }, [investorsData]);
 
+
+  // Sync formData with initialData when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || '',
+        fundSize: initialData.fundSize || '',
+        fundType: initialData.fundType || '',
+        targetGeographies: initialData.targetGeographies || '',
+        targetSectors: initialData.targetSectors || '',
+        targetMOIC: initialData.targetMOIC || '',
+        targetIRR: initialData.targetIRR || '',
+        minimumInvestment: initialData.minimumInvestment || '',
+        fundLifetime: initialData.fundLifetime || '',
+        fundDescription: initialData.fundDescription || '',
+        currency: initialData.currency || 'USD',
+        investors: initialData.investors || [],
+        documents: initialData.documents || [],
+      });
+    }
+  }, [initialData]);
+
   const handleReset = () => {
     setFormData({
       name: "",
@@ -135,6 +160,7 @@ const FundModal: React.FC<FundModalProps> = ({
       targetIRR: "",
       minimumInvestment: "",
       fundLifetime: "",
+      currency: 'USD', // Reset to default USD
       fundDescription: "",
     });
     setAmount("");
@@ -344,6 +370,7 @@ const FundModal: React.FC<FundModalProps> = ({
         minimumInvestment: formData.minimumInvestment,
         fundLifetime: formData.fundLifetime,
         fundDescription: formData.fundDescription,
+        currency: formData.currency, // Added currency to updateData
         existingDocuments: documents
           .filter((doc) => doc.url)
           .map((doc) => doc.url),
@@ -392,6 +419,18 @@ const FundModal: React.FC<FundModalProps> = ({
       setCreating(false);
     }
   };
+  const currencyOptions = [
+    { code: 'USD', name: 'USD - US Dollar' },
+    { code: 'EUR', name: 'EUR - Euro' },
+    { code: 'GBP', name: 'GBP - British Pound' },
+    { code: 'CAD', name: 'CAD - Canadian Dollar' },
+    { code: 'AUD', name: 'AUD - Australian Dollar' },
+    { code: 'JPY', name: 'JPY - Japanese Yen' },
+    { code: 'CNY', name: 'CNY - Chinese Yuan' },
+    { code: 'INR', name: 'INR - Indian Rupee' },
+    { code: 'CHF', name: 'CHF - Swiss Franc' },
+    { code: 'SGD', name: 'SGD - Singapore Dollar' },
+  ];
 
   if (!isOpen) return null;
 
@@ -452,6 +491,24 @@ const FundModal: React.FC<FundModalProps> = ({
                   }
                   className="w-full px-3 py-2 border border-theme-primary-text rounded-md focus:outline-none focus:ring-2 focus:ring-theme-sidebar-accent focus:border-transparent placeholder:text-theme-secondary-text"
                 />
+              </div>
+              <div>
+                <select
+                  value={formData.currency}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    handleInputChange('currency', e.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-theme-primary-text rounded-md focus:outline-none focus:ring-2 focus:ring-theme-sidebar-accent focus:border-transparent"
+                >
+                  <option value="" disabled>
+                    Select Currency
+                  </option>
+                  {currencyOptions.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <input
@@ -951,7 +1008,7 @@ const FundModal: React.FC<FundModalProps> = ({
                 disabled={creating} // Only need to check creating state since we're already in edit mode
                 className="w-full bg-theme-sidebar-accent text-white py-3 rounded-[10px] transition-colors font-medium"
               >
-                {creating ? "updating..." : "Update"}
+                {creating ? "Updating..." : "Update"}
               </button>
             ) : (
               <button
@@ -959,7 +1016,7 @@ const FundModal: React.FC<FundModalProps> = ({
                 disabled={creating} // Only need to check creating state since we're already in create mode
                 className="w-full bg-theme-sidebar-accent text-white py-3 rounded-[10px] transition-colors font-medium"
               >
-                {creating ? "submitting..." : "Submit"}
+                {creating ? "Submitting..." : "Submit"}
               </button>
             )}
           </div>

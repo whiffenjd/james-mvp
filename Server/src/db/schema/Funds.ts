@@ -12,6 +12,7 @@ export const funds = pgTable('funds', {
   minimumInvestment: numeric('minimum_investment').notNull(),
   fundManagerId: text('fund_manager_id').notNull(),
   fundLifetime: text('fund_lifetime').notNull(),
+  currency: text('currency').notNull().default('USD'), // Added currency field
   fundDescription: text('fund_description'),
   documents: jsonb('documents').default([]),
   investors: jsonb('investors').default([]),

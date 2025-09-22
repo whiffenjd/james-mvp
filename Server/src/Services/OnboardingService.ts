@@ -24,6 +24,7 @@ export const startOnboarding = async (userId: string, payload: CreateOnboardingR
   } else if (payload.formData.entityDocuments?.length) {
     documentStatus = 'submitted';
   }
+  const status = payload.completeLater ? 'complete_later' : 'pending';
 
   const [created] = await db
     .insert(InvestorOnboardingTable)
@@ -34,7 +35,7 @@ export const startOnboarding = async (userId: string, payload: CreateOnboardingR
         documentStatus,
         documentNote: null,
       },
-      status: 'pending',
+      status,
     })
     .returning();
 
@@ -58,6 +59,8 @@ export const updateOnboarding = async (userId: string, payload: UpdateOnboarding
     documentStatus = 'submitted';
   }
 
+  const status = payload.completeLater ? 'complete_later' : 'pending';
+
   const [updated] = await db
     .update(InvestorOnboardingTable)
     .set({
@@ -71,7 +74,7 @@ export const updateOnboarding = async (userId: string, payload: UpdateOnboarding
         documentStatus,
         documentNote: null,
       },
-      status: 'pending',
+      status,
       rejectionNote: null,
       updatedAt: new Date(),
     })

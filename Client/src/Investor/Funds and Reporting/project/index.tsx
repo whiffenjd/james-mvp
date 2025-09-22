@@ -39,6 +39,8 @@
 import { useEffect, useState } from "react";
 import Tabs, { tabIds, type TabType } from "../../../Components/Tabs/Tabs";
 import { useSearchParams } from "react-router-dom";
+import RestrictedAccessMessage from "../../../Components/RestrictedAccessMessage";
+import { useAuth } from "../../../Context/AuthContext";
 
 // Type guard to ensure URL tab is valid
 const isValidTab = (tab: string | null): tab is TabType => {
@@ -46,6 +48,7 @@ const isValidTab = (tab: string | null): tab is TabType => {
 };
 
 const InvestorsProject = () => {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const defaultTab: TabType = "overview";
 
@@ -67,6 +70,11 @@ const InvestorsProject = () => {
       setActiveTab(tabInUrl);
     }
   }, [searchParams]);
+
+
+  if (user?.onboardingStatus?.status === 'complete_later') {
+    return (<RestrictedAccessMessage />)
+  }
 
   return (
     <div className=" p-4 md:p-6">

@@ -38,7 +38,7 @@ const Capital = () => {
       key: 'fundId',
       header: 'Fund ID',
       sortable: false,
-      width: '15vh',
+      // width: '15vh',
       align: 'left',
       render: (value: string) => {
         const shortValue = value?.split('-')[0];
@@ -53,7 +53,7 @@ const Capital = () => {
       key: 'InvestorName',
       header: 'Investor Name',
       sortable: false,
-      width: '20vh',
+      // width: '20vh',
       align: 'left',
       render: (value: string) => {
         const shortValue = value?.split('-')[0];
@@ -69,7 +69,7 @@ const Capital = () => {
       key: 'amount',
       header: 'Amount',
       sortable: false,
-      width: '15vh',
+      // width: '15vh',
       align: 'left',
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -81,7 +81,7 @@ const Capital = () => {
       key: 'date',
       header: 'Date',
       sortable: false,
-      width: '15vh',
+      // width: '15vh',
       align: 'left',
       render: (value: string) => {
         const formattedDate = formatDateToDDMMYYYY(value);
@@ -96,7 +96,7 @@ const Capital = () => {
       key: 'recipientName',
       header: 'Recipient',
       sortable: false,
-      width: '20vh',
+      // width: '20vh',
       align: 'left',
       render: (value: string) => (
         <div className="truncate" title={value}>
@@ -107,7 +107,7 @@ const Capital = () => {
     {
       key: 'status',
       header: 'Status',
-      width: '15vh',
+      // width: '15vh',
       align: 'left',
       render: (value: 'pending' | 'approved' | 'rejected') => (
         <div className="truncate">
@@ -314,6 +314,7 @@ const Capital = () => {
 
   return (
     <div className=" rounded-lg ">
+      {/* <div className="w-full" style={{ maxWidth: "calc(100% - 20rem)" }}> */}
       <Table
         data={data?.data || []}
         columns={columns}
@@ -324,6 +325,8 @@ const Capital = () => {
         emptyMessage="No capital calls found"
         className="mb-8"
       />
+      {/* </div> */}
+
 
       <FundTransactionModal
         isOpen={isCapitalModalOpen}

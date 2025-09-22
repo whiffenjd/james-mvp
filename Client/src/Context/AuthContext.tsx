@@ -32,7 +32,7 @@ export interface User {
   updatedAt: string;
   isOnboarded?: boolean;
   onboardingStatus?: {
-    status: "pending" | "approved" | "rejected";
+    status: "pending" | "approved" | "rejected" | "complete_later";
     rejectionNote?: string | null;
   } | null;
 }
@@ -50,7 +50,7 @@ interface AuthContextType {
   getToken: () => string | null;
   updateUser: (userData: Partial<User>) => void;
   updateOnboardingStatus: (
-    status: "pending" | "approved" | "rejected",
+    status: "pending" | "approved" | "rejected" | "complete_later",
     rejectionNote?: string
   ) => void;
   updateOnboardedStatus: (isOnboarded: boolean) => void; // Add this line
@@ -229,16 +229,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const updateOnboardingStatus = useCallback(
-    (status: "pending" | "approved" | "rejected", rejectionNote?: string) => {
+    (status: "pending" | "approved" | "rejected" | "complete_later", rejectionNote?: string) => {
       setUser((prev) =>
         prev
           ? {
-              ...prev,
-              onboardingStatus: {
-                status,
-                rejectionNote,
-              },
-            }
+            ...prev,
+            onboardingStatus: {
+              status,
+              rejectionNote,
+            },
+          }
           : null
       );
     },
@@ -249,9 +249,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setUser((prev) =>
       prev
         ? {
-            ...prev,
-            isOnboarded,
-          }
+          ...prev,
+          isOnboarded,
+        }
         : null
     );
 

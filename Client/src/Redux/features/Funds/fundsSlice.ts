@@ -46,6 +46,7 @@ export interface FundDetail {
   fundDescription: string;
   investors: FundInvestor[];
   documents: FundDocument[];
+  currency: string; // Added currency to form data
   createdAt: string;
   id: string;
   history: HistoryItem[];

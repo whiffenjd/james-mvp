@@ -1,4 +1,4 @@
-import { Eye, Trash2 } from "lucide-react";
+import { Eye, Loader2, Trash2 } from "lucide-react";
 import { StepHeader } from "../StepHeader";
 import { useOnboarding } from "../../Context/OnboardingContext";
 import { useEffect, useState } from "react";
@@ -6,6 +6,7 @@ import { useDocumentDelete, useDocumentUpload, useStartOnboarding, useUpdateOnbo
 import { useAuth } from "../../Context/AuthContext";
 import toast from "react-hot-toast";
 import { DocumentPreviewModal } from '../../Components/DocumentPreviewModal';
+import { useNavigate } from "react-router-dom";
 
 interface FileInputBlockProps {
     label: string;
@@ -28,8 +29,9 @@ export function DocumentUploadStepEntity() {
     const { mutateAsync: updateOnboarding, status: updateStatus } = useUpdateOnboarding();
     const isUpdating = updateStatus === 'pending';
 
-    const { mutateAsync: uploadDocuments } = useDocumentUpload();
-
+    const { mutateAsync: uploadDocuments, status: uploadeDocumentStatus } = useDocumentUpload();
+    const navigate = useNavigate()
+    const isUploading = uploadeDocumentStatus === 'pending';
     const { mutateAsync: deleteDocument } = useDocumentDelete();
     const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File[] }>({});
     const [uploadedFiles, setUploadedFiles] = useState<Array<{ key: string; url: string }>>([]);
@@ -83,7 +85,7 @@ export function DocumentUploadStepEntity() {
     };
 
     // First, update the handleSubmit function to handle optional documents
-    const handleSubmit = async () => {
+    const handleSubmit = async (completeLater: boolean = false) => {
         try {
             // Initialize with existing documents
             interface DocumentUrl {
@@ -93,7 +95,7 @@ export function DocumentUploadStepEntity() {
             let documentUrls: DocumentUrl[] = [];
 
             // Only upload if new files are selected
-            if (selectedFiles.kyc?.length) {
+            if (!completeLater && selectedFiles.kyc?.length) {
                 const formData = new FormData();
                 selectedFiles.kyc.forEach(file => {
                     formData.append('documents', file);
@@ -139,19 +141,20 @@ export function DocumentUploadStepEntity() {
                     ...state.formData,
                     entityDocuments: documentUrls
                 };
-
-                const onboardingPromise = user?.onboardingStatus?.status === 'rejected'
-                    ? updateOnboarding({ formData: updatedFormData })
-                    : startOnboarding({ formData: updatedFormData });
+                const onboardingPromise =
+                    user?.onboardingStatus?.status === 'rejected' || user?.onboardingStatus?.status === 'complete_later'
+                        ? updateOnboarding({ formData: updatedFormData, completeLater })
+                        : startOnboarding({ formData: updatedFormData, completeLater });
 
                 const response = await toast.promise(onboardingPromise, {
-                    loading: 'Submitting onboarding information...',
-                    success: 'Onboarding submitted successfully',
-                    error: 'Failed to submit onboarding'
+                    loading: completeLater ? 'Submitting without documents' : 'Submitting onboarding information...',
+                    success: completeLater ? 'Submitting without documents' : 'Onboarding submitted successfully',
+                    error: 'Failed to submit onboarding',
                 });
-
                 // Update onboarding status to pending
-                updateOnboardingStatus('pending');
+                updateOnboardingStatus(completeLater ? 'complete_later' : 'pending');
+
+
 
                 // Reset files
                 setUploadedFiles([]);
@@ -163,11 +166,13 @@ export function DocumentUploadStepEntity() {
 
                 // Load new onboarding data
                 if (response.data?.formData) {
-
                     await new Promise<void>(resolve => {
                         updateFormData(response.data.formData);
                         setTimeout(resolve, 100);
                     });
+                }
+                if (completeLater) {
+                    navigate("/investor/dashboard");
                 }
 
             } catch (error) {
@@ -376,25 +381,37 @@ export function DocumentUploadStepEntity() {
                             fileKey="kyc"
                         />
                     </div>
-                    <div className="flex space-x-4">
-                        <button
-                            type="button"
-                            onClick={prevStep}
-                            className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
-                        >
-                            Back
-                        </button>
-                        <button
-                            onClick={handleSubmit}
-                            disabled={
-                                isStarting ||
-                                isUpdating ||
-                                user?.onboardingStatus?.status === 'pending'
-                            }
-                            className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
-                        >
-                            {user?.onboardingStatus?.status === 'rejected' ? 'Resubmit' : 'Submit'}
-                        </button>
+                    <div className="space-y-6">
+
+                        {/* Other form fields and steps */}
+                        <div className="flex space-x-4">
+                            <button
+                                type="button"
+                                onClick={prevStep}
+                                disabled={isUploading || isStarting || isUpdating}
+                                className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            >
+                                Back
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleSubmit(false)}
+                                disabled={isUploading || isStarting || isUpdating || user?.onboardingStatus?.status === 'pending'}
+                                className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {(isUploading || isStarting || isUpdating) && <Loader2 className="animate-spin h-4 w-4" />}
+                                {user?.onboardingStatus?.status === 'rejected' ? 'Update' : 'Submit'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleSubmit(true)}
+                                disabled={isUploading || isStarting || isUpdating || user?.onboardingStatus?.status === 'pending'}
+                                className="flex-1 bg-[#797979] text-white py-3 px-4 rounded-lg  transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {(isUploading || isStarting || isUpdating) && <Loader2 className="animate-spin h-4 w-4" />}
+                                Complete Later
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

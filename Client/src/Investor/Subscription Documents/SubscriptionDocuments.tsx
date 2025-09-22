@@ -10,6 +10,7 @@ import { useInvestorDocuments } from "../hooks/useInvestorDocuments";
 import { Document, Page, pdfjs } from "react-pdf";
 import type { InvestorFundSummary } from "../../API/Endpoints/Funds/funds";
 import { PDFDocument } from "pdf-lib";
+import RestrictedAccessMessage from "../../Components/RestrictedAccessMessage";
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
 
 interface Placement {
@@ -378,14 +379,14 @@ const SubscriptionDocuments = () => {
       title: "Status",
       key: "status",
       render: (row: InvestorFundSummary) => (
-        <span>{row.investors[0].status ? "Signed" : "Pending"}</span>
+        <span>{row?.investors[0]?.status ? "Signed" : "Pending"}</span>
       ),
     },
     {
       title: "Details",
       key: "action",
       render: (row: InvestorFundSummary) => {
-        const isSigned = row.investors[0].status === true;
+        const isSigned = row?.investors[0]?.status === true;
 
         if (user?.role === "fundManager") {
           return isSigned ? (
@@ -438,6 +439,10 @@ const SubscriptionDocuments = () => {
     const date = new Date(e.target.value)
     setDateText(date.toLocaleDateString())
   }
+  if (user?.onboardingStatus?.status === 'complete_later') {
+    return (<RestrictedAccessMessage />)
+  }
+
 
   return (
     <div className="min-h-screen p-4 md:p-6">

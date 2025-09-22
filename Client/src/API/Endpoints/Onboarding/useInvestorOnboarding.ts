@@ -47,9 +47,12 @@ interface DocumentUploadResponse extends ApiResponse {
 
 // Start onboarding (POST)
 export const useStartOnboarding = () =>
-  useMutation<ApiResponse, Error, { formData: InvestorOnboardingPayload }>({
+  useMutation<
+    ApiResponse,
+    Error,
+    { formData: InvestorOnboardingPayload; completeLater?: boolean }
+  >({
     mutationFn: async (payload) => {
-      // Decode URLs before sending
       const formData = {
         ...payload.formData,
         kycDocumentUrl: payload.formData.kycDocumentUrl
@@ -62,16 +65,19 @@ export const useStartOnboarding = () =>
 
       const res = await axiosPrivate.post("/onboarding/investor/start", {
         formData,
+        completeLater: payload.completeLater || false,
       });
       return res.data;
     },
   });
 
-// Update onboarding (PUT)
 export const useUpdateOnboarding = () =>
-  useMutation<ApiResponse, Error, { formData: InvestorOnboardingPayload }>({
+  useMutation<
+    ApiResponse,
+    Error,
+    { formData: InvestorOnboardingPayload; completeLater?: boolean }
+  >({
     mutationFn: async (payload) => {
-      // Decode URLs before sending
       const formData = {
         ...payload.formData,
         kycDocumentUrl: payload.formData.kycDocumentUrl
@@ -84,11 +90,11 @@ export const useUpdateOnboarding = () =>
 
       const res = await axiosPrivate.put("/onboarding/investor/update", {
         formData,
+        completeLater: payload.completeLater || false,
       });
       return res.data;
     },
   });
-
 // Get onboarding status (GET)
 export const useOnboardingStatus = () =>
   useQuery<ApiResponse<OnboardingStatusResponse>, Error>({

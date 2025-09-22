@@ -20,7 +20,6 @@ export const InvestorOnboardingTable = pgTable(
       .references(() => UsersTable.id, { onDelete: 'cascade' }),
     status: varchar('status', { length: 30 }).notNull().default('pending'), // pending, approved, rejected
     rejectionNote: varchar('rejection_note', { length: 1024 }),
-
     formData: jsonb('form_data').notNull().default({}),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),

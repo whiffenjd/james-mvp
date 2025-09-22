@@ -19,6 +19,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../../Context/AuthContext";
 import { EnhancedYearQuarterDropdowns } from "../../Components/Modal/EnhancedYearQuarterDropdowns";
 import { UploadModal, ViewModal } from "./TaxModals";
+import RestrictedAccessMessage from "../../Components/RestrictedAccessMessage";
 
 
 interface TaxReportRow {
@@ -268,6 +269,9 @@ function TaxReportsPage() {
     };
 
     const isSubmitting = isLoading || createTaxReport.isPending || updateTaxReport.isPending || deleteTaxReport.isPending;
+    if (user?.onboardingStatus?.status === 'complete_later') {
+        return (<RestrictedAccessMessage />)
+    }
 
     return (
         <div className="">

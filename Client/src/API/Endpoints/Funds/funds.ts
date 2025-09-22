@@ -100,6 +100,7 @@ interface UpdateFundPayload {
     minimumInvestment: string;
     fundLifetime: string;
     fundDescription: string;
+    currency: string;
     existingDocuments: string[];
     investors: {
       investorId: string;
@@ -158,6 +159,7 @@ export const useUpdateFund = () => {
           targetSectors: params.data.targetSectors,
           targetMOIC: params.data.targetMOIC,
           targetIRR: params.data.targetIRR,
+          currency: params.data.currency,
           minimumInvestment: params.data.minimumInvestment,
           fundLifetime: params.data.fundLifetime,
           fundDescription: params.data.fundDescription,

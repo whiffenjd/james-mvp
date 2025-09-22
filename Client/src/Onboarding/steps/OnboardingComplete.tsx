@@ -7,8 +7,10 @@ import toast from 'react-hot-toast';
 
 // Step 1: Jurisdiction Selection
 export function OnboardingComplete() {
-    const { updateOnboardedStatus } = useAuth();
+    const { updateOnboardedStatus, user } = useAuth();
     const { mutateAsync: proceedOnboarding, isPending: isLoading } = useProceedOnboarding();
+    console.log("User in OnboardingComplete:", user?.onboardingStatus?.status);
+
     const nav = useNavigate();
     const handleProceed = async () => {
         try {
@@ -34,13 +36,18 @@ export function OnboardingComplete() {
                     On Boarding complete!
                 </h2>
                 <p className="text-gray-700 mb-2">
-                    Your account has been created successfully. You have chosen to complete
-                    AML/KYC verification later.
+                    Your account has been created successfully.
+
+                    {user?.onboardingStatus?.status === "complete_later" ? " You have chosen to complete AML/KYC verification later." : ""}
+                    {/* You have chosen to complete
+                    AML/KYC verification later. */}
                 </p>
-                <p className="text-[#976700] font-medium mb-6">
-                    Note: You will not be able to invest until your AML/KYC verification has been approved.
-                </p>
-                <button
+                {user?.onboardingStatus?.status === "complete_later" && (
+                    <p className="text-[#976700] font-medium mb-6">
+                        Note: You will not be able to invest until your AML/KYC verification has been approved.
+                    </p>
+                )}
+                < button
                     disabled={isLoading}
                     type="button"
                     className="bg-[#017776] text-white px-6 py-2 rounded-md transition"
@@ -52,7 +59,7 @@ export function OnboardingComplete() {
                     {isLoading ? 'Loading...' : "Proceed to Platform"}
                 </button>
             </div>
-        </div>
+        </div >
 
     );
 }

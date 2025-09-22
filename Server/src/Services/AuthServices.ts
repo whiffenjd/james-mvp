@@ -111,7 +111,7 @@ export const registerInvestor = async (
 };
 
 export const loginUser = async (
-  req: CustomRequest,
+  req: any, // Adjust type as needed
   email: string,
   password: string,
   role: 'admin' | 'fundManager' | 'investor',
@@ -121,7 +121,6 @@ export const loginUser = async (
     throw new Error('Invalid credentials');
   }
 
-  // For investors, check subdomain matches their referral fund manager
   if (
     (user.role === 'investor' && user.referral) ||
     (user.role === 'fundManager' && user.subdomain)
@@ -155,20 +154,20 @@ export const loginUser = async (
       }
     }
   }
-  //Check email verfication
+
   if (!user.isEmailVerified) {
     throw new Error('Email not verified');
   }
 
   await deleteUserTokenByType(user.id, email, 'userAuth');
 
-  //check invsetor onboarding
   let onboardingStatus = null;
   if (user.role === 'investor') {
     const [onboarding] = await db
       .select({
         status: InvestorOnboardingTable.status,
         rejectionNote: InvestorOnboardingTable.rejectionNote,
+        // documentStatus: InvestorOnboardingTable.formData.documentStatus,
       })
       .from(InvestorOnboardingTable)
       .where(eq(InvestorOnboardingTable.userId, user.id))
@@ -177,6 +176,7 @@ export const loginUser = async (
       onboardingStatus = {
         status: onboarding.status,
         rejectionNote: onboarding.rejectionNote,
+        // documentStatus: onboarding.documentStatus || 'pending_upload',
       };
     }
   }
@@ -210,11 +210,41 @@ export const loginUser = async (
     user: userWithOnboarding,
   };
 };
+// export const getUserProfileByRole = async (id: string, role: Role): Promise<User | null> => {
+//   const [user] = await db.select().from(UsersTable).where(eq(UsersTable.id, id));
 
+//   return user ? { ...user, role: user.role as Role } : null;
+// };
 export const getUserProfileByRole = async (id: string, role: Role): Promise<User | null> => {
   const [user] = await db.select().from(UsersTable).where(eq(UsersTable.id, id));
 
-  return user ? { ...user, role: user.role as Role } : null;
+  if (!user) return null;
+
+  let onboardingStatus = null;
+  if (role === 'investor') {
+    const [onboarding] = await db
+      .select({
+        status: InvestorOnboardingTable.status,
+        rejectionNote: InvestorOnboardingTable.rejectionNote,
+        // documentStatus: InvestorOnboardingTable.formData.documentStatus,
+      })
+      .from(InvestorOnboardingTable)
+      .where(eq(InvestorOnboardingTable.userId, id))
+      .limit(1);
+    if (onboarding) {
+      onboardingStatus = {
+        status: onboarding.status,
+        rejectionNote: onboarding.rejectionNote,
+        // documentStatus: onboarding.documentStatus || 'pending_upload',
+      };
+    }
+  }
+
+  return {
+    ...user,
+    role: user.role as Role,
+    onboardingStatus,
+  };
 };
 
 export const getAllUsers = async (): Promise<User[]> => {

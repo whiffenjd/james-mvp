@@ -6,6 +6,7 @@ import { useAuth } from "../../Context/AuthContext";
 import { useInvestorFunds } from "../../FundManager/hooks/useInvestorFunds";
 import { useAppSelector } from "../../Redux/hooks";
 import type { InvestorFundSummary } from "../../API/Endpoints/Funds/funds";
+import RestrictedAccessMessage from "../../Components/RestrictedAccessMessage";
 
 const FundsAndReportingInvestors: React.FC = () => {
   const [fundsData, setFundsData] = useState<InvestorFundSummary[]>([]);
@@ -24,6 +25,10 @@ const FundsAndReportingInvestors: React.FC = () => {
   if (isLoading) {
     return <BasicLoader />;
   }
+  if (user?.onboardingStatus?.status === 'complete_later') {
+    return (<RestrictedAccessMessage />)
+  }
+
   return (
     <div className="min-h-screen p-4 md:p-6">
       {/* Header Section */}

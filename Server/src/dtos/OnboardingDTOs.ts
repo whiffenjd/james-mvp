@@ -73,10 +73,12 @@ export interface InvestorOnboardingPayload {
 
 export interface CreateOnboardingRequest {
   formData: InvestorOnboardingPayload;
+  completeLater?: boolean; // Added for complete later
 }
 
 export interface UpdateOnboardingRequest {
   formData: InvestorOnboardingPayload;
+  completeLater?: boolean; // Added for complete later
 }
 
 export interface OnboardingStatusResponse {

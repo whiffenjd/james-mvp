@@ -205,7 +205,7 @@ function Documents() {
                         setShowUploadModal(true);
                     },
                     show: (row: KycDocumentRow) =>
-                        row.formData.documentStatus === "reupload_requested",
+                        row.formData.documentStatus === "reupload_requested" || row.formData.documentStatus === "pending_upload",
                 },
             ]
             : []),

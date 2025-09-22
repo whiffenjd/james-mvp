@@ -32,6 +32,7 @@ export interface FundCreateRequest {
   fundDescription: string;
   investors: Investor[];
   documents: FundDocument[];
+  currency: string; // Added currency to form data
   [key: string]: any;
 }
 

@@ -48,25 +48,25 @@ const InvestorLayout = () => {
       id: "funds",
       icon: <CircleDollarSign size={22} />,
       label: "Funds",
-      path: "funds",
+      path: "/investor/dashboard/funds",
     },
     {
       id: "tax",
       icon: <CircleDollarSign size={22} />,
       label: "Tax Reports",
-      path: "tax", // This matches your nested route
+      path: "/investor/dashboard/tax",
     },
     {
       id: "documents",
       icon: <CircleDollarSign size={22} />,
       label: "AML/KYC Documents",
-      path: "documents", // This matches your nested route
+      path: "/investor/dashboard/documents",
     },
     {
       id: "Subscription_Documents",
       icon: <Files size={22} />,
       label: "Subscription Documents",
-      path: "subscription-documents",
+      path: "/investor/dashboard/subscription-documents",
     },
     {
       id: "notifications",
@@ -81,8 +81,8 @@ const InvestorLayout = () => {
         </div>
       ),
       label: "Notifications",
-      path: "notifications",
-    }
+      path: "/investor/dashboard/notifications",
+    },
   ];
 
   // Show loading state while theme is loading

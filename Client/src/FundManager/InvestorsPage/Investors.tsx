@@ -15,7 +15,7 @@ interface Investor {
     id: string;
     name: string;
     email: string;
-    onboardingStatus: "pending" | "approved" | "rejected";
+    onboardingStatus: "pending" | "approved" | "rejected" | "complete_later";
     createdAt: string;
     lastLoginAt: string;
     status: "pending" | "approved" | "rejected";
@@ -100,18 +100,26 @@ function InvestorsPage() {
             header: "Status",
             width: "15vh",
             align: "left",
-            render: (value: "pending" | "approved" | "rejected") => (
+            render: (value: "pending" | "approved" | "rejected" | "complete_later") => (
                 <div className="truncate">
                     <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                        ${value === "approved"
+                ${value === "approved"
                                 ? "bg-green-100 text-green-800"
                                 : value === "pending"
                                     ? "bg-yellow-100 text-yellow-800"
-                                    : "bg-red-100 text-red-700"
+                                    : value === "complete_later"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : "bg-red-100 text-red-700"
                             }`}
                     >
-                        {value === "approved" ? "Onboarded" : value === "pending" ? "In Progress" : "Rejected"}
+                        {value === "approved"
+                            ? "Onboarded"
+                            : value === "pending"
+                                ? "In Progress"
+                                : value === "complete_later"
+                                    ? "Complete Later"
+                                    : "Rejected"}
                     </span>
                 </div>
             )

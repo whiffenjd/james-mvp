@@ -90,12 +90,17 @@ const FundraisingUI: React.FC<FundraisingUIProps> = ({
                         </div>
 
                         <button
-                            onClick={() => openPdfModal(fundData?.documents[0]?.fileUrl, 0)}
+                            onClick={() => {
+                                if (fundData?.documents?.length) {
+                                    openPdfModal(fundData.documents[0].fileUrl, 0);
+                                }
+                            }}
                             className="w-full bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                             disabled={!fundData?.documents?.length}
                         >
                             View Documents ({fundData?.documents?.length || 0})
                         </button>
+
                     </div>
 
                     {/* All Investors */}

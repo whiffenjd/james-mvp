@@ -7,7 +7,7 @@ import {
     useUpdateKycDocument,
     useApproveKycDocument,
     useRequestReupload,
-    useDownloadKycDocument,
+    // useDownloadKycDocument,
     type KycDocument,
     type UpdateKycDocumentPayload,
     // type RequestReuploadPayload,
@@ -38,15 +38,15 @@ interface KycDocumentRow {
 
 function Documents() {
     const [currentPage, setCurrentPage] = useState(1);
-    type KycStatus = "pending_upload" | "submitted" | "under_review" | "approved" | "reupload_requested";
+    // type KycStatus = "pending_upload" | "submitted" | "under_review" | "approved" | "reupload_requested";
 
-    const [filters, setFilters] = useState<{
-        status: KycStatus | "";   // empty string means "no filter"
-        investorName: string;
-    }>({
-        status: "",
-        investorName: "",
-    });
+    // const [filters, setFilters] = useState<{
+    //     status: KycStatus | "";   // empty string means "no filter"
+    //     investorName: string;
+    // }>({
+    //     status: "",
+    //     investorName: "",
+    // });
     const [canRefetch, setCanRefetch] = useState(true);
     const [justRefetched, setJustRefetched] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
@@ -71,14 +71,14 @@ function Documents() {
     const updateKycDocument = useUpdateKycDocument();
     const approveKycDocument = useApproveKycDocument();
     const requestReupload = useRequestReupload();
-    const downloadKycDocument = useDownloadKycDocument();
+    // const downloadKycDocument = useDownloadKycDocument();
 
     // Map status to API format
     const apiParams = {
         page: currentPage,
         limit: 5,
-        status: filters.status || undefined,
-        investorName: filters.investorName || undefined,
+        // status: filters.status || undefined,
+        // investorName: filters.investorName || undefined,
     };
     const { data: apiData, isLoading, isFetching, refetch } = useKycDocuments(apiParams);
     const kycDocuments = apiData?.data?.data ?? [];

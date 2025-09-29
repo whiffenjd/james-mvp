@@ -3,7 +3,7 @@ import { useAuth } from "../../Context/AuthContext";
 import { useInvestorFunds } from "../../FundManager/hooks/useInvestorFunds";
 import { useAppSelector } from "../../Redux/hooks";
 import CustomTable from "../../Components/Table/CustomTable";
-import { Calendar, Edit3, MousePointer, X } from "lucide-react";
+import { Calendar, Download, Edit3, Loader2, MousePointer, X } from "lucide-react";
 import SignaturePad from "react-signature-pad-wrapper";
 import toast from "react-hot-toast";
 import { useInvestorDocuments } from "../hooks/useInvestorDocuments";
@@ -50,6 +50,25 @@ const SubscriptionDocuments = () => {
   const padRef = useRef<SignaturePad>(null);
   const pdfContainerRef = useRef<HTMLDivElement>(null);
 
+  const handleDownload = async (pdfSrc: string) => {
+    try {
+      const response = await fetch(pdfSrc, { mode: "cors" });
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Signed_Agreement_${currentFund?.name}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download failed:", err);
+    }
+  };
+
   const { isLoading } = useInvestorFunds();
   const funds = useAppSelector((state) => state.investorFunds.funds);
 
@@ -87,49 +106,6 @@ const SubscriptionDocuments = () => {
     setDragging({ index, type });
   };
 
-  // const handleMouseMove = (e: React.MouseEvent) => {
-  //   if (!dragging || !pdfContainerRef.current) return;
-
-  //   const container = pdfContainerRef.current;
-  //   const rect = container.getBoundingClientRect();
-
-  //   // Calculate position relative to the PDF container including scroll offset
-  //   const x = e.clientX - rect.left + container.scrollLeft;
-  //   const y = e.clientY - rect.top + container.scrollTop;
-
-  //   // Find the PDF page element to get its bounds
-  //   const pdfPage = container.querySelector('.react-pdf__Page');
-  //   if (!pdfPage) return;
-
-  //   const pageRect = pdfPage.getBoundingClientRect();
-  //   const containerRect = container.getBoundingClientRect();
-
-  //   // Calculate position relative to the PDF page
-  //   const pageX = e.clientX - pageRect.left;
-  //   const pageY = e.clientY - pageRect.top;
-
-  //   // Ensure the signature/date stays within page bounds
-  //   const maxX = pdfPage.clientWidth - (dragging.type === "signature" ? 100 * signatureSize : 100);
-  //   const maxY = pdfPage.clientHeight - (dragging.type === "signature" ? 50 * signatureSize : 20);
-
-  //   const constrainedX = Math.max(0, Math.min(pageX, maxX));
-  //   const constrainedY = Math.max(0, Math.min(pageY, maxY));
-
-  //   setPlacements((prev) =>
-  //     prev.map((p, i) =>
-  //       i === dragging.index
-  //         ? {
-  //           ...p,
-  //           [dragging.type]: {
-  //             ...p[dragging.type]!,
-  //             x: constrainedX,
-  //             y: constrainedY
-  //           }
-  //         }
-  //         : p
-  //     )
-  //   );
-  // };
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!dragging || !pdfContainerRef.current) return;
 
@@ -341,7 +317,6 @@ const SubscriptionDocuments = () => {
       setLoading(false);
     }
   };
-
   const isDocumentSigned = () => {
     return currentFund?.investors?.[0]?.status === true;
   };
@@ -423,12 +398,7 @@ const SubscriptionDocuments = () => {
     },
   ];
 
-
   const [showSignaturePad, setShowSignaturePad] = useState(false)
-
-
-
-
 
   const handleDateChange = (date: Date | null) => {
     if (!date) return;
@@ -483,13 +453,42 @@ const SubscriptionDocuments = () => {
             {isDocumentSigned() ? (
               // Signed Document View
               <div className="w-full relative">
-                <h2 className="text-lg font-semibold mb-4 text-gray-800 text-center">Signed Agreement Document</h2>
+                {/* Header with download option */}
+                <div className="flex justify-around items-center mb-4">
+
+                  {pdfSrc && (
+                    <button
+                      onClick={() => {
+                        handleDownload(pdfSrc)
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm transition"
+                    >
+                      <Download className="w-4 h-4" />
+
+                    </button>
+                  )}
+                  <h2 className="text-lg font-semibold text-gray-800 text-center flex-1">
+                    Signed Agreement Document
+                  </h2>
+                </div>
+
                 <div className="w-full h-[80vh] overflow-auto bg-gray-100 p-4 rounded-lg">
                   <div className="flex flex-col items-center space-y-4">
                     <Document
                       file={pdfSrc}
                       onLoadSuccess={({ numPages }) => setNumPages(numPages)}
                       className="w-full max-w-4xl"
+                      loading={
+                        <div className="flex flex-col items-center justify-center h-[60vh]">
+                          <Loader2 className="animate-spin w-10 h-10 text-gray-600 mb-4" />
+                          <p className="text-gray-600 font-medium">Loading document...</p>
+                        </div>
+                      }
+                      error={
+                        <div className="text-center text-red-500 font-medium">
+                          Failed to load PDF. Please try again.
+                        </div>
+                      }
                     >
                       {Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => (
                         <div key={pageNum} className="mb-4 shadow-lg">

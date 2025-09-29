@@ -155,13 +155,10 @@ const FundReports = () => {
       },
     });
   };
-
-
   const handleViewReport = (report: FundReport) => {
     setSelectedReport(report);
     setIsModalOpen(true);
   };
-
   const handleDownload = async (report: FundReport) => {
     if (!report.documentUrl) {
       console.error('No document URL available');

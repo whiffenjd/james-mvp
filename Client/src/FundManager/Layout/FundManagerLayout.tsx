@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import { Bell, CircleDollarSign, Files, LayoutGrid, Settings } from "lucide-react";
+import { Bell, CircleDollarSign, Files, FileText, LayoutGrid, Receipt, ReceiptText, Settings, Users } from "lucide-react";
 import { useAuth } from "../../Context/AuthContext";
 import { useTheme } from "../../Context/ThemeContext";
 import ManagerSidebar from "../Public/ManagerSidebar";
@@ -46,7 +46,7 @@ const FundManagerLayout = () => {
     },
     {
       id: "investors",
-      icon: <CircleDollarSign size={22} />,
+      icon: <Users size={22} />,
       label: "Investors",
       path: "investors",
     },
@@ -57,23 +57,24 @@ const FundManagerLayout = () => {
       path: "funds",
     },
     {
-      id: "tax",
-      icon: <CircleDollarSign size={22} />,
-      label: "Tax Reports",
-      path: "tax",
-    },
-    {
-      id: "documents",
-      icon: <CircleDollarSign size={22} />,
-      label: "AML/KYC Documents",
-      path: "documents",
-    },
-    {
       id: "Subscription_Documents",
       icon: <Files size={22} />,
       label: "Subscription Documents",
       path: "subscription-documents",
     },
+    {
+      id: "tax",
+      icon: <Receipt size={22} />,
+      label: "Tax Reports",
+      path: "tax",
+    },
+    {
+      id: "documents",
+      icon: <FileText size={22} />,
+      label: "AML/KYC Documents",
+      path: "documents",
+    },
+
     {
       id: "settings",
       icon: <Settings size={22} />,

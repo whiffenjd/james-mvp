@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import { Bell, CircleDollarSign, Files, LayoutGrid } from "lucide-react";
+import { Bell, CircleDollarSign, Files, FileText, LayoutGrid, Receipt } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
 import ManagerSidebar from "../FundManager/Public/ManagerSidebar";
 import { useThemeContext } from "../Context/InvestorThemeContext";
@@ -47,18 +47,18 @@ const InvestorLayout = () => {
     {
       id: "funds",
       icon: <CircleDollarSign size={22} />,
-      label: "Funds",
+      label: "Funds and Reporting",
       path: "/investor/dashboard/funds",
     },
     {
       id: "tax",
-      icon: <CircleDollarSign size={22} />,
+      icon: <Receipt size={22} />,
       label: "Tax Reports",
       path: "/investor/dashboard/tax",
     },
     {
       id: "documents",
-      icon: <CircleDollarSign size={22} />,
+      icon: <FileText size={22} />,
       label: "AML/KYC Documents",
       path: "/investor/dashboard/documents",
     },

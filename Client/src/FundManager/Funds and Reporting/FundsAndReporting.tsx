@@ -56,7 +56,7 @@ const FundsAndReporting: React.FC = () => {
       </div>
 
       {/* Content Section - Fund Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-12  xl:gap-8 2xl:gap-16 pt-4 2xl:mr-32 xl:mr-0  h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 xl:gap-16 pt-4 h-full">
         {fundsData.length > 0 ? (
           <>
             {fundsData?.map((fund) => (
@@ -79,28 +79,20 @@ const FundsAndReporting: React.FC = () => {
                   </div>
 
                   {/* Project Details */}
-                  <div className="space-y-4 mb-8">
-                    {/* <div className="flex items-start gap-3">
-                      <div className="min-w-[20px]">
-                        <img src="/assets/projectName.png" alt="project icon" />
-                      </div>
-                      <span className="text-sm lg:text-base font-medium text-theme-secondary-text">
-                        {fund?.fundType}
-                      </span>
-                    </div> */}
-
-                    <div className="flex items-start gap-3 ">
+                  <div className="space-y-4 mb-8 min-h-[140px]">
+                    <div className="flex items-start gap-3">
                       <div className="min-w-[20px]">
                         <img
                           src="/assets/description.png"
                           alt="description icon"
                         />
                       </div>
-                      <span className="text-sm lg:text-base font-medium text-theme-secondary-text">
-                        {fund?.fundDescription}
+                      <span className="text-sm lg:text-base font-medium text-theme-secondary-text line-clamp-5">
+                        {fund?.fundDescription || "No description provided."}
                       </span>
                     </div>
                   </div>
+
 
                   {/* Horizontal Separator */}
                   <div className="border-t border-theme-sidebar-accent mb-8"></div>

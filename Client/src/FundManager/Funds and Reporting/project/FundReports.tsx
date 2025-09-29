@@ -8,6 +8,7 @@ import ReportDetailsModal from '../../../Components/Modal/ReportDetailsModal';
 import { EnhancedYearQuarterDropdowns } from '../../../Components/Modal/EnhancedYearQuarterDropdowns';
 import type { FundDetail } from '../../../Redux/features/Funds/fundsSlice';
 import { useAppSelector } from '../../../Redux/hooks';
+import { formatDateToDDMMYYYY } from '../../../utils/dateUtils';
 
 interface FormData {
   projectName: string;
@@ -155,9 +156,7 @@ const FundReports = () => {
     });
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-GB');
-  };
+
   const handleViewReport = (report: FundReport) => {
     setSelectedReport(report);
     setIsModalOpen(true);
@@ -251,7 +250,7 @@ const FundReports = () => {
       sortable: false,
       align: 'left',
       render: (value: string) => {
-        const formattedDate = formatDate(value);
+        const formattedDate = formatDateToDDMMYYYY(value);
         return (
           <div className="truncate" title={formattedDate}>
             {formattedDate}
@@ -562,7 +561,7 @@ const FundReports = () => {
           pagination={paginationInfo}
           onPageChange={handlePageChange}
           loading={isLoading}
-          emptyMessage="No capital calls found"
+          emptyMessage="No Fund Reports found"
           className="mb-8"
         />
         <ReportDetailsModal

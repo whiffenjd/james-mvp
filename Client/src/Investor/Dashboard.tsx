@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
+import { formatDateToDDMMYYYY } from "../utils/dateUtils";
 
 const InvestorDashboard = () => {
   const { user } = useAuth();
@@ -94,7 +95,7 @@ const InvestorDashboard = () => {
                           Joined on
                         </dt>
                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                          {new Date(user.createdAt).toLocaleDateString()}
+                          {formatDateToDDMMYYYY(user?.createdAt)}
                         </dd>
                       </div>
                     </dl>

@@ -7,6 +7,7 @@ import { useInvestorFunds } from "../../FundManager/hooks/useInvestorFunds";
 import { useAppSelector } from "../../Redux/hooks";
 import type { InvestorFundSummary } from "../../API/Endpoints/Funds/funds";
 import RestrictedAccessMessage from "../../Components/RestrictedAccessMessage";
+import { formatDateToDDMMYYYY } from "../../utils/dateUtils";
 
 const FundsAndReportingInvestors: React.FC = () => {
   const [fundsData, setFundsData] = useState<InvestorFundSummary[]>([]);
@@ -97,7 +98,7 @@ const FundsAndReportingInvestors: React.FC = () => {
                       </span>
                       <span className="text-sm lg:text-base font-semibold text-gray-800">
                         {/* {fund.createdAt} */}
-                        {new Date(fund.createdAt).toLocaleDateString("en-US")}
+                        {formatDateToDDMMYYYY(fund?.createdAt)}
                       </span>
                     </div>
                   </div>

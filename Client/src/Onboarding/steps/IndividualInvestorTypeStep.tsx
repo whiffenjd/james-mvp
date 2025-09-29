@@ -29,7 +29,7 @@ export function IndividualInvestorTypeStep() {
         <div className="space-y-6">
             <StepHeader
                 step={3}
-                title="Investor Categorization"
+                title="Investor Categorisation"
                 subtitle="Determine your investor classification"
             />
 

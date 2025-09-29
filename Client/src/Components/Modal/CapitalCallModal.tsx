@@ -7,6 +7,7 @@ import type { Distribution as DistType } from "../../API/Endpoints/Funds/distrib
 import type { FundDetail } from "../../Redux/features/Funds/fundsSlice";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { formatDateToDDMMYYYY } from "../../utils/dateUtils";
 
 type FundTransaction = CapitalCall | DistType; // Union type for both entities
 
@@ -258,7 +259,7 @@ export default function FundTransactionModal({
                         {mode === "view" ? (
                             <div className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center">
                                 <span className="text-gray-900">
-                                    {selectedDate?.toLocaleDateString() || "No date selected"}
+                                    {selectedDate ? formatDateToDDMMYYYY(selectedDate) : "No date selected"}
                                 </span>
                             </div>
                         ) : (
@@ -266,7 +267,7 @@ export default function FundTransactionModal({
                                 <DatePicker
                                     selected={selectedDate}
                                     onChange={handleDateChange}
-                                    dateFormat="MMMM d, yyyy"
+                                    dateFormat="dd/MM/yyyy"
                                     placeholderText="Select Date"
                                     className={`w-full h-12 pl-4 pr-10 border rounded-lg transition-colors ${errors.date
                                         ? "border-red-500"

@@ -2,6 +2,7 @@ import React from 'react';
 import { X, FileText, Calendar, Upload, Eye, Edit2, Download } from 'lucide-react';
 import { useDownloadTaxReport } from '../../API/Endpoints/TaxReports/taxReports';
 import { EnhancedYearQuarterDropdowns } from '../../Components/Modal/EnhancedYearQuarterDropdowns';
+import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 
 // Types
 interface TaxReport {
@@ -219,16 +220,6 @@ export const ViewModal: React.FC<ViewModalProps> = ({
     const { mutate: downloadReport, isPending } = useDownloadTaxReport();
     if (!isOpen || !report) return null;
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
-
     const formatQuarter = (quarter: string) => {
         const quarterMap = {
             Quarter1: "Q1",
@@ -334,11 +325,11 @@ export const ViewModal: React.FC<ViewModalProps> = ({
                     {/* Metadata */}
                     <div className="bg-theme-card-hover rounded-xl p-4 space-y-2">
                         <div className="text-sm text-theme-secondary-text">
-                            Created: {formatDate(report.createdAt)}
+                            Created: {formatDateToDDMMYYYY(report.createdAt)}
                         </div>
                         {report.updatedAt !== report.createdAt && (
                             <div className="text-sm text-theme-secondary-text">
-                                Updated: {formatDate(report.updatedAt)}
+                                Updated: {formatDateToDDMMYYYY(report.updatedAt)}
                             </div>
                         )}
                     </div>

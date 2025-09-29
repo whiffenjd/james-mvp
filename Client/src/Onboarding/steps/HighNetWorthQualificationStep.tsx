@@ -56,7 +56,7 @@ export function HighNetWorthQualificationStep() {
     <div className="p-2 mx-auto space-y-8">
       <StepHeader
         step={4}
-        title="Investor Categorization"
+        title="Investor Categorisation"
         subtitle="Determine your investor classification"
       />
       <div>
@@ -116,12 +116,11 @@ export function HighNetWorthQualificationStep() {
                   })}
                   placeholder="e.g. 100000"
                   className={`w-full p-2 border rounded outline-none focus:ring-2 focus:ring-[#2FB5B4] 
-                                        ${
-                                          errors.highNetWorthQualification
-                                            ?.incomeAmount
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                        }`}
+                                        ${errors.highNetWorthQualification
+                      ?.incomeAmount
+                      ? "border-red-500"
+                      : "border-gray-300"
+                    }`}
                 />
               </div>
               {errors.highNetWorthQualification?.incomeAmount && (
@@ -184,12 +183,11 @@ export function HighNetWorthQualificationStep() {
                 })}
                 placeholder="Specify your net assets (£), nearest £100,000"
                 className={`w-full p-2 border rounded outline-none focus:ring-2 focus:ring-[#2FB5B4] 
-                                    ${
-                                      errors.highNetWorthQualification
-                                        ?.netAssetsAmount
-                                        ? "border-red-500"
-                                        : "border-gray-300"
-                                    }`}
+                                    ${errors.highNetWorthQualification
+                    ?.netAssetsAmount
+                    ? "border-red-500"
+                    : "border-gray-300"
+                  }`}
               />
               {errors.highNetWorthQualification?.netAssetsAmount && (
                 <p className="text-sm text-red-600 mt-1">

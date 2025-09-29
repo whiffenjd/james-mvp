@@ -2,6 +2,7 @@ import React from 'react';
 import { X, CreditCard, } from 'lucide-react';
 import type { CapitalCall } from '../../API/Endpoints/Funds/capitalCall';
 import type { Distribution as DistType } from '../../API/Endpoints/Funds/distributions';
+import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 
 type FundTransaction = CapitalCall | DistType;
 
@@ -26,14 +27,6 @@ export const FundTransactionViewModal: React.FC<FundTransactionViewModalProps> =
     entityType,
 }) => {
     if (!isOpen || !transaction) return null;
-
-    const formatDate = (dateString: string): string => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
 
     const formatAmount = (amount: string): string => {
         return new Intl.NumberFormat('en-US', {
@@ -106,7 +99,7 @@ export const FundTransactionViewModal: React.FC<FundTransactionViewModalProps> =
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Date
                                 </label>
-                                <p className="text-gray-900">{formatDate(transaction.date)}</p>
+                                <p className="text-gray-900">{formatDateToDDMMYYYY(transaction.date)}</p>
                             </div>
                         </div>
                     </div>

@@ -7,6 +7,7 @@ import { useAppSelector } from "../../Redux/hooks";
 import BasicLoader from "../../Components/Loader/BasicLoader";
 import { useAuth } from "../../Context/AuthContext";
 import type { FundSummary } from "../../Redux/features/Funds/fundsSlice";
+import { formatDateToDDMMYYYY } from "../../utils/dateUtils";
 
 const FundsAndReporting: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -121,7 +122,7 @@ const FundsAndReporting: React.FC = () => {
                       </span>
                       <span className="text-sm lg:text-base font-semibold text-gray-800">
                         {/* {fund.createdAt} */}
-                        {new Date(fund?.createdAt).toLocaleDateString("en-US")}
+                        {formatDateToDDMMYYYY(fund?.createdAt)}
                       </span>
                     </div>
                   </div>

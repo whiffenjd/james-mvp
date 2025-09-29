@@ -159,7 +159,7 @@ export function InvestorDetailsModal({
           2
         </div>
         <h3 className="text-lg font-semibold text-gray-900">
-          Investor Categorization
+          Investor Categorisation
         </h3>
       </div>
       <div className="ml-11 space-y-6">
@@ -543,7 +543,7 @@ export function InvestorDetailsModal({
                 currentStep={2}
                 steps={[
                   "Jurisdiction Selection",
-                  "Investor Categorization",
+                  "Investor Categorisation",
                   "AML/KYC Documents",
                 ]}
               />

@@ -10,6 +10,7 @@ import type {
 } from "../../../Redux/features/Funds/fundsSlice";
 import { HistoryTimeline } from "../../../Components/HistoryTimeline";
 import { useAuth } from "../../../Context/AuthContext";
+import { formatDateToDDMMYYYY } from "../../../utils/dateUtils";
 
 const Overview = () => {
   const { id } = useParams<{ id: string }>();
@@ -73,7 +74,7 @@ const Overview = () => {
             </h2>
             <span className="text-sm text-theme-secondary-text font-semibold font-poppins">
               {fundData?.createdAt
-                ? new Date(fundData.createdAt).toLocaleDateString('en-US')
+                ? formatDateToDDMMYYYY(fundData?.createdAt)
                 : 'N/A'}
             </span>
           </div>

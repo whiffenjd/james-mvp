@@ -1,5 +1,6 @@
 import React from 'react';
 import { Download, X } from 'lucide-react';
+import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 
 interface Report {
     id: string;
@@ -29,14 +30,6 @@ const ReportDetailsModal: React.FC<ReportDetailsModalProps> = ({
 }) => {
     if (!isOpen || !selectedReport) return null;
 
-    const formatDate = (dateString: string): string => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-    };
 
     const handleDownload = (): void => {
         if (onDownload && selectedReport) {
@@ -70,7 +63,7 @@ const ReportDetailsModal: React.FC<ReportDetailsModalProps> = ({
 
                             <div className="text-lg flex justify-between text-[#2C2C2EE5]   rounded-lg">
                                 {selectedReport.projectName} <span>
-                                    {formatDate(selectedReport.createdAt)}
+                                    {formatDateToDDMMYYYY(selectedReport.createdAt)}
                                 </span>
                             </div>
                             {/* Fund Manager Name (second line) */}

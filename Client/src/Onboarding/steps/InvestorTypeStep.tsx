@@ -26,7 +26,7 @@ export function InvestorTypeStep() {
 
             <StepHeader
                 step={2}
-                title="Investor Categorization"
+                title="Investor Categorisation"
                 subtitle="Determine your investor classification"
             />
 

@@ -11,6 +11,7 @@ import { Document, Page, pdfjs } from "react-pdf";
 import type { InvestorFundSummary } from "../../API/Endpoints/Funds/funds";
 import { PDFDocument } from "pdf-lib";
 import RestrictedAccessMessage from "../../Components/RestrictedAccessMessage";
+import DatePicker from "react-datepicker";
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
 
 interface Placement {
@@ -40,6 +41,7 @@ const SubscriptionDocuments = () => {
   const [mode, setMode] = useState<"signature" | "date" | null>(null);
   const [placements, setPlacements] = useState<PagePlacement[]>([]);
   const [signatureSize, setSignatureSize] = useState<number>(0.5);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [dateFontSize, setDateFontSize] = useState<number>(12);
   const [dateText, setDateText] = useState<string>(new Date().toLocaleDateString());
   const [dragging, setDragging] = useState<{ index: number; type: "signature" | "date" } | null>(null);
@@ -423,22 +425,16 @@ const SubscriptionDocuments = () => {
 
 
   const [showSignaturePad, setShowSignaturePad] = useState(false)
-  const [showDatePicker, setShowDatePicker] = useState(false)
 
 
-  const formatDateForInput = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+
+
+
+  const handleDateChange = (date: Date | null) => {
+    if (!date) return;
+    setSelectedDate(date);
+    setDateText(date.toLocaleDateString("en-GB")); // dd/MM/yyyy (UK format)
   };
-
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const date = new Date(e.target.value)
-    setDateText(date.toLocaleDateString())
-  }
   if (user?.onboardingStatus?.status === 'complete_later') {
     return (<RestrictedAccessMessage />)
   }
@@ -461,13 +457,13 @@ const SubscriptionDocuments = () => {
             setPlacements([])
             setMode(null)
             setShowSignaturePad(false)
-            setShowDatePicker(false)
+
           }}
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[40px] w-[95%] max-w-7xl max-h-[98vh] relative p-8 font-poppins flex"
+            className="bg-white rounded-[40px] w-[95%] max-w-7xl max-h-[95vh] relative px-8 font-poppins flex overflow-y-auto py-4"
           >
             <button
               onClick={() => {
@@ -477,7 +473,7 @@ const SubscriptionDocuments = () => {
                 setPlacements([])
                 setMode(null)
                 setShowSignaturePad(false)
-                setShowDatePicker(false)
+
               }}
               className="p-2 hover:bg-gray-100 rounded-full absolute right-5 top-5 z-10 transition-colors"
             >
@@ -615,35 +611,26 @@ const SubscriptionDocuments = () => {
                       </div>
 
                       <div className="space-y-4">
+                        {/* Date Picker */}
                         <div>
-                          <label className="block text-sm font-medium mb-2 text-theme-sidebar-accent">Select Date</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="date"
-                              value={formatDateForInput(dateText)}
-                              onChange={handleDateChange}
-                              className="flex-1 p-2 border border-theme-sidebar-accent rounded-md text-sm focus:outline-none focus:ring-2 "
-                            />
-                            <button
-                              onClick={() => setShowDatePicker(true)}
-                              className="px-3 py-2 bg-theme-sidebar-accent text-white rounded  transition-colors"
-                            >
-                              <Calendar className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-theme-sidebar-accent">Custom Date Text</label>
-                          <input
-                            type="text"
-                            value={dateText}
-                            onChange={(e) => setDateText(e.target.value)}
-                            className="w-full p-2 border border-theme-sidebar-accent rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-theme-sidebar-accent "
-                            placeholder="Enter custom date format"
+                          <label className="block text-sm font-medium mb-2 text-theme-sidebar-accent">
+                            Select Date
+                          </label>
+                          <DatePicker
+                            selected={selectedDate}
+                            onChange={handleDateChange}
+                            dateFormat="dd/MM/yyyy"
+                            placeholderText="Select Date"
+                            className="w-full p-2 border border-theme-sidebar-accent rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-theme-sidebar-accent"
+                            wrapperClassName="w-full"
+                            onKeyDown={(e) => e?.preventDefault()} // block typing
+                            onChangeRaw={(e) => e?.preventDefault()} // block manual changes
                           />
                         </div>
 
+
+
+                        {/* Font Size */}
                         <div>
                           <label className="block text-sm font-medium mb-2 text-theme-sidebar-accent">
                             Font Size: {dateFontSize}px
@@ -837,7 +824,7 @@ const SubscriptionDocuments = () => {
       {/* Signature Pad Popup */}
       {showSignaturePad && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70]">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-800">Create Your Signature</h3>
               <button
@@ -883,69 +870,7 @@ const SubscriptionDocuments = () => {
         </div>
       )}
 
-      {/* Date Picker Popup */}
-      {showDatePicker && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70]">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Select Date</h3>
-              <button
-                onClick={() => setShowDatePicker(false)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-600" />
-              </button>
-            </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">Choose Date</label>
-                <input
-                  type="date"
-                  value={formatDateForInput(dateText)}
-                  onChange={handleDateChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">Quick Options</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => {
-                      setDateText(new Date().toLocaleDateString())
-                      setShowDatePicker(false)
-                    }}
-                    className="p-2 text-sm bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
-                  >
-                    Today
-                  </button>
-                  <button
-                    onClick={() => {
-                      const tomorrow = new Date()
-                      tomorrow.setDate(tomorrow.getDate() + 1)
-                      setDateText(tomorrow.toLocaleDateString())
-                      setShowDatePicker(false)
-                    }}
-                    className="p-2 text-sm bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
-                  >
-                    Tomorrow
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                onClick={() => setShowDatePicker(false)}
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

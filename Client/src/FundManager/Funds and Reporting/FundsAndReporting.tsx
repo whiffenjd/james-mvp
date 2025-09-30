@@ -70,7 +70,8 @@ const FundsAndReporting: React.FC = () => {
                 </div>
 
                 {/* Card */}
-                <div className=" rounded-3xl border-2 border-theme-sidebar-accent p-6 pt-8 shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col justify-between">
+                {/* Card */}
+                <div className="rounded-3xl border-2 border-theme-sidebar-accent p-6 pt-8 shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col">
                   {/* Card Title */}
                   <div className="text-center mb-6">
                     <h2 className="text-base lg:text-xl font-poppins font-medium text-theme-primary-text">
@@ -79,7 +80,7 @@ const FundsAndReporting: React.FC = () => {
                   </div>
 
                   {/* Project Details */}
-                  <div className="space-y-4 mb-8 min-h-[140px]">
+                  <div className="space-y-4 mb-6">
                     <div className="flex items-start gap-3">
                       <div className="min-w-[20px]">
                         <img
@@ -87,48 +88,49 @@ const FundsAndReporting: React.FC = () => {
                           alt="description icon"
                         />
                       </div>
-                      <span className="text-sm lg:text-base font-medium text-theme-secondary-text line-clamp-5">
+                      <span className="text-sm lg:text-base font-medium text-theme-secondary-text line-clamp-4">
                         {fund?.fundDescription || "No description provided."}
                       </span>
                     </div>
                   </div>
 
+                  {/* Push everything below to bottom */}
+                  <div className="mt-auto">
+                    {/* Horizontal Separator */}
+                    <div className="border-t border-theme-sidebar-accent mb-6"></div>
 
-                  {/* Horizontal Separator */}
-                  <div className="border-t border-theme-sidebar-accent mb-8"></div>
+                    {/* Fund Statistics */}
+                    <div className="space-y-4 mb-6">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm lg:text-base font-medium text-gray-700">
+                          Total Investors
+                        </span>
+                        <span className="text-sm lg:text-base font-semibold text-gray-800">
+                          {fund?.investorCount}
+                        </span>
+                      </div>
 
-                  {/* Fund Statistics */}
-                  <div className="space-y-4 mb-8">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm lg:text-base font-medium text-gray-700">
-                        Total Investors
-                      </span>
-                      <span className="text-sm lg:text-base font-semibold text-gray-800">
-                        {fund?.investorCount}
-                      </span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm lg:text-base font-medium text-gray-700">
+                          Date Created
+                        </span>
+                        <span className="text-sm lg:text-base font-semibold text-gray-800">
+                          {formatDateToDDMMYYYY(fund?.createdAt)}
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm lg:text-base font-medium text-gray-700">
-                        Date Created
-                      </span>
-                      <span className="text-sm lg:text-base font-semibold text-gray-800">
-                        {/* {fund.createdAt} */}
-                        {formatDateToDDMMYYYY(fund?.createdAt)}
-                      </span>
-                    </div>
+                    {/* View Details Button */}
+                    <button
+                      onClick={() => navigate(`../project/${fund.id}`)}
+                      className="w-full bg-theme-sidebar-accent text-white py-3 px-4 rounded-2xl text-sm lg:text-base font-medium transition-colors duration-200"
+                    >
+                      View Details
+                    </button>
                   </div>
-
-                  {/* View Details Button */}
-                  <button
-                    onClick={() => {
-                      navigate(`../project/${fund.id}`);
-                    }}
-                    className="w-full bg-theme-sidebar-accent text-white py-3 px-4 rounded-2xl text-sm lg:text-base font-medium transition-colors duration-200"
-                  >
-                    View Details
-                  </button>
                 </div>
+
+
               </div>
             ))}
           </>

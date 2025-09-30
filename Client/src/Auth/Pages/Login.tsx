@@ -107,6 +107,7 @@ const Login = () => {
   };
 
   return (
+
     <div
       className={`bg-bgDark h-screen w-full flex items-center justify-center flex-col before:absolute before:inset-0 before:bg-[url('/assets/bg.png')] before:bg-cover before:bg-[center_-200px] before:bg-no-repeat before:content-[''] before:z-0 z-0`}
     >

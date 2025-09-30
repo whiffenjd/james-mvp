@@ -8,6 +8,9 @@ export const CreateTaxReportSchema = z.object({
     errorMap: () => ({ message: 'Invalid quarter value' }),
   }),
   createdBy: z.string().uuid('Valid UUID is required for createdBy'),
+  investorIds: z
+    .union([z.array(z.string().uuid('Valid UUID is required for investor ID')), z.literal('all')])
+    .optional(),
 });
 
 export const UpdateTaxReportSchema = CreateTaxReportSchema.partial({
@@ -15,7 +18,8 @@ export const UpdateTaxReportSchema = CreateTaxReportSchema.partial({
   reportURL: true,
   year: true,
   quarter: true,
-  createdBy: true, // make it optional here
+  createdBy: true,
+  investorIds: true,
 }).extend({
   id: z.string().uuid('Valid UUID is required for id'),
 });

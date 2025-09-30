@@ -15,3 +15,13 @@ export const taxReports = pgTable('tax_reports', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+// Junction table for tax reports and investors
+export const taxReportInvestors = pgTable('tax_report_investors', {
+  taxReportId: uuid('tax_report_id')
+    .notNull()
+    .references(() => taxReports.id, { onDelete: 'cascade' }),
+  investorId: uuid('investor_id')
+    .notNull()
+    .references(() => UsersTable.id, { onDelete: 'cascade' }),
+});

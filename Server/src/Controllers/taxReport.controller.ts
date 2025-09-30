@@ -13,9 +13,9 @@ import {
 } from '../validators/taxReport.schema';
 import { sendSuccessResponse, sendErrorResponse } from '../Utils/response';
 import { s3UploadDuplicate } from '../Utils/s3UploadDuplicate';
-import { UsersTable } from '../db/schema';
+import { taxReportInvestors, taxReports, UsersTable } from '../db/schema';
 import { db } from '../db/DbConnection';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 export const createTaxReport = async (req: Request, res: Response) => {
   try {
@@ -34,6 +34,7 @@ export const createTaxReport = async (req: Request, res: Response) => {
       ...req.body,
       reportURL,
       createdBy,
+      investorIds: req.body.investorIds ? JSON.parse(req.body.investorIds) : [],
     });
     if (!parsed.success) {
       return sendErrorResponse(res, parsed.error.message, 400);
@@ -74,7 +75,15 @@ export const getTaxReports = async (req: Request, res: Response) => {
       return sendErrorResponse(res, 'Unauthorized to view tax reports', 403);
     }
 
-    const taxReports = await getTaxReportsService({ creatorId, page, limit, year, quarter });
+    const taxReports = await getTaxReportsService({
+      creatorId,
+      userId,
+      role,
+      page,
+      limit,
+      year,
+      quarter,
+    });
     return sendSuccessResponse(res, 'Tax reports fetched successfully', 200, taxReports);
   } catch (error) {
     return sendErrorResponse(
@@ -102,6 +111,7 @@ export const updateTaxReport = async (req: Request, res: Response) => {
       id,
       ...req.body,
       reportURL,
+      investorIds: req.body.investorIds ? JSON.parse(req.body.investorIds) : undefined,
     });
 
     if (!parsed.success) {
@@ -137,13 +147,33 @@ export const deleteTaxReport = async (req: Request, res: Response) => {
     );
   }
 };
+
 export const downloadTaxReport = async (req: Request, res: Response) => {
   try {
-    const { id: userId } = req.user!;
+    const { id: userId, role } = req.user!;
     const { id } = req.params;
 
-    const signedUrl = await getReportDownloadUrl(id);
+    // Check if the user is authorized to download the report
+    const [report] = await db.select().from(taxReports).where(eq(taxReports.id, id));
+    if (!report) {
+      return sendErrorResponse(res, 'Tax report not found', 404);
+    }
 
+    if (role === 'investor') {
+      const [assignment] = await db
+        .select()
+        .from(taxReportInvestors)
+        .where(
+          and(eq(taxReportInvestors.taxReportId, id), eq(taxReportInvestors.investorId, userId)),
+        );
+      if (!assignment && report.createdBy !== userId) {
+        return sendErrorResponse(res, 'Unauthorized to download this tax report', 403);
+      }
+    } else if (role !== 'fundManager' && role !== 'admin') {
+      return sendErrorResponse(res, 'Unauthorized to download tax reports', 403);
+    }
+
+    const signedUrl = await getReportDownloadUrl(id);
     return sendSuccessResponse(res, 'Download URL generated successfully', 200, { url: signedUrl });
   } catch (error) {
     return sendErrorResponse(

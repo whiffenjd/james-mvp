@@ -48,6 +48,8 @@ function TaxReportsPage() {
         year: "",
         quarter: "Quarter1" as "Quarter1" | "Quarter2" | "Quarter3" | "Quarter4",
         document: null as File | null,
+        investorIds: [],
+
     });
 
     // Get user role (replace with your actual implementation)
@@ -216,35 +218,34 @@ function TaxReportsPage() {
 
     const handleFormSubmit = () => {
         if (!formData.projectName || !formData.year || (!formData.document && !editingReport)) {
-            toast.error("Please fill all required fields and select a document");
+            toast.error('Please fill all required fields and select a document');
             return;
         }
 
         if (editingReport) {
-            // ✅ Update payload: document is optional
             const payload: UpdateTaxReportPayload = {
                 projectName: formData.projectName,
                 year: formData.year,
                 quarter: formData.quarter,
                 document: formData.document ?? undefined,
+                investorIds: formData.investorIds,
             };
 
             updateTaxReport.mutate(
                 { id: editingReport.id, data: payload },
                 {
                     onSuccess: () => {
-                        toast.success("Tax report updated successfully!");
+                        toast.success('Tax report updated successfully!');
                         setShowUploadModal(false);
                         setEditingReport(null);
-                        setFormData({ projectName: "", year: "", quarter: "Quarter1", document: null });
+                        setFormData({ projectName: '', year: '', quarter: 'Quarter1', document: null, investorIds: [] });
                     },
                     onError: (err) => toast.error(`Update failed! ${err.message}`),
                 }
             );
         } else {
-            // ✅ Create payload: document is required
             if (!formData.document) {
-                toast.error("Please upload a document before creating a tax report");
+                toast.error('Please upload a document before creating a tax report');
                 return;
             }
 
@@ -253,19 +254,19 @@ function TaxReportsPage() {
                 year: formData.year,
                 quarter: formData.quarter,
                 document: formData.document,
+                investorIds: formData.investorIds,
             };
 
             createTaxReport.mutate(payload, {
                 onSuccess: () => {
-                    toast.success("Tax report created successfully!");
+                    toast.success('Tax report created successfully!');
                     setShowUploadModal(false);
-                    setFormData({ projectName: "", year: "", quarter: "Quarter1", document: null });
+                    setFormData({ projectName: '', year: '', quarter: 'Quarter1', document: null, investorIds: [] });
                 },
                 onError: (err) => toast.error(`Creation failed! ${err.message}`),
             });
         }
     };
-
     const isSubmitting = isLoading || createTaxReport.isPending || updateTaxReport.isPending || deleteTaxReport.isPending;
     if (user?.onboardingStatus?.status === 'complete_later') {
         return (<RestrictedAccessMessage />)

@@ -23,6 +23,7 @@ export interface TaxReport {
   quarter: "Quarter1" | "Quarter2" | "Quarter3" | "Quarter4";
   createdAt: string;
   updatedAt: string;
+  investors: { id: string; name: string }[];
 }
 
 export interface PaginatedTaxReportResponse {
@@ -40,6 +41,7 @@ export interface CreateTaxReportPayload {
   year: string;
   quarter: "Quarter1" | "Quarter2" | "Quarter3" | "Quarter4";
   document: File;
+  investorIds?: string[] | "all";
 }
 
 export interface UpdateTaxReportPayload {
@@ -47,6 +49,7 @@ export interface UpdateTaxReportPayload {
   year?: string;
   quarter?: "Quarter1" | "Quarter2" | "Quarter3" | "Quarter4";
   document?: File;
+  investorIds?: string[] | "all";
 }
 
 // ---------- API Hooks ----------
@@ -69,11 +72,13 @@ export const useTaxReports = (params: UseTaxReportsParams = {}) =>
       params.quarter ?? null,
     ],
     queryFn: async () => {
-      // Map quarter values from Q1-Q4 to Quarter1-Quarter4
+      // Map quarter values from Q1-Q4 to Quarter1-Quarter4 if needed
       const mappedParams = {
         ...params,
         quarter: params.quarter
-          ? `Quarter${params.quarter.replace("Q", "")}`
+          ? params.quarter.startsWith("Quarter")
+            ? params.quarter
+            : `Quarter${params.quarter.replace("Q", "")}`
           : undefined,
       };
       const res = await axiosPrivate.get("/tax-report", {
@@ -95,6 +100,9 @@ export const useCreateTaxReport = () => {
       formData.append("year", payload.year);
       formData.append("quarter", payload.quarter);
       formData.append("document", payload.document);
+      if (payload.investorIds) {
+        formData.append("investorIds", JSON.stringify(payload.investorIds));
+      }
 
       const res = await axiosPrivate.post("/tax-report/create", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -121,6 +129,9 @@ export const useUpdateTaxReport = () => {
       if (data.year) formData.append("year", data.year);
       if (data.quarter) formData.append("quarter", data.quarter);
       if (data.document) formData.append("document", data.document);
+      if (data.investorIds) {
+        formData.append("investorIds", JSON.stringify(data.investorIds));
+      }
 
       const res = await axiosPrivate.put(`/tax-report/update/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },

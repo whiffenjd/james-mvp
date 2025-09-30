@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, FileText, Calendar, Upload, Eye, Edit2, Download } from 'lucide-react';
 import { useDownloadTaxReport } from '../../API/Endpoints/TaxReports/taxReports';
 import { EnhancedYearQuarterDropdowns } from '../../Components/Modal/EnhancedYearQuarterDropdowns';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
+import { useInvestors } from '../hooks/useInvestors';
 
 // Types
 interface TaxReport {
@@ -14,6 +15,8 @@ interface TaxReport {
     quarter: 'Quarter1' | 'Quarter2' | 'Quarter3' | 'Quarter4';
     createdAt: string;
     updatedAt: string;
+    investors: { id: string; name: string }[];
+
 }
 
 interface FormData {
@@ -21,6 +24,12 @@ interface FormData {
     year: string;
     quarter: 'Quarter1' | 'Quarter2' | 'Quarter3' | 'Quarter4';
     document: File | null;
+    investorIds: string[] | 'all';
+
+}
+interface InvestorOption {
+    id: string;
+    name: string;
 }
 
 // Upload/Edit Modal Component
@@ -43,6 +52,31 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     onSubmit,
     isSubmitting,
 }) => {
+    const { investors: investorsData } = useInvestors();
+    const [investorOptions, setInvestorOptions] = useState<InvestorOption[]>([]);
+
+    useEffect(() => {
+        if (investorsData) {
+            const options = investorsData.map((investor) => ({
+                id: investor.id,
+                name: investor.name,
+            }));
+            setInvestorOptions(options);
+        }
+    }, [investorsData]);
+
+    useEffect(() => {
+        if (editingReport && editingReport.investors) {
+            const allInvestorsSelected = investorOptions.length > 0 &&
+                editingReport.investors.length === investorOptions.length &&
+                investorOptions.every(opt => editingReport.investors.some(inv => inv.id === opt.id));
+            setFormData({
+                ...formData,
+                investorIds: allInvestorsSelected ? 'all' : editingReport.investors.map(inv => inv.id),
+            });
+        }
+    }, [editingReport, investorOptions]);
+
     if (!isOpen) return null;
 
     const handleClose = () => {
@@ -52,10 +86,10 @@ export const UploadModal: React.FC<UploadModalProps> = ({
             year: '',
             quarter: 'Quarter1',
             document: null,
+            investorIds: [],
         });
     };
 
-    // Map between Q1/Q2/Q3/Q4 and Quarter1/Quarter2/Quarter3/Quarter4
     const quarterToEnhancedFormat = (quarter: FormData['quarter']): string => {
         const quarterMap: Record<FormData['quarter'], string> = {
             Quarter1: 'Q1',
@@ -76,13 +110,22 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         return quarterMap[quarter] || 'Quarter1';
     };
 
-    // Handle input changes for the enhanced dropdown
     const handleInputChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData({
             ...formData,
             [name]: name === 'quarter' ? enhancedToQuarterFormat(value) : value,
         });
+    };
+
+    const handleInvestorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        if (value === 'all') {
+            setFormData({ ...formData, investorIds: 'all' });
+        } else {
+            const selectedIds = Array.from(e.target.selectedOptions).map(option => option.value);
+            setFormData({ ...formData, investorIds: selectedIds });
+        }
     };
 
     return (
@@ -119,10 +162,9 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                         </label>
                         <input
                             type="text"
+                            name="projectName"
                             value={formData.projectName}
-                            onChange={(e) =>
-                                setFormData({ ...formData, projectName: e.target.value })
-                            }
+                            onChange={handleInputChange}
                             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-theme-sidebar-accent focus:border-transparent transition-all text-theme-primary-text"
                             placeholder="Enter project name"
                             required
@@ -130,7 +172,6 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                         />
                     </div>
 
-                    {/* Replace Year and Quarter inputs with EnhancedYearQuarterDropdowns */}
                     <EnhancedYearQuarterDropdowns
                         formData={{
                             year: formData.year,
@@ -138,6 +179,29 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                         }}
                         handleInputChange={handleInputChange}
                     />
+
+                    <div>
+                        <label className="block text-sm font-medium text-theme-secondary-text mb-2">
+                            Assign to Investors
+                        </label>
+                        <select
+                            multiple
+                            value={Array.isArray(formData.investorIds) ? formData.investorIds : formData.investorIds === 'all' ? ['all'] : []}
+                            onChange={handleInvestorChange}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-theme-sidebar-accent focus:border-transparent transition-all text-theme-primary-text"
+                            disabled={isSubmitting}
+                        >
+                            <option value="all">All Investors</option>
+                            {investorOptions.map((investor) => (
+                                <option key={investor.id} value={investor.id}>
+                                    {investor.name}
+                                </option>
+                            ))}
+                        </select>
+                        <p className="text-sm text-theme-secondary-text mt-1">
+                            Hold Ctrl/Cmd or Shift to select multiple investors
+                        </p>
+                    </div>
 
                     <div>
                         <label className="block text-sm font-medium text-theme-secondary-text mb-2">
@@ -153,8 +217,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                                     })
                                 }
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-theme-sidebar-accent focus:border-transparent transition-all 
-                  file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold 
-                  file:bg-theme-sidebar-accent/10 file:text-theme-sidebar-accent hover:file:bg-theme-sidebar-accent/20"
+                                file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold 
+                                file:bg-theme-sidebar-accent/10 file:text-theme-sidebar-accent hover:file:bg-theme-sidebar-accent/20"
                                 required={!editingReport}
                                 disabled={isSubmitting}
                                 accept=".pdf"
@@ -203,7 +267,6 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         </div>
     );
 };
-
 // View Modal Component (Only for user.role)
 interface ViewModalProps {
     isOpen: boolean;

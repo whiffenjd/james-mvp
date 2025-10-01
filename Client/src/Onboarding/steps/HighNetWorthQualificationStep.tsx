@@ -6,6 +6,7 @@ import React, { useEffect } from "react";
 import { StepHeader } from "../StepHeader";
 import { useState } from "react";
 import { SignatureModal } from "../../Components/Modal/SignatureModal";
+import { useTheme } from "../../Context/ThemeContext";
 
 export function HighNetWorthQualificationStep() {
   const { state, updateFormData, nextStep, prevStep } = useOnboarding();
@@ -32,7 +33,7 @@ export function HighNetWorthQualificationStep() {
 
   const watched = watch("highNetWorthQualification");
   const noneApply = watched?.noneApply === true;
-
+  const { currentTheme } = useTheme();
   // Handle mutually exclusive logic: If "None Apply" is true, reset A and B
   React.useEffect(() => {
     if (noneApply) {
@@ -58,12 +59,19 @@ export function HighNetWorthQualificationStep() {
         step={4}
         title="Investor Categorisation"
         subtitle="Determine your investor classification"
+        currentTheme={currentTheme}
       />
       <div>
-        <h2 className="primary-heading mb-2">
+        <h2
+          className="primary-heading mb-2"
+          style={{ color: currentTheme.primaryText }}
+        >
           High Net Worth Individual Qualification
         </h2>
-        <p className="secondary-heading">
+        <p
+          className="secondary-heading"
+          style={{ color: currentTheme.secondaryText }}
+        >
           If you meet condition <b>A</b> or <b>B</b> below, you may choose to be
           classified as a high net worth individual for the purposes of the
           Financial Services and Markets Act 2000 (Financial Promotion) Order
@@ -73,7 +81,10 @@ export function HighNetWorthQualificationStep() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         {/* (A) Annual income */}
         <div className=" border border-[#979797] rounded-xl p-5 space-y-4">
-          <div className="tertiary-heading">
+          <div
+            className="tertiary-heading"
+            style={{ color: currentTheme.secondaryText }}
+          >
             (A) In the last financial year, did you have an annual income of
             £100,000 or more? Income does NOT include any one-off pension
             withdrawals
@@ -101,7 +112,10 @@ export function HighNetWorthQualificationStep() {
           {/* Input if Yes */}
           {watched?.incomeQualified == "true" && (
             <div className="mt-2">
-              <label className="tertiary-heading">
+              <label
+                className="tertiary-heading"
+                style={{ color: currentTheme.secondaryText }}
+              >
                 Please specify your income (as defined above) to the nearest
                 £10,000 in the last financial year
               </label>
@@ -115,12 +129,23 @@ export function HighNetWorthQualificationStep() {
                     valueAsNumber: true,
                   })}
                   placeholder="e.g. 100000"
-                  className={`w-full p-2 border rounded outline-none focus:ring-2 focus:ring-[#2FB5B4] 
-                                        ${errors.highNetWorthQualification
-                      ?.incomeAmount
-                      ? "border-red-500"
-                      : "border-gray-300"
-                    }`}
+                  className={`w-full p-2 border rounded outline-none focus:ring-2  
+                                        ${
+                                          errors.highNetWorthQualification
+                                            ?.incomeAmount
+                                            ? "border-red-500"
+                                            : "border-gray-300"
+                                        }`}
+                  style={{
+                    // dynamic ring color
+                    boxShadow: `0 0 0 2px transparent`, // default when not focused
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.boxShadow = `0 0 0 2px ${currentTheme.dashboardBackground}`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.boxShadow = `0 0 0 2px transparent`;
+                  }}
                 />
               </div>
               {errors.highNetWorthQualification?.incomeAmount && (
@@ -139,7 +164,10 @@ export function HighNetWorthQualificationStep() {
 
         {/* (B) Net assets */}
         <div className=" border border-[#979797] rounded-xl p-5 space-y-4">
-          <div className="tertiary-heading">
+          <div
+            className="tertiary-heading"
+            style={{ color: currentTheme.secondaryText }}
+          >
             (B) Net assets of £250,000 or more? Net assets do NOT include: your
             home (primary residence), any loan secured on it or any equity
             released from it; your pension (or any pension withdrawals) or any
@@ -171,7 +199,10 @@ export function HighNetWorthQualificationStep() {
           {/* Input if Yes */}
           {watched?.netAssetsQualified === "true" && !noneApply && (
             <div className="mt-2">
-              <label className="tertiary-heading">
+              <label
+                className="tertiary-heading"
+                style={{ color: currentTheme.secondaryText }}
+              >
                 Please specify your net assets (as defined above) to the nearest
                 £100,000 in the last financial year{" "}
               </label>
@@ -183,11 +214,22 @@ export function HighNetWorthQualificationStep() {
                 })}
                 placeholder="Specify your net assets (£), nearest £100,000"
                 className={`w-full p-2 border rounded outline-none focus:ring-2 focus:ring-[#2FB5B4] 
-                                    ${errors.highNetWorthQualification
-                    ?.netAssetsAmount
-                    ? "border-red-500"
-                    : "border-gray-300"
-                  }`}
+                                    ${
+                                      errors.highNetWorthQualification
+                                        ?.netAssetsAmount
+                                        ? "border-red-500"
+                                        : "border-gray-300"
+                                    }`}
+                style={{
+                  // dynamic ring color
+                  boxShadow: `0 0 0 2px transparent`, // default when not focused
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px ${currentTheme.dashboardBackground}`;
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px transparent`;
+                }}
               />
               {errors.highNetWorthQualification?.netAssetsAmount && (
                 <p className="text-sm text-red-600 mt-1">
@@ -205,13 +247,17 @@ export function HighNetWorthQualificationStep() {
 
         {/* (C) None apply */}
         <div className=" border border-[#979797] rounded-xl p-5 space-y-2">
-          <div className="tertiary-heading">(C) None of these apply to me.</div>
+          <div
+            className="tertiary-heading"
+            style={{ color: currentTheme.secondaryText }}
+          >
+            (C) None of these apply to me.
+          </div>
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
               {...register("highNetWorthQualification.noneApply")}
               checked={noneApply}
-              className="accent-[#2FB5B4]"
             />
             <span>Yes</span>
           </label>
@@ -223,9 +269,12 @@ export function HighNetWorthQualificationStep() {
             <input
               type="checkbox"
               {...register("highNetWorthQualification.declarationAccepted")}
-              className="accent-[#2FB5B4] mt-1"
+              className=" mt-1"
             />
-            <div className="tertiary-heading space-y-3">
+            <div
+              className="tertiary-heading space-y-3"
+              style={{ color: currentTheme.secondaryText }}
+            >
               <div>
                 I declare that I have answered yes to A and/or B, and wish to be
                 treated as a high net worth individual.
@@ -266,7 +315,10 @@ export function HighNetWorthQualificationStep() {
         {/* Signature & Date */}
         <div className="flex  gap-6 flex-wrap">
           <div className="flex-1">
-            <label className="block mb-1 font-medium text-gray-800">
+            <label
+              className="block mb-1 font-medium text-gray-800"
+              style={{ color: currentTheme.primaryText }}
+            >
               Signature
             </label>
 
@@ -281,6 +333,7 @@ export function HighNetWorthQualificationStep() {
                   type="button"
                   onClick={() => setSignatureModalOpen(true)}
                   className="text-sm text-[#2FB5B4] underline"
+                  style={{ color: currentTheme.dashboardBackground }}
                 >
                   Edit Signature
                 </button>
@@ -292,8 +345,18 @@ export function HighNetWorthQualificationStep() {
                 required
                 placeholder="Add your Signature"
                 onClick={() => setSignatureModalOpen(true)}
-                className={`w-full p-2 border rounded outline-none focus:ring-2 focus:ring-[#2FB5B4] 
+                className={`w-full p-2 border rounded outline-none focus:ring-2 
         ${errors.signature ? "border-red-500" : "border-gray-300"}`}
+                style={{
+                  // dynamic ring color
+                  boxShadow: `0 0 0 2px transparent`, // default when not focused
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px ${currentTheme.dashboardBackground}`;
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px transparent`;
+                }}
               />
             )}
 
@@ -304,7 +367,12 @@ export function HighNetWorthQualificationStep() {
             )}
           </div>
           <div className="flex-1">
-            <label className="block mb-1 font-medium text-gray-800">Date</label>
+            <label
+              className="block mb-1 font-medium text-gray-800"
+              style={{ color: currentTheme.primaryText }}
+            >
+              Date
+            </label>
             <input
               type="date"
               {...register("signatureDate")}
@@ -327,6 +395,7 @@ export function HighNetWorthQualificationStep() {
           <button
             type="submit"
             className="flex-1 bg-[#2FB5B4] text-white py-3 px-4 rounded-lg hover:bg-[#147574] transition-colors font-medium"
+            style={{ backgroundColor: currentTheme.dashboardBackground }}
           >
             Continue to Document Upload
           </button>
@@ -336,6 +405,7 @@ export function HighNetWorthQualificationStep() {
         isOpen={signatureModalOpen}
         onClose={() => setSignatureModalOpen(false)}
         onSave={handleSignatureSave}
+        currentTheme={currentTheme}
       />
     </div>
   );

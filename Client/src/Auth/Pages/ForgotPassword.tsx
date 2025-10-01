@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { useRequestPasswordReset } from "../../API/Endpoints/Auth/AuthApis";
+import { useTheme } from "../../Context/ThemeContext";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const resetRequestMutation = useRequestPasswordReset();
-
+  const { currentTheme } = useTheme();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -37,16 +38,44 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="bg-bgDark h-screen w-full flex items-center justify-center flex-col before:absolute before:inset-0 before:bg-[url('/assets/bg.png')] before:bg-cover before:bg-[center_-200px] before:bg-no-repeat before:content-[''] before:z-0 z-0">
+    <div className="bg-bgDark h-screen w-full flex items-center justify-center flex-col overflow-hidden">
+      {/* Beautiful 3-color fading gradient from bottom */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          background: `linear-gradient(165deg, 
+        #2C2C2E 10%,
+        ${currentTheme.sidebarAccentText}10 20%,
+        ${currentTheme.sidebarAccentText}20 30%,
+        ${currentTheme.dashboardBackground}60 50%, 
+        ${currentTheme.dashboardBackground}25 45%, 
+        transparent 90%)`,
+        }}
+      />
+
+      {/* Your content here with relative z-index */}
+      <div className="relative z-10">
+        {/* Your login card and other content */}
+      </div>
       <div
         className="w-[590px] bg-white rounded-[20px] flex items-center justify-center flex-col py-[60px] px-[53px] z-10"
-        style={{
-          background:
-            "linear-gradient(135deg, #F4F4F5 10%, #B1DEDF 60%, #2FB5B4 120%)",
-        }}
+        // style={{
+        //   background:
+        //     "linear-gradient(135deg, #F4F4F5 10%, #B1DEDF 60%, #2FB5B4 120%)",
+        // }}
       >
-        <h2 className="font-markazi font-semibold text-5xl">Forgot Password</h2>
-        <h3 className="font-semibold text-2xl mt-6">Reset Your Password</h3>
+        <h2
+          className="font-markazi font-semibold text-5xl"
+          style={{ color: currentTheme.primaryText }}
+        >
+          Forgot Password
+        </h2>
+        <h3
+          className="font-semibold text-2xl mt-6"
+          style={{ color: currentTheme.primaryText }}
+        >
+          Reset Your Password
+        </h3>
 
         <form onSubmit={handleSubmit} className="w-full mt-10">
           {!emailSent ? (
@@ -67,6 +96,10 @@ const ForgotPassword = () => {
                 type="submit"
                 className="w-full bg-bgPrimary rounded-[100px] h-[46px] font-medium transition-colors disabled:opacity-50 flex items-center justify-center"
                 disabled={!email || resetRequestMutation.isPending}
+                style={{
+                  background: currentTheme.dashboardBackground,
+                  color: currentTheme.primaryText,
+                }}
               >
                 {resetRequestMutation.isPending ? (
                   <span className="animate-spin inline-block h-5 w-5 border-t-2 border-b-2 border-white rounded-full mr-2"></span>
@@ -76,11 +109,21 @@ const ForgotPassword = () => {
             </>
           ) : (
             <div className="text-center py-4">
-              <div className="mb-6 text-lg">
+              <div
+                className="mb-6 text-lg"
+                style={{
+                  color: currentTheme.primaryText,
+                }}
+              >
                 Password reset link has been sent to{" "}
                 <span className="font-medium">{email}</span>
               </div>
-              <p className="text-sm text-gray-600 mt-2">
+              <p
+                className="text-sm text-gray-600 mt-2"
+                style={{
+                  color: currentTheme.primaryText,
+                }}
+              >
                 Please check your email inbox and click on the link to reset
                 your password.
               </p>
@@ -90,7 +133,10 @@ const ForgotPassword = () => {
           <div className="text-center mt-6">
             <Link
               to="/login"
-              className="text-primary font-medium hover:underline"
+              className=" font-medium hover:underline"
+              style={{
+                color: currentTheme.primaryText,
+              }}
             >
               Back to Login
             </Link>

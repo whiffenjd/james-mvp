@@ -5,12 +5,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
 import { useLogin } from "../../API/Endpoints/Auth/AuthApis";
 import { useResendOtp } from "../../API/Endpoints/Otp/OtpResendApis";
+import { useTheme } from "../../Context/ThemeContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [emailNotVerified, setEmailNotVerified] = useState(false);
   const navigate = useNavigate();
+  const { currentTheme } = useTheme();
   const { login } = useAuth();
   const loginMutation = useLogin();
   const resendOtpMutation = useResendOtp();
@@ -107,26 +109,56 @@ const Login = () => {
   };
 
   return (
-    <div
-      className={`bg-bgDark h-screen w-full flex items-center justify-center flex-col before:absolute before:inset-0 before:bg-[url('/assets/bg.png')] before:bg-cover before:bg-[center_-200px] before:bg-no-repeat before:content-[''] before:z-0 z-0`}
-    >
+    <div className="bg-bgDark h-screen w-full flex items-center justify-center flex-col overflow-hidden">
+      {/* Beautiful 3-color fading gradient from bottom */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          background: `linear-gradient(165deg, 
+        #2C2C2E 10%,
+        ${currentTheme.sidebarAccentText}10 20%,
+        ${currentTheme.sidebarAccentText}20 30%,
+        ${currentTheme.dashboardBackground}60 50%, 
+        ${currentTheme.dashboardBackground}25 45%, 
+        transparent 90%)`,
+        }}
+      />
+
+      {/* Your content here with relative z-index */}
+      <div className="relative z-10">
+        {/* Your login card and other content */}
+      </div>
       <div className="absolute top-14 short:static short:mb-2">
         {logoimg ? (
           <img src={logoimg} alt="Logo" className="h-16 w-auto" />
         ) : (
-          <p className="text-white text-3xl">Logo</p>
+          <p
+            className="text-white text-3xl"
+            style={{ color: currentTheme.sidebarAccentText }}
+          >
+            Logo
+          </p>
         )}
       </div>
 
       <div
         className="w-[590px] bg-white rounded-[20px] flex items-center justify-center flex-col py-[60px] px-[53px] z-10"
-        style={{
-          background:
-            "linear-gradient(135deg, #F4F4F5 10%, #B1DEDF 60%, #2FB5B4 120%)",
-        }}
+        // style={{
+        //   background: `linear-gradient(135deg, #F4F4F5 10%, #B1DEDF 60%, #2FB5B4 120%)`,
+        // }}
       >
-        <p className="font-markazi font-semibold text-5xl">Welcome</p>
-        <h3 className="font-semibold text-2xl mt-6">Sign in Your Account</h3>
+        <p
+          className="font-markazi font-semibold text-5xl"
+          style={{ color: currentTheme.primaryText }}
+        >
+          Welcome
+        </p>
+        <h3
+          className="font-semibold text-2xl mt-6"
+          style={{ color: currentTheme.primaryText }}
+        >
+          Sign in Your Account
+        </h3>
 
         <form onSubmit={handleSubmit} className="w-full mt-14 space-y-2">
           {emailNotVerified && (
@@ -188,7 +220,11 @@ const Login = () => {
           </div>
 
           <div className="flex justify-end items-center">
-            <Link to="/forgot-password" className="text-base underline">
+            <Link
+              to="/forgot-password"
+              className="text-base underline"
+              style={{ color: currentTheme.primaryText }}
+            >
               Forgot Password?
             </Link>
           </div>
@@ -196,12 +232,16 @@ const Login = () => {
           <div className="space-y-4">
             <button
               type="submit"
-              className="w-full bg-bgPrimary rounded-[100px] h-[46px] font-medium mt-8 transition-colors disabled:opacity-50 flex items-center justify-center"
+              className="w-full rounded-[100px] h-[46px] font-medium mt-8 transition-colors disabled:opacity-50 flex items-center justify-center"
               disabled={
                 formData.password.length < 6 ||
                 !formData.email ||
                 loginMutation.isPending
               }
+              style={{
+                background: currentTheme.dashboardBackground,
+                color: currentTheme.primaryText,
+              }}
             >
               {loginMutation.isPending ? (
                 <span className="animate-spin inline-block h-5 w-5 border-t-2 border-b-2 border-white rounded-full mr-2"></span>
@@ -209,7 +249,10 @@ const Login = () => {
               Sign In
             </button>
 
-            <div className="text-center mt-4">
+            <div
+              className="text-center mt-4"
+              style={{ color: currentTheme.primaryText }}
+            >
               <p>
                 Don't have an account?{" "}
                 <Link to="/signup" className="underline font-medium">

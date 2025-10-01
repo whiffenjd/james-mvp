@@ -75,3 +75,7 @@
   background-color: #f9fafb;
   color: #6b7280;
 }
+input[type="radio"] {
+  padding: 5px;
+  accent-color: var(--dashboard-bg) !important;
+}

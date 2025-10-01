@@ -52,15 +52,20 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
   userType = "investor",
 }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, token } = useAuth();
 
   // Local state for managing theme operations - Initialize with default theme
   const [currentTheme, setCurrentTheme] = useState<Theme | null>(defaultTheme);
   const [themeError, setThemeError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   // Only fetch data when user is authenticated and is an investor
-  const shouldFetchThemes = isAuthenticated && userType === "investor";
-
+  const shouldFetchThemes =
+    isAuthenticated &&
+    userType === "investor" &&
+    !!user &&
+    Object.keys(user).length > 0 &&
+    !!token; // or whatever field holds the JWT / auth token;
+  console.log("user", user, token, isAuthenticated);
   // Fetch all themes
   const {
     data: themesResponse,
@@ -208,7 +213,7 @@ export const InvestorThemeProvider: React.FC<ThemeProviderProps> = ({
         }
 
         // Apply the theme via API
-        await applyThemeMutation.mutateAsync({ themeId });
+        if (themeId) await applyThemeMutation.mutateAsync({ themeId });
 
         // Update local state immediately for better UX
         setCurrentTheme(themeToApply);

@@ -13,10 +13,29 @@ export const requestPasswordReset = async (email: string) => {
   if (!user.length) throw new Error('User not found');
 
   const foundUser = user[0];
+
+  // 🔑 Figure out which subdomain to use
+  let subdomain: string | null = null;
+
+  if (foundUser.role === 'fundmanager') {
+    // fund manager has their own subdomain
+    subdomain = foundUser.subdomain;
+  } else if (foundUser.role === 'investor' && foundUser.referral) {
+    // investor → lookup their fund manager via referral
+    const fundManager = await db
+      .select()
+      .from(UsersTable)
+      .where(eq(UsersTable.id, foundUser.referral));
+
+    if (fundManager.length && fundManager[0].subdomain) {
+      subdomain = fundManager[0].subdomain;
+    }
+  }
+
   const token = generateResetToken(email);
   const expiresAt = addMinutes(new Date(), 15); // Token expires in 15 minutes
 
-  // ⛔ Delete old reset tokens for this user (email + type + role)
+  // ⛔ Delete old reset tokens for this user
   await deleteUserTokenByType(foundUser.id, email, 'reset_password');
 
   // ✅ Insert new token
@@ -29,8 +48,8 @@ export const requestPasswordReset = async (email: string) => {
     userRole: foundUser.role,
   });
 
-  // ✉️ Send email
-  await sendResetPasswordEmail(email, token, foundUser.name);
+  // ✉️ Send email with the right subdomain (if null, maybe fallback to root?)
+  await sendResetPasswordEmail(email, token, foundUser.name, subdomain ?? undefined);
 
   return { message: 'Reset link sent' };
 };

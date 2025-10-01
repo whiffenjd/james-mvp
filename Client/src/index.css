@@ -13,10 +13,6 @@ body.sidebar-open {
   overflow: hidden;
 }
 
-input[type="radio"] {
-  padding: 5px;
-  accent-color: #017776;
-}
 
 .primary-heading {
   @apply font-[Poppins] font-medium;
@@ -44,4 +40,7 @@ input[type="radio"] {
 
 .react-datepicker-wrapper {
   width: 100%;
+}
+.dropdown-opt:hover{
+  background-color: "green";
 }

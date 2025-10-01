@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useInvestorSignup } from "../../API/Endpoints/Investor/InvestorSignupApis";
+import { useTheme } from "../../Context/ThemeContext";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -17,7 +18,7 @@ const Signup = () => {
   const signupMutation = useInvestorSignup();
   const logoimg = null;
   const { fundManagerId } = useParams<{ fundManagerId?: string }>();
-
+  const { currentTheme } = useTheme();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -77,26 +78,57 @@ const Signup = () => {
   };
 
   return (
-    <div
-      className={`bg-bgDark h-screen w-full flex items-center justify-center flex-col before:absolute before:inset-0 before:bg-[url('/assets/bg.png')] before:bg-cover before:bg-[center_-200px] before:bg-no-repeat before:content-[''] before:z-0 z-0`}
-    >
+    <div className="bg-bgDark h-screen w-full flex items-center justify-center flex-col overflow-hidden">
+      {/* Beautiful 3-color fading gradient from bottom */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          background: `linear-gradient(165deg, 
+        #2C2C2E 10%,
+        ${currentTheme.sidebarAccentText}10 20%,
+        ${currentTheme.sidebarAccentText}20 30%,
+        ${currentTheme.dashboardBackground}60 50%, 
+        ${currentTheme.dashboardBackground}25 45%, 
+        transparent 90%)`,
+        }}
+      />
+
+      {/* Your content here with relative z-index */}
+      <div className="relative z-10">
+        {/* Your login card and other content */}
+      </div>
       <div className="absolute top-14 short:static short:mb-2">
         {logoimg ? (
           <img src={logoimg} alt="Logo" className="h-16 w-auto" />
         ) : (
-          <p className="text-white text-3xl">Logo</p>
+          <p
+            className="text-white text-3xl"
+            style={{ color: currentTheme.sidebarAccentText }}
+          >
+            Logo
+          </p>
         )}
       </div>
 
       <div
         className="w-[590px] bg-white rounded-[20px] flex items-center justify-center flex-col py-[60px] px-[53px] z-10"
-        style={{
-          background:
-            "linear-gradient(135deg, #F4F4F5 10%, #B1DEDF 60%, #2FB5B4 120%)",
-        }}
+        // style={{
+        //   background:
+        //     "linear-gradient(135deg, #F4F4F5 10%, #B1DEDF 60%, #2FB5B4 120%)",
+        // }}
       >
-        <p className="font-markazi font-semibold text-5xl">Welcome</p>
-        <h3 className="font-semibold text-2xl mt-6">Sign up Your Account</h3>
+        <p
+          className="font-markazi font-semibold text-5xl"
+          style={{ color: currentTheme.sidebarAccentText }}
+        >
+          Welcome
+        </p>
+        <h3
+          className="font-semibold text-2xl mt-6"
+          style={{ color: currentTheme.sidebarAccentText }}
+        >
+          Sign up Your Account
+        </h3>
 
         <form onSubmit={handleSubmit} className="w-full mt-14 space-y-2">
           <div className="space-y-4">

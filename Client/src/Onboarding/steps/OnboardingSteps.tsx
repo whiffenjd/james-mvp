@@ -15,13 +15,16 @@ import toast from "react-hot-toast";
 import { Loader2, LogOut } from "lucide-react";
 
 import { OnboardingComplete } from "./OnboardingComplete";
+import { useTheme, type Theme } from "../../Context/ThemeContext";
 
 const OnboardingStatus = ({
   status,
   rejectionNote,
+  currentTheme,
 }: {
   status: string;
   rejectionNote?: string;
+  currentTheme: Theme;
 }) => (
   <div className="my-6 px-4">
     <div
@@ -30,8 +33,8 @@ const OnboardingStatus = ({
               status === "pending"
                 ? "bg-yellow-50 border-yellow-200"
                 : status === "rejected"
-                ? "bg-red-50 border-red-200"
-                : "bg-gray-50 border-gray-200"
+                  ? "bg-red-50 border-red-200"
+                  : "bg-gray-50 border-gray-200"
             }`}
     >
       <div className="flex items-center gap-2 mb-2">
@@ -39,19 +42,25 @@ const OnboardingStatus = ({
           {status === "pending" && "⏳"}
           {status === "rejected" && "❌"}
         </span>
-        <span className="font-semibold text-gray-800 text-lg capitalize">
+        <span
+          className="font-semibold text-gray-800 text-lg capitalize"
+          style={{ color: currentTheme.secondaryText }}
+        >
           {status}
         </span>
       </div>
       {rejectionNote && (
         <div className="mt-2 text-sm text-red-600">{rejectionNote}</div>
       )}
-      <div className="mt-2 text-sm text-gray-600">
+      <div
+        className="mt-2 text-sm "
+        style={{ color: currentTheme.secondaryText }}
+      >
         {status === "pending"
           ? "Your submission is under review."
           : status === "rejected"
-          ? "Please review the reason and resubmit."
-          : "You have completed onboarding."}
+            ? "Please review the reason and resubmit."
+            : "You have completed onboarding."}
       </div>
     </div>
   </div>
@@ -61,6 +70,7 @@ export function OnboardingSteps() {
   const { state, dispatch, updateFormData } = useOnboarding();
   const { user, logout, updateOnboardingStatus } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { currentTheme } = useTheme();
   // Only fetch onboarding info if user has onboarding status
   const { data: onboardingInfo, isLoading: isLoadingOnboarding } =
     useOnboardingInfo({
@@ -123,8 +133,16 @@ export function OnboardingSteps() {
   if (user?.onboardingStatus && isLoadingOnboarding) {
     return (
       <div className="w-screen h-screen flex flex-col items-center justify-center">
-        <Loader2 className="animate-spin h-8 w-8 mb-4 text-teal-600" />
-        <p className="text-gray-600">Loading your onboarding information...</p>
+        <Loader2
+          className={`animate-spin h-8 w-8 mb-4 ${currentTheme.sidebarAccentText}`}
+          style={{ color: currentTheme.sidebarAccentText }}
+        />
+        <p
+          className="text-gray-600"
+          style={{ color: currentTheme.sidebarAccentText }}
+        >
+          Loading your onboarding information...
+        </p>
       </div>
     );
   }
@@ -145,6 +163,7 @@ export function OnboardingSteps() {
           <OnboardingStatus
             status={user.onboardingStatus.status}
             rejectionNote={user?.onboardingStatus?.rejectionNote ?? undefined}
+            currentTheme={currentTheme}
           />
           {/* Still show the document upload step below the status */}
           {state.formData.investorType === "individual" ? (
@@ -193,7 +212,10 @@ export function OnboardingSteps() {
   };
 
   return (
-    <div className="w-screen h-screen min-h-screen bg-[#2FB5B4] flex items-center justify-center overflow-auto relative">
+    <div
+      className="w-screen h-screen min-h-screen flex items-center justify-center overflow-auto relative"
+      style={{ backgroundColor: currentTheme.dashboardBackground }}
+    >
       <button
         onClick={handleLogout}
         disabled={isLoggingOut}
@@ -223,10 +245,20 @@ export function OnboardingSteps() {
             <div className="flex-shrink-0">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-[#017776] rounded flex items-center justify-center">
+                  <div
+                    className="w-8 h-8 rounded flex items-center justify-center"
+                    style={{
+                      backgroundColor: currentTheme.dashboardBackground,
+                    }}
+                  >
                     <span className="text-white font-bold">▲</span>
                   </div>
-                  <span className="font-semibold text-[#017776] text-xl tracking-wide">
+                  <span
+                    className="font-semibold text-[#017776] text-xl tracking-wide"
+                    style={{
+                      color: currentTheme.dashboardBackground,
+                    }}
+                  >
                     LOGO
                   </span>
                 </div>
@@ -252,16 +284,36 @@ export function OnboardingSteps() {
 
                                         </button>
                                     )} */}
-                  <span className="font-medium">Need Help?</span>
-                  <span className="underline cursor-pointer">LogIn</span>
+                  <span
+                    className="font-medium"
+                    style={{
+                      color: currentTheme.primaryText,
+                    }}
+                  >
+                    Need Help?
+                  </span>
+                  <span
+                    className="underline cursor-pointer"
+                    style={{
+                      color: currentTheme.sidebarAccentText,
+                    }}
+                  >
+                    LogIn
+                  </span>
                 </div>
               </div>
 
               <div className="mb-6">
-                <h1 className="text-3xl font-playfair font-bold text-[#017776]">
+                <h1
+                  className="text-3xl font-playfair font-bold text-[#017776]"
+                  style={{ color: currentTheme.primaryText }}
+                >
                   Investor OnBoarding
                 </h1>
-                <p className="tertiary-heading">
+                <p
+                  className="tertiary-heading"
+                  style={{ color: currentTheme.primaryText }}
+                >
                   Complete the Following steps to start investing
                 </p>
               </div>

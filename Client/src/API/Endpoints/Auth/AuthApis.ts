@@ -56,7 +56,7 @@ export const useResetPassword = () =>
       return res.data;
     },
   });
-export const useGetUserProfile = () =>
+export const useGetUserProfile = (options?: { enabled?: boolean }) =>
   useQuery({
     queryKey: ["userProfile"],
     queryFn: async () => {
@@ -68,4 +68,5 @@ export const useGetUserProfile = () =>
     retry: 2,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
+    enabled: options?.enabled ?? true, // default true unless overridden
   });

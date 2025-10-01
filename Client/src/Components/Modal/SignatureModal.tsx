@@ -3,17 +3,20 @@ import { useState } from "react";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import SignatureCanvas from "react-signature-canvas";
+import type { Theme } from "../../Context/ThemeContext";
 
 interface SignatureModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (signatureData: string) => void;
+  currentTheme: Theme;
 }
 
 export const SignatureModal: React.FC<SignatureModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  currentTheme,
 }) => {
   const sigCanvas = useRef<SignatureCanvas | null>(null);
   // const containerRef = useRef(null);
@@ -63,7 +66,12 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
         className="bg-white p-6 rounded-xl shadow-xl max-w-md  w-full  space-y-4 "
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-medium font-poppins">Please sign below</h2>
+        <h2
+          className="text-lg font-medium font-poppins"
+          style={{ color: currentTheme.primaryText }}
+        >
+          Please sign below
+        </h2>
         <SignatureCanvas
           onEnd={() => setIsEmpty(sigCanvas.current?.isEmpty() ?? true)}
           ref={sigCanvas}
@@ -93,6 +101,7 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
             <button
               onClick={saveSignature}
               className=" bg-[#2FB5B4] text-white py-3 px-4 rounded-lg hover:bg-[#147574] transition-colors font-medium"
+              style={{ backgroundColor: currentTheme.dashboardBackground }}
             >
               Save
             </button>

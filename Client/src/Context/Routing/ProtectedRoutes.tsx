@@ -1,6 +1,10 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import LoadingSpinner from "../../PublicComponents/Components/LoadingSpinner";
+import { useTheme } from "../ThemeContext";
+import getSubdomain from "../../FundManager/hooks/getSubDomain";
+import { useThemeByDomain } from "../../FundManager/hooks/Theme&AssetsHooks";
+import React from "react";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -129,16 +133,43 @@ export const InvestorRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   //   return <Navigate to="/investor/onboarding" replace />;
   // }
 
-
   return children ? <>{children}</> : <Outlet />;
 };
 
 export const PublicRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
+  const { applyTheme } = useTheme();
 
-  // Show loading until authentication state is determined
-  if (user === undefined) {
-    return <LoadingSpinner />;
+  // get subdomain
+  const hostname = window.location.hostname;
+  const subdomain = getSubdomain(hostname);
+
+  // fetch theme
+  const location = useLocation();
+  const isPublicPath = [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/verify-email",
+  ].some((path) => location.pathname.startsWith(path));
+  const {
+    data,
+    isLoading: isThemeLoading,
+    isFetching: isThemeFetching,
+  } = useThemeByDomain(subdomain || "", !!subdomain && isPublicPath);
+
+  React.useEffect(() => {
+    if (data?.data && !isAuthenticated) {
+      applyTheme(data.data);
+    }
+  }, [data, applyTheme]);
+
+  console.log("themeQuery", data?.data);
+
+  // Wait until BOTH auth and theme are resolved
+  if (user === undefined || isThemeLoading || isThemeFetching) {
+    return <LoadingSpinner />; // make this spinner cover the full page
   }
 
   // If user is authenticated, redirect to their appropriate dashboard

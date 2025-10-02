@@ -3,12 +3,14 @@ import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useVerifyInvestorOtp } from "../../API/Endpoints/Otp/OtpVerifyApis";
 import { useResendOtp } from "../../API/Endpoints/Otp/OtpResendApis";
+import { useTheme } from "../../Context/ThemeContext";
 
 const EmailVerification = () => {
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
   const [email, setEmail] = useState<string>("");
   const location = useLocation();
   const navigate = useNavigate();
+  const { currentTheme } = useTheme();
   // Create refs for input elements
   const inputRefs = useRef<HTMLInputElement[]>([]);
 
@@ -188,19 +190,44 @@ const EmailVerification = () => {
   };
 
   return (
-    <div className="bg-bgDark h-screen w-full flex items-center justify-center flex-col before:absolute before:inset-0 before:bg-[url('/assets/bg.png')] before:bg-cover before:bg-[center_-200px] before:bg-no-repeat before:content-[''] before:z-0 z-0">
+    <div className="bg-bgDark h-screen w-full flex items-center justify-center flex-col overflow-hidden">
+      {/* Beautiful 3-color fading gradient from bottom */}
       <div
-        className="w-[590px] bg-white rounded-[20px] flex items-center justify-center flex-col py-[60px] px-[53px] z-10"
+        className="absolute inset-0 z-0"
         style={{
-          background:
-            "linear-gradient(135deg, #F4F4F5 10%, #B1DEDF 60%, #2FB5B4 120%)",
+          background: `linear-gradient(165deg, 
+        #2C2C2E 10%,
+        ${currentTheme.sidebarAccentText}10 20%,
+        ${currentTheme.sidebarAccentText}20 30%,
+        ${currentTheme.dashboardBackground}60 50%, 
+        ${currentTheme.dashboardBackground}25 45%, 
+        transparent 90%)`,
         }}
-      >
-        <h2 className="font-markazi font-semibold text-5xl">Verify Email</h2>
+      />
 
-        <p className="text-xl mt-4 text-center">
+      {/* Your content here with relative z-index */}
+      <div className="relative z-10">
+        {/* Your login card and other content */}
+      </div>
+      <div className="w-[590px] bg-white rounded-[20px] flex items-center justify-center flex-col py-[60px] px-[53px] z-10">
+        <h2
+          className="font-markazi font-semibold text-5xl"
+          style={{ color: currentTheme.primaryText }}
+        >
+          Verify Email
+        </h2>
+
+        <p
+          className="text-xl mt-4 text-center"
+          style={{ color: currentTheme.secondaryText }}
+        >
           Enter the verification code sent to your email
-          <span className="block font-medium mt-2">{email}</span>
+          <span
+            className="block font-medium mt-2"
+            style={{ color: currentTheme.primaryText }}
+          >
+            {email}
+          </span>
         </p>
 
         <form onSubmit={handleSubmit} className="w-full mt-10">
@@ -239,7 +266,12 @@ const EmailVerification = () => {
             </button>
 
             <div className="mt-6 text-center">
-              <p className="text-gray-700">Didn't receive the code?</p>
+              <p
+                className="text-gray-700"
+                style={{ color: currentTheme.primaryText }}
+              >
+                Didn't receive the code?
+              </p>
 
               <button
                 type="button"

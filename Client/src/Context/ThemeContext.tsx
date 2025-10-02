@@ -68,7 +68,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
   dashboardType = "fundManager",
 }) => {
-  const { user } = useAuth();
+  const { user, token, isAuthenticated } = useAuth();
   const userId = user?.id;
 
   // Extract selectedThemeId from user.selectedTheme object
@@ -95,8 +95,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     refetch: refetchSelectedTheme,
     data: selectedThemeData,
   } = useSelectedTheme({ enabled: true }, userSelectedThemeId ?? undefined);
-
-  const { isLoading: isAllThemesLoading } = useThemes();
+  const shouldFetchThemes =
+    isAuthenticated && !!user && Object.keys(user).length > 0 && !!token; // or whatever field holds the JWT / auth token;
+  const { isLoading: isAllThemesLoading } = useThemes({
+    enabled: shouldFetchThemes,
+  });
   const applyThemeMutation = useApplyTheme();
 
   // Generate user-specific localStorage key
@@ -318,7 +321,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         }
 
         // 3. Sync with backend (if applicable)
-        if (dashboardType === "fundManager" && userId) {
+        if (dashboardType === "fundManager" && userId && theme.id) {
           try {
             await applyThemeMutation.mutateAsync({
               themeId: theme.id && theme.id !== "default" ? theme.id : "",

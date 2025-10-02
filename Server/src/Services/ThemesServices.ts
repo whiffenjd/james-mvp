@@ -44,7 +44,17 @@ export class ThemeService {
   async getById(id: string, userId: string) {
     return await db.select().from(themes).where(eq(themes.id, id));
   }
+  async getBySubdomain(subdomain: string) {
+    const [user] = await db.select().from(UsersTable).where(eq(UsersTable.subdomain, subdomain));
 
+    return user || null;
+  }
+  async getThemeById(themeId: string, userId?: string) {
+    const [theme] = await db.select().from(themes).where(eq(themes.id, themeId));
+
+    // optionally you can verify ownership with userId if needed
+    return theme || null;
+  }
   async list(userId: string) {
     return await db.select().from(themes).where(eq(themes.userId, userId));
   }

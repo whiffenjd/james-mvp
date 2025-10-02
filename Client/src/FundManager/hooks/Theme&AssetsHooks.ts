@@ -109,6 +109,17 @@ export const useThemeById = (id: string, enabled: boolean = true) => {
   });
 };
 
+export const useThemeByDomain = (domain: string, enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ["theme", domain],
+    queryFn: () => themesApi.getByDomain(domain),
+    enabled: enabled && !!domain,
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnMount: true, // Don't refetch on component mount if data exists
+    retry: false,
+  });
+};
+
 export const useApplyTheme = () => {
   const queryClient = useQueryClient();
 

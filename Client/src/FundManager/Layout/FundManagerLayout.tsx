@@ -3,7 +3,16 @@ import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import { Bell, CircleDollarSign, Files, FileText, LayoutGrid, Receipt, ReceiptText, Settings, Users } from "lucide-react";
+import {
+  Bell,
+  CircleDollarSign,
+  Files,
+  FileText,
+  LayoutGrid,
+  Receipt,
+  Settings,
+  Users,
+} from "lucide-react";
 import { useAuth } from "../../Context/AuthContext";
 import { useTheme } from "../../Context/ThemeContext";
 import ManagerSidebar from "../Public/ManagerSidebar";
@@ -84,7 +93,7 @@ const FundManagerLayout = () => {
     {
       id: "notifications",
       icon: (
-        <div className={`relative ${isLoading ? 'opacity-70 blur-[1px]' : ''}`}>
+        <div className={`relative ${isLoading ? "opacity-70 blur-[1px]" : ""}`}>
           <Bell size={22} />
           {!isLoading && unreadCount > 0 && (
             <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full">
@@ -95,7 +104,7 @@ const FundManagerLayout = () => {
       ),
       label: "Notifications",
       path: "notifications",
-    }
+    },
   ];
 
   return (

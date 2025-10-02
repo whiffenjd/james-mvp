@@ -71,13 +71,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const navigate = useNavigate();
   const logoutMutation = useLogout();
   const dispatch = useDispatch();
-  // const getUserThemeKey = useCallback(
-  //   (userId: string) => `theme_${userId}`,
-  //   []
-  // );
-
-  // 2. Fetch latest user profile from backend when token is present
-  const { data: freshUser, isSuccess } = useGetUserProfile();
+  const hasUserAndToken = !!user && !!token; // or user.accessToken
+  const { data: freshUser, isSuccess } = useGetUserProfile({
+    enabled: hasUserAndToken,
+  });
   useEffect(() => {
     if (isSuccess && freshUser) {
       setUser(freshUser);
@@ -230,16 +227,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const updateOnboardingStatus = useCallback(
-    (status: "pending" | "approved" | "rejected" | "complete_later", rejectionNote?: string) => {
+    (
+      status: "pending" | "approved" | "rejected" | "complete_later",
+      rejectionNote?: string
+    ) => {
       setUser((prev) =>
         prev
           ? {
-            ...prev,
-            onboardingStatus: {
-              status,
-              rejectionNote,
-            },
-          }
+              ...prev,
+              onboardingStatus: {
+                status,
+                rejectionNote,
+              },
+            }
           : null
       );
     },
@@ -250,9 +250,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setUser((prev) =>
       prev
         ? {
-          ...prev,
-          isOnboarded,
-        }
+            ...prev,
+            isOnboarded,
+          }
         : null
     );
 

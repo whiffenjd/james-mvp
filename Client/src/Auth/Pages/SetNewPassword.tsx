@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useResetPassword } from "../../API/Endpoints/Auth/AuthApis";
+import { useTheme } from "../../Context/ThemeContext";
 
 const SetNewPassword = () => {
   const [formData, setFormData] = useState({
@@ -18,27 +19,23 @@ const SetNewPassword = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const resetPasswordMutation = useResetPassword();
-
+  const { currentTheme } = useTheme();
   // Extract token and email from URL
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tokenParam = params.get("token");
     const emailParam = params.get("email");
 
-    if (!tokenParam) {
-      toast.error("Reset token is missing");
-      navigate("/login");
-      return;
+    if (tokenParam && emailParam) {
+      setToken(tokenParam);
+      setEmail(emailParam);
+    } else {
+      // Delay redirect slightly so params parsing stabilizes
+      setTimeout(() => {
+        toast.error("Invalid or missing reset link");
+        navigate("/login");
+      }, 100);
     }
-
-    if (!emailParam) {
-      toast.error("Email is missing");
-      navigate("/login");
-      return;
-    }
-
-    setToken(tokenParam);
-    setEmail(emailParam);
   }, [location.search, navigate]);
 
   const togglePasswordVisibility = () => {
@@ -104,18 +101,45 @@ const SetNewPassword = () => {
   };
 
   return (
-    <div className="bg-bgDark h-screen w-full flex items-center justify-center flex-col before:absolute before:inset-0 before:bg-[url('/assets/bg.png')] before:bg-cover before:bg-[center_-200px] before:bg-no-repeat before:content-[''] before:z-0 z-0">
+    <div className="bg-bgDark h-screen w-full flex items-center justify-center flex-col overflow-hidden">
+      {/* Beautiful 3-color fading gradient from bottom */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          background: `linear-gradient(165deg, 
+        #2C2C2E 10%,
+        ${currentTheme.sidebarAccentText}10 20%,
+        ${currentTheme.sidebarAccentText}20 30%,
+        ${currentTheme.dashboardBackground}60 50%, 
+        ${currentTheme.dashboardBackground}25 45%, 
+        transparent 90%)`,
+        }}
+      />
+      {/* Your content here with relative z-index */}
+      <div className="relative z-10">
+        {/* Your login card and other content */}
+      </div>
       <div
         className="w-[590px] bg-white rounded-[20px] flex items-center justify-center flex-col py-[60px] px-[53px] z-10"
-        style={{
-          background:
-            "linear-gradient(135deg, #F4F4F5 10%, #B1DEDF 60%, #2FB5B4 120%)",
-        }}
+        // style={{
+        //   background:
+        //     "linear-gradient(135deg, #F4F4F5 10%, #B1DEDF 60%, #2FB5B4 120%)",
+        // }}
       >
-        <h2 className="font-markazi font-semibold text-5xl">
+        <h2
+          className="font-markazi font-semibold text-5xl"
+          style={{
+            color: currentTheme.primaryText,
+          }}
+        >
           Set New Password
         </h2>
-        <h3 className="font-semibold text-2xl mt-6">
+        <h3
+          className="font-semibold text-2xl mt-6"
+          style={{
+            color: currentTheme.primaryText,
+          }}
+        >
           Enter and confirm your new password
         </h3>
 
@@ -171,12 +195,16 @@ const SetNewPassword = () => {
 
             <button
               type="submit"
-              className="w-full bg-bgPrimary rounded-[100px] h-[46px] font-medium mt-8 transition-colors disabled:opacity-50 flex items-center justify-center"
+              className="w-full rounded-[100px] h-[46px] font-medium mt-8 transition-colors disabled:opacity-50 flex items-center justify-center"
               disabled={
                 formData.password.length < 6 ||
                 formData.password !== formData.confirmPassword ||
                 resetPasswordMutation.isPending
               }
+              style={{
+                background: currentTheme.dashboardBackground,
+                color: currentTheme.primaryText,
+              }}
             >
               {resetPasswordMutation.isPending ? (
                 <span className="animate-spin inline-block h-5 w-5 border-t-2 border-b-2 border-white rounded-full mr-2"></span>
@@ -186,10 +214,22 @@ const SetNewPassword = () => {
           </form>
         ) : (
           <div className="text-center py-8">
-            <div className="mb-4 text-2xl font-medium">
+            <div
+              className="mb-4 text-2xl font-medium"
+              style={{
+                color: currentTheme.primaryText,
+              }}
+            >
               Your password has been updated successfully.
             </div>
-            <p className="text-gray-700">Redirecting to login page...</p>
+            <p
+              className="text-gray-700"
+              style={{
+                color: currentTheme.primaryText,
+              }}
+            >
+              Redirecting to login page...
+            </p>
           </div>
         )}
       </div>

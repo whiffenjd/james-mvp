@@ -1,5 +1,6 @@
 // Updated services/api.ts
 import axiosPrivate from "../../AxiosInstances/PrivateAxiosInstance";
+import axiosPublic from "../../AxiosInstances/PublicAxiosInstance";
 
 // Types (make sure these match your updated types)
 export interface DashboardAsset {
@@ -120,7 +121,14 @@ export const themesApi = {
     const response = await axiosPrivate.get(`/dashboard/theme/getTheme/${id}`);
     return response.data;
   },
-
+  getByDomain: async (
+    subdomain: string
+  ): Promise<{ success: boolean; data: Theme }> => {
+    const response = await axiosPublic.get(
+      `/dashboard/theme/getThemeByDomain/${subdomain}`
+    );
+    return response.data;
+  },
   list: async (): Promise<{ success: boolean; data: Theme[] }> => {
     const response = await axiosPrivate.get("/dashboard/theme/listThemes");
     return response.data;

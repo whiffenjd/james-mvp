@@ -2,424 +2,538 @@ import { Eye, Loader2, Trash2 } from "lucide-react";
 import { StepHeader } from "../StepHeader";
 import { useOnboarding } from "../../Context/OnboardingContext";
 import { useEffect, useState } from "react";
-import { useDocumentDelete, useDocumentUpload, useStartOnboarding, useUpdateOnboarding } from "../../API/Endpoints/Onboarding/useInvestorOnboarding";
+import {
+  useDocumentDelete,
+  useDocumentUpload,
+  useStartOnboarding,
+  useUpdateOnboarding,
+} from "../../API/Endpoints/Onboarding/useInvestorOnboarding";
 import { useAuth } from "../../Context/AuthContext";
 import toast from "react-hot-toast";
-import { DocumentPreviewModal } from '../../Components/DocumentPreviewModal';
+import { DocumentPreviewModal } from "../../Components/DocumentPreviewModal";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../../Context/ThemeContext";
 
 interface FileInputBlockProps {
-    label: string;
-    desc: string;
-    ul: React.ReactNode;
-    inputId: string;
-    accept: string;
-    fileKey: string;
+  label: string;
+  desc: string;
+  ul: React.ReactNode;
+  inputId: string;
+  accept: string;
+  fileKey: string;
 }
 
-
 export function DocumentUploadStepEntity() {
-    const { state, updateFormData, prevStep, dispatch } = useOnboarding();
-    const { user, updateOnboardingStatus } = useAuth();
-    // const { mutateAsync: startOnboarding, isLoading: isStarting } = useStartOnboarding();
-    // const { mutateAsync: updateOnboarding, isLoading: isUpdating } = useUpdateOnboarding();
-    // const { mutateAsync: uploadDocuments, isLoading: isUploading } = useDocumentUpload();
-    const { mutateAsync: startOnboarding, status: startOnboardingStatus } = useStartOnboarding();
-    const isStarting = startOnboardingStatus === 'pending';
-    const { mutateAsync: updateOnboarding, status: updateStatus } = useUpdateOnboarding();
-    const isUpdating = updateStatus === 'pending';
+  const { state, updateFormData, prevStep, dispatch } = useOnboarding();
+  const { user, updateOnboardingStatus } = useAuth();
+  // const { mutateAsync: startOnboarding, isLoading: isStarting } = useStartOnboarding();
+  // const { mutateAsync: updateOnboarding, isLoading: isUpdating } = useUpdateOnboarding();
+  // const { mutateAsync: uploadDocuments, isLoading: isUploading } = useDocumentUpload();
+  const { mutateAsync: startOnboarding, status: startOnboardingStatus } =
+    useStartOnboarding();
+  const isStarting = startOnboardingStatus === "pending";
+  const { mutateAsync: updateOnboarding, status: updateStatus } =
+    useUpdateOnboarding();
+  const isUpdating = updateStatus === "pending";
+  const { currentTheme } = useTheme();
+  const { mutateAsync: uploadDocuments, status: uploadeDocumentStatus } =
+    useDocumentUpload();
+  const navigate = useNavigate();
+  const isUploading = uploadeDocumentStatus === "pending";
+  const { mutateAsync: deleteDocument } = useDocumentDelete();
+  const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File[] }>(
+    {}
+  );
+  const [uploadedFiles, setUploadedFiles] = useState<
+    Array<{ key: string; url: string }>
+  >([]);
+  const [existingDocuments, setExistingDocuments] = useState<
+    Array<{ url: string; filename: string }>
+  >([]);
+  const [previewModal, setPreviewModal] = useState<{
+    isOpen: boolean;
+    url: string;
+    type: string;
+  }>({
+    isOpen: false,
+    url: "",
+    type: "",
+  });
 
-    const { mutateAsync: uploadDocuments, status: uploadeDocumentStatus } = useDocumentUpload();
-    const navigate = useNavigate()
-    const isUploading = uploadeDocumentStatus === 'pending';
-    const { mutateAsync: deleteDocument } = useDocumentDelete();
-    const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File[] }>({});
-    const [uploadedFiles, setUploadedFiles] = useState<Array<{ key: string; url: string }>>([]);
-    const [existingDocuments, setExistingDocuments] = useState<Array<{ url: string; filename: string }>>([]);
-    const [previewModal, setPreviewModal] = useState<{
-        isOpen: boolean;
+  const handleFileSelect = (type: string, files: FileList | null) => {
+    if (!files) return;
+    setSelectedFiles((prev) => ({
+      ...prev,
+      [type]: [...(prev[type] || []), ...Array.from(files)],
+    }));
+  };
+
+  const handlePreview = (type: string, fileIdx: number) => {
+    const file = selectedFiles[type]?.[fileIdx];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    setPreviewModal({
+      isOpen: true,
+      url,
+      type: file.type,
+    });
+  };
+
+  const handleClosePreview = () => {
+    if (previewModal.url && !previewModal.url.includes("amazonaws.com")) {
+      URL.revokeObjectURL(previewModal.url);
+    }
+    setPreviewModal({
+      isOpen: false,
+      url: "",
+      type: "",
+    });
+  };
+
+  const handleDelete = (type: string, fileIdx: number) => {
+    setSelectedFiles((prev) => ({
+      ...prev,
+      [type]: prev[type].filter((_, idx) => idx !== fileIdx),
+    }));
+  };
+
+  // First, update the handleSubmit function to handle optional documents
+  const handleSubmit = async (completeLater: boolean = false) => {
+    try {
+      // Initialize with existing documents
+      interface DocumentUrl {
         url: string;
         type: string;
-    }>({
-        isOpen: false,
-        url: '',
-        type: ''
-    });
+      }
+      let documentUrls: DocumentUrl[] = [];
 
-    const handleFileSelect = (type: string, files: FileList | null) => {
-        if (!files) return;
-        setSelectedFiles(prev => ({
-            ...prev,
-            [type]: [...(prev[type] || []), ...Array.from(files)]
-        }));
-    };
-
-    const handlePreview = (type: string, fileIdx: number) => {
-        const file = selectedFiles[type]?.[fileIdx];
-        if (!file) return;
-
-        const url = URL.createObjectURL(file);
-        setPreviewModal({
-            isOpen: true,
-            url,
-            type: file.type
+      // Only upload if new files are selected
+      if (!completeLater && selectedFiles.kyc?.length) {
+        const formData = new FormData();
+        selectedFiles.kyc.forEach((file) => {
+          formData.append("documents", file);
         });
-    };
 
-    const handleClosePreview = () => {
-        if (previewModal.url && !previewModal.url.includes('amazonaws.com')) {
-            URL.revokeObjectURL(previewModal.url);
+        const uploadResponse = await toast.promise(uploadDocuments(formData), {
+          loading: "Uploading documents...",
+          success: "Documents uploaded successfully",
+          error: "Failed to upload documents",
+        });
+
+        if (uploadResponse.success) {
+          setUploadedFiles(
+            uploadResponse.data.map((doc) => ({
+              key: doc.key,
+              url: doc.url,
+            }))
+          );
+
+          // Create document URLs array combining existing and new documents
+          documentUrls = uploadResponse.data.map((doc) => ({
+            url: doc.url,
+            type: "entity_document",
+          }));
+          setExistingDocuments(
+            documentUrls.map((doc) => ({
+              url: doc.url,
+              filename: doc.url.split("/").pop() || "Document",
+            }))
+          );
         }
-        setPreviewModal({
-            isOpen: false,
-            url: '',
-            type: ''
+      }
+
+      // Submit even if no new documents are uploaded
+      await new Promise<void>((resolve) => {
+        updateFormData({ entityDocuments: documentUrls });
+        setTimeout(resolve, 100);
+      });
+
+      try {
+        const updatedFormData = {
+          ...state.formData,
+          entityDocuments: documentUrls,
+        };
+        const onboardingPromise =
+          user?.onboardingStatus?.status === "rejected" ||
+            user?.onboardingStatus?.status === "complete_later"
+            ? updateOnboarding({ formData: updatedFormData, completeLater })
+            : startOnboarding({ formData: updatedFormData, completeLater });
+
+        const response = await toast.promise(onboardingPromise, {
+          loading: completeLater
+            ? "Submitting without documents"
+            : "Submitting onboarding information...",
+          success: completeLater
+            ? "Submitting without documents"
+            : "Onboarding submitted successfully",
+          error: "Failed to submit onboarding",
         });
-    };
+        // Update onboarding status to pending
+        updateOnboardingStatus(completeLater ? "complete_later" : "pending");
 
-    const handleDelete = (type: string, fileIdx: number) => {
-        setSelectedFiles(prev => ({
-            ...prev,
-            [type]: prev[type].filter((_, idx) => idx !== fileIdx)
-        }));
-    };
+        // Reset files
+        setUploadedFiles([]);
+        setSelectedFiles({});
+        setExistingDocuments([]);
 
-    // First, update the handleSubmit function to handle optional documents
-    const handleSubmit = async (completeLater: boolean = false) => {
-        try {
-            // Initialize with existing documents
-            interface DocumentUrl {
-                url: string;
-                type: string;
-            }
-            let documentUrls: DocumentUrl[] = [];
+        // Clear form data and reset to initial state
+        dispatch({ type: "RESET_FORM" });
 
-            // Only upload if new files are selected
-            if (!completeLater && selectedFiles.kyc?.length) {
-                const formData = new FormData();
-                selectedFiles.kyc.forEach(file => {
-                    formData.append('documents', file);
-                });
+        // Load new onboarding data
+        if (response.data?.formData) {
+          await new Promise<void>(resolve => {
+            updateFormData(response.data.formData);
+            setTimeout(resolve, 100);
+          });
+        }
+        navigate("/investor/dashboard");
+      } catch (error) {
+        // Clean up uploaded files on failure
+        await Promise.all(
+          uploadedFiles.map(file =>
+            deleteDocument(file.key).catch(err =>
+              console.error(`Failed to delete file ${file.key}:`, err)
+            )
+          )
+        );
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error in submission:', error);
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
+    }
+  };
 
-                const uploadResponse = await toast.promise(
-                    uploadDocuments(formData),
-                    {
-                        loading: 'Uploading documents...',
-                        success: 'Documents uploaded successfully',
-                        error: 'Failed to upload documents'
-                    }
-                );
+  // Add useEffect to set existing documents when form data changes
+  useEffect(() => {
+    if (state.formData?.entityDocuments?.length) {
+      setExistingDocuments(
+        state.formData.entityDocuments.map((doc) => ({
+          url: doc.url,
+          filename: doc.url.split("/").pop() || "Document",
+        }))
+      );
+    }
+  }, [state.formData]);
 
-                if (uploadResponse.success) {
-                    setUploadedFiles(uploadResponse.data.map(doc => ({
-                        key: doc.key,
-                        url: doc.url
-                    })));
+  // Update FileInputBlock component to handle pending and rejected states
+  // For reusable file input + preview row
+  function FileInputBlock({
+    label,
+    desc,
+    ul,
+    inputId,
+    accept,
+    fileKey,
+  }: FileInputBlockProps) {
+    const isPending = user?.onboardingStatus?.status === "pending";
+    const isRejected = user?.onboardingStatus?.status === "rejected";
 
-                    // Create document URLs array combining existing and new documents
-                    documentUrls = uploadResponse.data.map(doc => ({
+    return (
+      <div className="border border-[#979797] rounded-lg p-6 space-y-4 shadow-sm">
+        <h3
+          className="font-medium text-gray-900 mb-2"
+          style={{ color: currentTheme.primaryText }}
+        >
+          {label}
+        </h3>
+        <p
+          className="text-sm text-gray-600 mb-3"
+          style={{ color: currentTheme.secondaryText }}
+        >
+          {desc}
+        </p>
+        <ul
+          className="text-sm text-gray-600 list-disc list-inside mb-4 space-y-2"
+          style={{ color: currentTheme.secondaryText }}
+        >
+          {ul}
+        </ul>
+
+        {isPending && (
+          <div className="p-4 mb-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              <strong>Under Review:</strong> Your documents are being reviewed.
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2">
+          {/* Show existing documents if any */}
+          {existingDocuments.length > 0 && (
+            <div className="space-y-1 mb-4">
+              <p
+                className="text-sm font-medium text-gray-700 mb-2"
+                style={{ color: currentTheme.primaryText }}
+              >
+                {isRejected
+                  ? "Previously Submitted Documents:"
+                  : "Uploaded Documents:"}
+              </p>
+              {existingDocuments.map((doc, idx) => (
+                <div
+                  key={idx}
+                  className={`flex items-center border rounded px-2 py-1 
+                                    ${isRejected ? "border-red-200 bg-red-50" : "border-[#2FB5B4] bg-[#2FB5B410]"}`}
+                >
+                  <span className="flex-1 truncate">{doc.filename}</span>
+                  <button
+                    type="button"
+                    title="Preview"
+                    onClick={() =>
+                      setPreviewModal({
+                        isOpen: true,
                         url: doc.url,
-                        type: 'entity_document'
-                    }));
-                    setExistingDocuments(
-                        documentUrls.map(doc => ({
-                            url: doc.url,
-                            filename: doc.url.split('/').pop() || 'Document'
-                        }))
-                    );
-                }
-            }
+                        type: doc.filename.toLowerCase().endsWith(".pdf")
+                          ? "application/pdf"
+                          : "image/*",
+                      })
+                    }
+                    className="text-[#2FB5B4] hover:text-[#145D5D] p-1"
+                    style={{
+                      color: currentTheme.sidebarAccentText,
+                      backgroundColor: currentTheme.dashboardBackground,
+                    }}
+                  >
+                    <Eye size={16} />
+                  </button>
+                </div>
+              ))}
+              <p
+                className="text-sm font-medium text-gray-700 mt-4"
+                style={{ color: currentTheme.primaryText }}
+              >
+                {isRejected && "You have to submit new documents."}
+              </p>
+            </div>
+          )}
 
-            // Submit even if no new documents are uploaded
-            await new Promise<void>(resolve => {
-                updateFormData({ entityDocuments: documentUrls });
-                setTimeout(resolve, 100);
-            });
-
-            try {
-                const updatedFormData = {
-                    ...state.formData,
-                    entityDocuments: documentUrls
-                };
-                const onboardingPromise =
-                    user?.onboardingStatus?.status === 'rejected' || user?.onboardingStatus?.status === 'complete_later'
-                        ? updateOnboarding({ formData: updatedFormData, completeLater })
-                        : startOnboarding({ formData: updatedFormData, completeLater });
-
-                const response = await toast.promise(onboardingPromise, {
-                    loading: completeLater ? 'Submitting without documents' : 'Submitting onboarding information...',
-                    success: completeLater ? 'Submitting without documents' : 'Onboarding submitted successfully',
-                    error: 'Failed to submit onboarding',
-                });
-                // Update onboarding status to pending
-                updateOnboardingStatus(completeLater ? 'complete_later' : 'pending');
-
-
-
-                // Reset files
-                setUploadedFiles([]);
-                setSelectedFiles({});
-                setExistingDocuments([]);
-
-                // Clear form data and reset to initial state
-                dispatch({ type: 'RESET_FORM' });
-
-                // Load new onboarding data
-                if (response.data?.formData) {
-                    await new Promise<void>(resolve => {
-                        updateFormData(response.data.formData);
-                        setTimeout(resolve, 100);
-                    });
-                }
-                navigate("/investor/dashboard");
-            } catch (error) {
-                // Clean up uploaded files on failure
-                await Promise.all(
-                    uploadedFiles.map(file =>
-                        deleteDocument(file.key).catch(err =>
-                            console.error(`Failed to delete file ${file.key}:`, err)
-                        )
-                    )
-                );
-                throw error;
-            }
-        } catch (error) {
-            console.error('Error in submission:', error);
-            toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
-        }
-    };
-
-    // Add useEffect to set existing documents when form data changes
-    useEffect(() => {
-        if (state.formData?.entityDocuments?.length) {
-
-            setExistingDocuments(
-                state.formData.entityDocuments.map(doc => ({
-                    url: doc.url,
-                    filename: doc.url.split('/').pop() || 'Document'
-                }))
-            );
-        }
-    }, [state.formData]);
-
-    // Update FileInputBlock component to handle pending and rejected states
-    // For reusable file input + preview row
-    function FileInputBlock({ label, desc, ul, inputId, accept, fileKey }: FileInputBlockProps) {
-        const isPending = user?.onboardingStatus?.status === 'pending';
-        const isRejected = user?.onboardingStatus?.status === 'rejected';
-
-        return (
-            <div className="border border-[#979797] rounded-lg p-6 space-y-4 shadow-sm">
-                <h3 className="font-medium text-gray-900 mb-2">{label}</h3>
-                <p className="text-sm text-gray-600 mb-3">{desc}</p>
-                <ul className="text-sm text-gray-600 list-disc list-inside mb-4 space-y-2">{ul}</ul>
-
-                {isPending && (
-                    <div className="p-4 mb-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <p className="text-sm text-yellow-800">
-                            <strong>Under Review:</strong> Your documents are being reviewed.
-                        </p>
-                    </div>
-                )}
-
-                <div className="flex flex-col gap-2">
-                    {/* Show existing documents if any */}
-                    {existingDocuments.length > 0 && (
-                        <div className="space-y-1 mb-4">
-                            <p className="text-sm font-medium text-gray-700 mb-2">
-                                {isRejected ? 'Previously Submitted Documents:' : 'Uploaded Documents:'}
-
-                            </p>
-                            {existingDocuments.map((doc, idx) => (
-                                <div
-                                    key={idx}
-                                    className={`flex items-center border rounded px-2 py-1 
-                                    ${isRejected ? 'border-red-200 bg-red-50' : 'border-[#2FB5B4] bg-[#2FB5B410]'}`}
-                                >
-                                    <span className="flex-1 truncate">{doc.filename}</span>
-                                    <button
-                                        type="button"
-                                        title="Preview"
-                                        onClick={() => setPreviewModal({
-                                            isOpen: true,
-                                            url: doc.url,
-                                            type: doc.filename.toLowerCase().endsWith('.pdf')
-                                                ? 'application/pdf'
-                                                : 'image/*'
-                                        })}
-                                        className="text-[#2FB5B4] hover:text-[#145D5D] p-1"
-                                    >
-                                        <Eye size={16} />
-                                    </button>
-                                </div>
-
-                            ))}
-                            <p className="text-sm font-medium text-gray-700 mt-4">
-
-                                {isRejected && 'You have to submit new documents.'}
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Only show file input when not pending */}
-                    {!isPending && (
-                        <>
-                            <input
-                                type="file"
-                                accept={accept}
-                                id={inputId}
-                                multiple
-                                onChange={e => handleFileSelect(fileKey, e.target.files)}
-                                className="hidden"
-                            />
-                            <label
-                                htmlFor={inputId}
-                                className={`
+          {/* Only show file input when not pending */}
+          {!isPending && (
+            <>
+              <input
+                type="file"
+                accept={accept}
+                id={inputId}
+                multiple
+                onChange={(e) => handleFileSelect(fileKey, e.target.files)}
+                className="hidden"
+              />
+              <label
+                htmlFor={inputId}
+                className={`
                                 flex items-center justify-between border border-gray-400 rounded-lg px-4 py-3 
                                 cursor-pointer bg-white text-gray-800
                                 transition-colors hover:border-[#2FB5B4]
-                                ${selectedFiles[fileKey]?.length ? 'border-[#2FB5B4]' : ''}
+                                ${selectedFiles[fileKey]?.length ? "border-[#2FB5B4]" : ""}
                             `}
-                            >
-                                <span>
-                                    {selectedFiles[fileKey]?.length
-                                        ? `${selectedFiles[fileKey].length} file(s) selected`
-                                        : isRejected
-                                            ? "Upload new documents"
-                                            : "Choose Files"}
-                                </span>
-                                <span className="text-xs text-gray-500 ml-3">
-                                    (PDF, JPG, PNG up to 10MB each)
-                                </span>
-                            </label>
-                        </>
-                    )}
+                style={{
+                  backgroundColor: "white",
+                  color: currentTheme.primaryText,
+                  borderColor: selectedFiles[fileKey]
+                    ? currentTheme.dashboardBackground
+                    : currentTheme.secondaryText,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLLabelElement).style.borderColor =
+                    currentTheme.dashboardBackground;
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLLabelElement).style.borderColor =
+                    selectedFiles[fileKey]
+                      ? currentTheme.dashboardBackground
+                      : currentTheme.secondaryText;
+                }}
+              >
+                <span>
+                  {selectedFiles[fileKey]?.length
+                    ? `${selectedFiles[fileKey].length} file(s) selected`
+                    : isRejected
+                      ? "Upload new documents"
+                      : "Choose Files"}
+                </span>
+                <span className="text-xs text-gray-500 ml-3">
+                  (PDF, JPG, PNG up to 10MB each)
+                </span>
+              </label>
+            </>
+          )}
 
-                    {/* Show selected files preview */}
-                    {selectedFiles[fileKey]?.length > 0 && (
-                        <div className="space-y-1 mt-2">
-                            {selectedFiles[fileKey].map((file, idx) => (
-                                <div key={idx} className="flex items-center border border-gray-200 rounded px-2 py-1 bg-gray-50">
-                                    <span className="flex-1 truncate">{file.name}</span>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            title="Preview"
-                                            onClick={() => handlePreview(fileKey, idx)}
-                                            className="text-[#2FB5B4] hover:text-[#145D5D] p-1"
-                                        >
-                                            <Eye size={16} />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            title="Delete"
-                                            onClick={() => handleDelete(fileKey, idx)}
-                                            className="text-red-500 hover:text-red-700 p-1"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+          {/* Show selected files preview */}
+          {selectedFiles[fileKey]?.length > 0 && (
+            <div className="space-y-1 mt-2">
+              {selectedFiles[fileKey].map((file, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center border border-gray-200 rounded px-2 py-1 bg-gray-50"
+                >
+                  <span className="flex-1 truncate">{file.name}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      title="Preview"
+                      onClick={() => handlePreview(fileKey, idx)}
+                      className="text-[#2FB5B4] hover:text-[#145D5D] p-1"
+                      style={{
+                        color: currentTheme.sidebarAccentText,
+                        backgroundColor: currentTheme.dashboardBackground,
+                      }}
+                    >
+                      <Eye size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      title="Delete"
+                      onClick={() => handleDelete(fileKey, idx)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
+              ))}
             </div>
-        );
-    }
-
-    return (
-        <>
-            <div className="space-y-6">
-                <StepHeader
-                    step={4}
-                    title="Document Upload"
-                    subtitle="Please upload required documents"
-                />
-                <div className="space-y-6 max-w-8xl">
-                    {/* Show pending notice if status is pending */}
-                    {user?.onboardingStatus?.status === 'pending' && (
-                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <p className="text-sm text-yellow-800">
-                                <strong>Pending Approval:</strong> Your onboarding submission is currently under review. You cannot make changes until the review is complete.
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Show rejection notice if status is rejected */}
-                    {user?.onboardingStatus?.status === 'rejected' && (
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-sm text-red-800">
-                                <strong>Update Required:</strong> Please review and update your documents based on the feedback provided.
-                            </p>
-                        </div>
-                    )}
-
-                    <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                        <p className="text-sm text-orange-800">
-                            <strong>Important Notice:</strong> KYC document verification is required before signing subscription document. You can complete this step later, but please note that investment opportunities will be limited until verification is complete.
-                        </p>
-                    </div>
-                    <div className="space-y-8">
-                        <FileInputBlock
-                            label="Entity Professional Documentation"
-                            desc="Please provide the following documents for your organization:"
-                            ul={
-                                <>
-                                    <li>Certificate of incorporation or equipment</li>
-                                    <li>Register of Directors</li>
-                                    <li>Register of Members/Shareholders</li>
-                                    <li>Regularity licenses or registration (If applicable)</li>
-                                    <li>Proof of required status (for FCA/PRA regulated entities)</li>
-                                </>
-                            }
-                            inputId="kyc-upload"
-                            accept=".pdf,.jpg,.jpeg,.png"
-                            fileKey="kyc"
-                        />
-                    </div>
-                    <div className="space-y-6">
-
-                        {/* Other form fields and steps */}
-                        <div className="flex space-x-4">
-                            <button
-                                type="button"
-                                onClick={prevStep}
-                                disabled={isUploading || isStarting || isUpdating}
-                                className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:bg-gray-100 disabled:cursor-not-allowed"
-                            >
-                                Back
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleSubmit(false)}
-                                disabled={isUploading || isStarting || isUpdating || user?.onboardingStatus?.status === 'pending'}
-                                className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                {(isUploading || isStarting || isUpdating) && <Loader2 className="animate-spin h-4 w-4" />}
-                                {user?.onboardingStatus?.status === 'rejected' ? 'Update' : 'Submit'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleSubmit(true)}
-                                disabled={isUploading || isStarting || isUpdating || user?.onboardingStatus?.status === 'pending'}
-                                className="flex-1 bg-[#797979] text-white py-3 px-4 rounded-lg  transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                {(isUploading || isStarting || isUpdating) && <Loader2 className="animate-spin h-4 w-4" />}
-                                Complete Later
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Add DocumentPreviewModal */}
-            <DocumentPreviewModal
-                isOpen={previewModal.isOpen}
-                onClose={handleClosePreview}
-                fileUrl={previewModal.url}
-                fileType={previewModal.type}
-            />
-        </>
+          )}
+        </div>
+      </div>
     );
+  }
+
+  return (
+    <>
+      <div className="space-y-6">
+        <StepHeader
+          step={4}
+          title="Document Upload"
+          subtitle="Please upload required documents"
+          currentTheme={currentTheme}
+        />
+        <div className="space-y-6 max-w-8xl">
+          {/* Show pending notice if status is pending */}
+          {user?.onboardingStatus?.status === "pending" && (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <strong>Pending Approval:</strong> Your onboarding submission is
+                currently under review. You cannot make changes until the review
+                is complete.
+              </p>
+            </div>
+          )}
+
+          {/* Show rejection notice if status is rejected */}
+          {user?.onboardingStatus?.status === "rejected" && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800">
+                <strong>Update Required:</strong> Please review and update your
+                documents based on the feedback provided.
+              </p>
+            </div>
+          )}
+
+          <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+            <p className="text-sm text-orange-800">
+              <strong>Important Notice:</strong> KYC document verification is
+              required before signing subscription document. You can complete
+              this step later, but please note that investment opportunities
+              will be limited until verification is complete.
+            </p>
+          </div>
+          <div className="space-y-8">
+            <FileInputBlock
+              label="Entity Professional Documentation"
+              desc="Please provide the following documents for your organization:"
+              ul={
+                <>
+                  <li>Certificate of incorporation or equipment</li>
+                  <li>Register of Directors</li>
+                  <li>Register of Members/Shareholders</li>
+                  <li>Regularity licenses or registration (If applicable)</li>
+                  <li>
+                    Proof of required status (for FCA/PRA regulated entities)
+                  </li>
+                </>
+              }
+              inputId="kyc-upload"
+              accept=".pdf,.jpg,.jpeg,.png"
+              fileKey="kyc"
+            />
+          </div>
+          <div className="space-y-6">
+            {/* Other form fields and steps */}
+            <div className="flex space-x-4">
+              <button
+                type="button"
+                onClick={prevStep}
+                disabled={isUploading || isStarting || isUpdating}
+                className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:bg-gray-100 disabled:cursor-not-allowed"
+                style={{ color: currentTheme.primaryText }}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSubmit(false)}
+                disabled={
+                  isUploading ||
+                  isStarting ||
+                  isUpdating ||
+                  user?.onboardingStatus?.status === "pending"
+                }
+                className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: currentTheme.dashboardBackground,
+                  color: currentTheme.primaryText,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                    currentTheme.sidebarAccentText; // or keep dashboardBackground if you prefer
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                    currentTheme.dashboardBackground;
+                }}
+              >
+                {(isUploading || isStarting || isUpdating) && (
+                  <Loader2 className="animate-spin h-4 w-4" />
+                )}
+                {user?.onboardingStatus?.status === "rejected"
+                  ? "Update"
+                  : "Submit"}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSubmit(true)}
+                disabled={
+                  isUploading ||
+                  isStarting ||
+                  isUpdating ||
+                  user?.onboardingStatus?.status === "pending"
+                }
+                className="flex-1 bg-[#797979] text-white py-3 px-4 rounded-lg  transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: currentTheme.dashboardBackground,
+                  color: currentTheme.primaryText,
+                }}
+              >
+                {(isUploading || isStarting || isUpdating) && (
+                  <Loader2 className="animate-spin h-4 w-4" />
+                )}
+                Complete Later
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Add DocumentPreviewModal */}
+      <DocumentPreviewModal
+        isOpen={previewModal.isOpen}
+        onClose={handleClosePreview}
+        fileUrl={previewModal.url}
+        fileType={previewModal.type}
+        currentTheme={currentTheme}
+      />
+    </>
+  );
 }

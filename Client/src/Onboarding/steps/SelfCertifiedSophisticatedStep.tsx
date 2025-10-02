@@ -5,6 +5,7 @@ import { useOnboarding } from "../../Context/OnboardingContext";
 import { useEffect } from "react";
 import { useState } from "react";
 import { SignatureModal } from "../../Components/Modal/SignatureModal";
+import { useTheme } from "../../Context/ThemeContext";
 
 export function SelfCertifiedSophisticatedStep() {
   const { state, updateFormData, nextStep, prevStep } = useOnboarding();
@@ -78,7 +79,7 @@ export function SelfCertifiedSophisticatedStep() {
 
   const watched = watch("selfCertifiedSophisticatedInvestor");
   const noneApply = watched?.noneApply === true;
-
+  const { currentTheme } = useTheme();
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
 
   const handleSignatureSave = (signatureDataUrl: string) => {
@@ -122,10 +123,16 @@ export function SelfCertifiedSophisticatedStep() {
   return (
     <div className="p-2 mx-auto space-y-8">
       <div>
-        <h2 className="primary-heading mb-2">
+        <h2
+          className="primary-heading mb-2"
+          style={{ color: currentTheme.primaryText }}
+        >
           SELF-CERTIFIED SOPHISTICATED INVESTOR STATEMENT
         </h2>
-        <p className="secondary-heading ">
+        <p
+          className="secondary-heading "
+          style={{ color: currentTheme.secondaryText }}
+        >
           If you meet condition <b>A</b>, <b>B</b>, <b>C</b> or <b>D</b> below,
           you may choose to be classified as a self-certified sophisticated
           investor for the purposes of the Financial Services and Markets Act
@@ -135,7 +142,10 @@ export function SelfCertifiedSophisticatedStep() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         {/* A. Professional Capacity */}
         <div className="border border-[#979797] rounded-xl p-5 space-y-4">
-          <div className="tertiary-heading">
+          <div
+            className="tertiary-heading"
+            style={{ color: currentTheme.secondaryText }}
+          >
             (A) Worked in a professional capacity in the private equity sector,
             or in the provision of finance for small and medium enterprises, in
             the last two years?
@@ -174,7 +184,10 @@ export function SelfCertifiedSophisticatedStep() {
           )}
           {watched?.professionalCapacity === "true" && !noneApply && (
             <div className="mt-2">
-              <label className="block mb-1 tertiary-heading">
+              <label
+                className="block mb-1 tertiary-heading"
+                style={{ color: currentTheme.secondaryText }}
+              >
                 What is/was the name of the business/organization?
               </label>
               <input
@@ -190,6 +203,16 @@ export function SelfCertifiedSophisticatedStep() {
                       ? "border-red-500"
                       : "border-gray-300"
                   }`}
+                style={{
+                  // dynamic ring color
+                  boxShadow: `0 0 0 2px transparent`, // default when not focused
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px ${currentTheme.dashboardBackground}`;
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px transparent`;
+                }}
               />
               {errors.selfCertifiedSophisticatedInvestor
                 ?.professionalCapacityDetails && (
@@ -206,7 +229,10 @@ export function SelfCertifiedSophisticatedStep() {
 
         {/* B. Director */}
         <div className="border border-[#979797] rounded-xl p-5 space-y-4">
-          <div className="tertiary-heading">
+          <div
+            className="tertiary-heading"
+            style={{ color: currentTheme.secondaryText }}
+          >
             (B) Been the director of a company with an annual turnover of at
             least £1 million, in the last two years?
           </div>
@@ -254,6 +280,16 @@ export function SelfCertifiedSophisticatedStep() {
                         ? "border-red-500"
                         : "border-gray-300"
                     }`}
+                  style={{
+                    // dynamic ring color
+                    boxShadow: `0 0 0 2px transparent`, // default when not focused
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.boxShadow = `0 0 0 2px ${currentTheme.dashboardBackground}`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.boxShadow = `0 0 0 2px transparent`;
+                  }}
                 />
                 {errors.selfCertifiedSophisticatedInvestor?.directorDetails
                   ?.companyName && (
@@ -266,7 +302,10 @@ export function SelfCertifiedSophisticatedStep() {
                 )}
               </div>
               <div className="flex-1">
-                <label className="block mb-1 tertiary-heading">
+                <label
+                  className="block mb-1 tertiary-heading"
+                  style={{ color: currentTheme.secondaryText }}
+                >
                   Companies House number (or international equivalent)
                 </label>
                 <input
@@ -282,6 +321,16 @@ export function SelfCertifiedSophisticatedStep() {
                         ? "border-red-500"
                         : "border-gray-300"
                     }`}
+                  style={{
+                    // dynamic ring color
+                    boxShadow: `0 0 0 2px transparent`, // default when not focused
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.boxShadow = `0 0 0 2px ${currentTheme.dashboardBackground}`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.boxShadow = `0 0 0 2px transparent`;
+                  }}
                 />
                 {errors.selfCertifiedSophisticatedInvestor?.directorDetails
                   ?.companyNumber && (
@@ -299,7 +348,10 @@ export function SelfCertifiedSophisticatedStep() {
 
         {/* C. Unlisted Investments */}
         <div className="border border-[#979797] rounded-xl p-5 space-y-4">
-          <div className="tertiary-heading">
+          <div
+            className="tertiary-heading"
+            style={{ color: currentTheme.secondaryText }}
+          >
             (C) Made two or more investments in an unlisted company, in the last
             two years?
           </div>
@@ -337,7 +389,10 @@ export function SelfCertifiedSophisticatedStep() {
           )}
           {watched?.unlistedInvestments === "true" && !noneApply && (
             <div className="mt-2">
-              <label className="block mb-1 tertiary-heading">
+              <label
+                className="block mb-1 tertiary-heading"
+                style={{ color: currentTheme.secondaryText }}
+              >
                 How many investments in unlisted companies have you made in the
                 last two years?
               </label>
@@ -356,6 +411,16 @@ export function SelfCertifiedSophisticatedStep() {
                       ? "border-red-500"
                       : "border-gray-300"
                   }`}
+                style={{
+                  // dynamic ring color
+                  boxShadow: `0 0 0 2px transparent`, // default when not focused
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px ${currentTheme.dashboardBackground}`;
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px transparent`;
+                }}
               />
               {errors.selfCertifiedSophisticatedInvestor
                 ?.unlistedInvestmentsCount && (
@@ -372,7 +437,10 @@ export function SelfCertifiedSophisticatedStep() {
 
         {/* D. Business Angel */}
         <div className="border border-[#979797] rounded-xl p-5 space-y-4">
-          <div className="tertiary-heading">
+          <div
+            className="tertiary-heading"
+            style={{ color: currentTheme.secondaryText }}
+          >
             (D) Been a member of a network or syndicate of business angels for
             more than six months, and are still a member?
           </div>
@@ -407,7 +475,10 @@ export function SelfCertifiedSophisticatedStep() {
           )}
           {watched?.businessAngel === "true" && !noneApply && (
             <div className="mt-2">
-              <label className="tertiary-heading">
+              <label
+                className="tertiary-heading"
+                style={{ color: currentTheme.secondaryText }}
+              >
                 What is the name of the network or syndicate?
               </label>
               <input
@@ -423,6 +494,16 @@ export function SelfCertifiedSophisticatedStep() {
                       ? "border-red-500"
                       : "border-gray-300"
                   }`}
+                style={{
+                  // dynamic ring color
+                  boxShadow: `0 0 0 2px transparent`, // default when not focused
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px ${currentTheme.dashboardBackground}`;
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px transparent`;
+                }}
               />
               {errors.selfCertifiedSophisticatedInvestor
                 ?.businessAngelNetwork && (
@@ -439,13 +520,17 @@ export function SelfCertifiedSophisticatedStep() {
 
         {/* (E) None apply */}
         <div className="border border-[#979797] rounded-xl p-5 space-y-4">
-          <div className="tertiary-heading">(E) None of these apply to me.</div>
+          <div
+            className="tertiary-heading"
+            style={{ color: currentTheme.secondaryText }}
+          >
+            (E) None of these apply to me.
+          </div>
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
               {...register("selfCertifiedSophisticatedInvestor.noneApply")}
               checked={noneApply}
-              className="accent-[#2FB5B4]"
             />
             <span>Yes</span>
           </label>
@@ -464,9 +549,12 @@ export function SelfCertifiedSophisticatedStep() {
               {...register(
                 "selfCertifiedSophisticatedInvestor.declarationAccepted"
               )}
-              className="accent-[#2FB5B4] mt-1"
+              className="mt-1"
             />
-            <div className="tertiary-heading space-y-3">
+            <div
+              className="tertiary-heading space-y-3"
+              style={{ color: currentTheme.secondaryText }}
+            >
               <div>
                 I declare that I have answered yes to A and/or B, and wish to be
                 treated as a high net worth individual.
@@ -510,7 +598,10 @@ export function SelfCertifiedSophisticatedStep() {
         {/* Signature & Date */}
         <div className="flex gap-6 flex-wrap">
           <div className="flex-1">
-            <label className="block mb-1 font-medium text-gray-800">
+            <label
+              className="block mb-1 font-medium text-gray-800"
+              style={{ color: currentTheme.primaryText }}
+            >
               Signature
             </label>
 
@@ -525,6 +616,7 @@ export function SelfCertifiedSophisticatedStep() {
                   type="button"
                   onClick={() => setSignatureModalOpen(true)}
                   className="text-sm text-[#2FB5B4] underline"
+                  style={{ color: currentTheme.dashboardBackground }}
                 >
                   Edit Signature
                 </button>
@@ -538,6 +630,16 @@ export function SelfCertifiedSophisticatedStep() {
                 onClick={() => setSignatureModalOpen(true)}
                 className={`w-full p-2 border rounded outline-none focus:ring-2 focus:ring-[#2FB5B4] 
         ${errors.signature ? "border-red-500" : "border-gray-300"}`}
+                style={{
+                  // dynamic ring color
+                  boxShadow: `0 0 0 2px transparent`, // default when not focused
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px ${currentTheme.dashboardBackground}`;
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px transparent`;
+                }}
               />
             )}
             {errors.signature && (
@@ -547,13 +649,28 @@ export function SelfCertifiedSophisticatedStep() {
             )}
           </div>
           <div className="flex-1">
-            <label className="block mb-1 font-medium text-gray-800">Date</label>
+            <label
+              className="block mb-1 font-medium text-gray-800"
+              style={{ color: currentTheme.primaryText }}
+            >
+              Date
+            </label>
             <input
               type="date"
               {...register("signatureDate")}
               required
               disabled
               className="w-full p-2 outline-none border border-gray-300 rounded focus:ring-2 focus:ring-[#2FB5B4]"
+              style={{
+                // dynamic ring color
+                boxShadow: `0 0 0 2px transparent`, // default when not focused
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = `0 0 0 2px ${currentTheme.dashboardBackground}`;
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = `0 0 0 2px transparent`;
+              }}
             />
           </div>
         </div>
@@ -570,6 +687,7 @@ export function SelfCertifiedSophisticatedStep() {
           <button
             type="submit"
             className="flex-1 bg-[#2FB5B4] text-white py-3 px-4 rounded-lg hover:bg-[#147574] transition-colors font-medium"
+            style={{ backgroundColor: currentTheme.dashboardBackground }}
           >
             Continue to Document Upload
           </button>
@@ -579,6 +697,7 @@ export function SelfCertifiedSophisticatedStep() {
         isOpen={signatureModalOpen}
         onClose={() => setSignatureModalOpen(false)}
         onSave={handleSignatureSave}
+        currentTheme={currentTheme}
       />
     </div>
   );

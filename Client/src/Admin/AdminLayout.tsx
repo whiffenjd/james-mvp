@@ -5,13 +5,12 @@ import { BsBellFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
 import { LayoutGrid, Users } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
-import { FiMenu, FiX } from 'react-icons/fi';
+import { FiMenu, FiX } from "react-icons/fi";
 import { defaultTheme } from "../Context/ThemeContext";
 import Sidebar from "../PublicComponents/Components/Sidebar";
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
   const { user, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -19,13 +18,13 @@ const AdminLayout = () => {
   // Add this effect
   useEffect(() => {
     if (isSidebarOpen) {
-      document.body.classList.add('sidebar-open');
+      document.body.classList.add("sidebar-open");
     } else {
-      document.body.classList.remove('sidebar-open');
+      document.body.classList.remove("sidebar-open");
     }
 
     return () => {
-      document.body.classList.remove('sidebar-open');
+      document.body.classList.remove("sidebar-open");
     };
   }, [isSidebarOpen]);
   useEffect(() => {
@@ -79,7 +78,7 @@ const AdminLayout = () => {
       {/* Sidebar - hidden on mobile unless toggled */}
       <div
         className={`fixed md:static z-40 h-full transition-all duration-300 
-      ${isSidebarOpen ? 'left-0' : '-left-full'} md:left-0`}
+      ${isSidebarOpen ? "left-0" : "-left-full"} md:left-0`}
       >
         <Sidebar menuItems={menuItems} />
       </div>

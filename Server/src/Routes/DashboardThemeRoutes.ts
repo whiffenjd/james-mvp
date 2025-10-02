@@ -26,6 +26,10 @@ DashboardThemeRouter.get(
   themeController.getThemeById as unknown as express.RequestHandler,
 );
 DashboardThemeRouter.get(
+  '/getThemeByDomain/:subdomain',
+  themeController.getThemeByDomain as unknown as express.RequestHandler,
+);
+DashboardThemeRouter.get(
   '/listThemes',
   verifyToken,
   themeController.listSpecificUserThemes as unknown as express.RequestHandler,

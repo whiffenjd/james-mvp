@@ -257,6 +257,50 @@ export class ThemeController {
       data: result,
     });
   };
+  getThemeByDomain = async (req: Request, res: Response) => {
+    try {
+      const domain = req.params?.subdomain;
+      if (!domain) {
+        return res.status(400).json({
+          success: false,
+          message: 'Domain not found',
+        });
+      }
+
+      // Step 1: fetch user by subdomain
+      const user = await this.themeService.getBySubdomain(domain);
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found for given domain',
+        });
+      }
+
+      if (!user.selectedTheme) {
+        return res.status(404).json({
+          success: false,
+          message: 'No theme assigned to this user',
+        });
+      }
+
+      // Step 2: fetch theme by id
+      const theme = await this.themeService.getThemeById(user.selectedTheme, user.id);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Theme fetched successfully',
+        data: theme,
+      });
+    } catch (error: any) {
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: error.message,
+      });
+    }
+  };
 
   /**
    * @swagger

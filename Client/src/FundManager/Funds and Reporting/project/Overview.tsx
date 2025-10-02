@@ -21,7 +21,7 @@ const Overview = () => {
   const [selectedPdf, setSelectedPdf] = useState("");
   const [currentDocIndex, setCurrentDocIndex] = useState(0);
   const documents = fundData?.documents || [];
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   const openPdfModal = (pdfUrl: string | undefined, index: number = 0) => {
     if (pdfUrl) {
@@ -58,7 +58,6 @@ const Overview = () => {
     }
   }, [fund, isLoading]);
 
-
   if (isLoading) {
     return <BasicLoader />;
   }
@@ -75,7 +74,7 @@ const Overview = () => {
             <span className="text-sm text-theme-secondary-text font-semibold font-poppins">
               {fundData?.createdAt
                 ? formatDateToDDMMYYYY(fundData?.createdAt)
-                : 'N/A'}
+                : "N/A"}
             </span>
           </div>
 
@@ -84,7 +83,9 @@ const Overview = () => {
               <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Fund Type
               </div>
-              <div className="text-theme-secondary-text">{fundData?.fundType}</div>
+              <div className="text-theme-secondary-text">
+                {fundData?.fundType}
+              </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
               <div className="text-sm font-medium text-theme-primary-text mb-1">
@@ -92,42 +93,52 @@ const Overview = () => {
               </div>
               <div className="text-theme-secondary-text">
                 {fundData?.fundSize && fundData?.currency
-                  ? new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: fundData.currency,
-                  }).format(Number(fundData.fundSize))
-                  : 'N/A'}
+                  ? new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: fundData.currency,
+                    }).format(Number(fundData.fundSize))
+                  : "N/A"}
               </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
               <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Currency
               </div>
-              <div className="text-theme-secondary-text">{fundData?.currency || 'N/A'}</div>
+              <div className="text-theme-secondary-text">
+                {fundData?.currency || "N/A"}
+              </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
               <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Target Geographies
               </div>
-              <div className="text-theme-secondary-text">{fundData?.targetGeographies}</div>
+              <div className="text-theme-secondary-text">
+                {fundData?.targetGeographies}
+              </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
               <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Target Sectors
               </div>
-              <div className="text-theme-secondary-text">{fundData?.targetSectors}</div>
+              <div className="text-theme-secondary-text">
+                {fundData?.targetSectors}
+              </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
               <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Target MOIC
               </div>
-              <div className="text-theme-secondary-text">{fundData?.targetMOIC}</div>
+              <div className="text-theme-secondary-text">
+                {fundData?.targetMOIC}
+              </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
               <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Target IRR
               </div>
-              <div className="text-theme-secondary-text">{fundData?.targetIRR}</div>
+              <div className="text-theme-secondary-text">
+                {fundData?.targetIRR}
+              </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
               <div className="text-sm font-medium text-theme-primary-text mb-1">
@@ -135,18 +146,20 @@ const Overview = () => {
               </div>
               <div className="text-theme-secondary-text">
                 {fundData?.minimumInvestment && fundData?.currency
-                  ? new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: fundData.currency,
-                  }).format(Number(fundData.minimumInvestment))
-                  : 'N/A'}
+                  ? new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: fundData.currency,
+                    }).format(Number(fundData.minimumInvestment))
+                  : "N/A"}
               </div>
             </div>
             <div className="bg-gray-100 border rounded-lg p-4">
               <div className="text-sm font-medium text-theme-primary-text mb-1">
                 Fund Lifetime
               </div>
-              <div className="text-theme-secondary-text">{fundData?.fundLifetime}</div>
+              <div className="text-theme-secondary-text">
+                {fundData?.fundLifetime}
+              </div>
             </div>
           </div>
 
@@ -175,7 +188,7 @@ const Overview = () => {
                 View Docs ({fundData?.documents?.length || 0})
               </button>
             </div>
-            {user?.role !== 'investor' && (
+            {user?.role !== "investor" && (
               <>
                 {/* All Investors */}
                 <div className="border rounded-lg p-6 text-center min-h-[200px] flex flex-col justify-between">
@@ -208,20 +221,20 @@ const Overview = () => {
                   <div className="relative group flex justify-center">
                     <div className="text-2xl font-bold text-theme-sidebar-accent bg-gray-100 rounded-lg p-4 min-w-[100px] max-w-[200px] mx-auto inline-block truncate text-center cursor-pointer">
                       {fundData?.fundSize && fundData?.currency
-                        ? new Intl.NumberFormat('en-US', {
-                          style: 'currency',
-                          currency: fundData.currency,
-                          notation: 'compact',
-                        }).format(Number(fundData.fundSize))
-                        : '0'}
+                        ? new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: fundData.currency,
+                            notation: "compact",
+                          }).format(Number(fundData.fundSize))
+                        : "0"}
                     </div>
                     <span className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-gray-700 text-sm bg-white px-3 py-1 rounded-lg shadow transition-all duration-500 whitespace-nowrap">
                       {fundData?.fundSize && fundData?.currency
-                        ? new Intl.NumberFormat('en-US', {
-                          style: 'currency',
-                          currency: fundData.currency,
-                        }).format(Number(fundData.fundSize))
-                        : '0'}
+                        ? new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: fundData.currency,
+                          }).format(Number(fundData.fundSize))
+                        : "0"}
                     </span>
                   </div>
                 </div>
@@ -240,19 +253,20 @@ const Overview = () => {
             <div className="flex justify-between items-center p-4 border-b">
               <div className="flex items-center gap-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Fundraising Document {currentDocIndex + 1} of {documents.length}
+                  Fundraising Document {currentDocIndex + 1} of{" "}
+                  {documents.length}
                 </h3>
                 {documents.length > 1 && (
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => navigateToDocument('prev')}
+                      onClick={() => navigateToDocument("prev")}
                       className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                       title="Previous document"
                     >
                       <ChevronLeft className="w-5 h-5 text-gray-600" />
                     </button>
                     <button
-                      onClick={() => navigateToDocument('next')}
+                      onClick={() => navigateToDocument("next")}
                       className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                       title="Next document"
                     >
@@ -285,10 +299,11 @@ const Overview = () => {
                         setCurrentDocIndex(index);
                         setSelectedPdf(documents[index].fileUrl);
                       }}
-                      className={`w-3 h-3 rounded-full transition-colors ${index === currentDocIndex
-                        ? 'bg-theme-sidebar-accent'
-                        : 'bg-gray-300 hover:bg-gray-400'
-                        }`}
+                      className={`w-3 h-3 rounded-full transition-colors ${
+                        index === currentDocIndex
+                          ? "bg-theme-sidebar-accent"
+                          : "bg-gray-300 hover:bg-gray-400"
+                      }`}
                       title={`Go to document ${index + 1}`}
                     />
                   ))}

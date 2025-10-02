@@ -30,11 +30,13 @@ export const createTaxReport = async (req: Request, res: Response) => {
 
     const file = req.file;
     const reportURL = await s3UploadDuplicate(file, createdBy, 'taxReports');
+    const investorIds = req.body.investorIds ? JSON.parse(req.body.investorIds) : undefined;
+
     const parsed = CreateTaxReportSchema.safeParse({
       ...req.body,
       reportURL,
       createdBy,
-      investorIds: req.body.investorIds ? JSON.parse(req.body.investorIds) : [],
+      investorIds,
     });
     if (!parsed.success) {
       return sendErrorResponse(res, parsed.error.message, 400);
@@ -107,11 +109,13 @@ export const updateTaxReport = async (req: Request, res: Response) => {
       reportURL = await s3UploadDuplicate(req.file, userId, 'taxReports');
     }
 
+    const investorIds = req.body.investorIds ? JSON.parse(req.body.investorIds) : undefined;
+
     const parsed = UpdateTaxReportSchema.safeParse({
       id,
       ...req.body,
       reportURL,
-      investorIds: req.body.investorIds ? JSON.parse(req.body.investorIds) : undefined,
+      investorIds,
     });
 
     if (!parsed.success) {
@@ -153,7 +157,6 @@ export const downloadTaxReport = async (req: Request, res: Response) => {
     const { id: userId, role } = req.user!;
     const { id } = req.params;
 
-    // Check if the user is authorized to download the report
     const [report] = await db.select().from(taxReports).where(eq(taxReports.id, id));
     if (!report) {
       return sendErrorResponse(res, 'Tax report not found', 404);

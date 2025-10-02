@@ -1,14 +1,7 @@
 import { db } from '../db/DbConnection';
-import {
-  taxReports,
-  taxReportInvestors,
-  activityLogs,
-  UsersTable,
-  userNotifications,
-} from '../db/schema';
+import { taxReports, taxReportInvestors, UsersTable } from '../db/schema';
 import { CreateTaxReportSchema, UpdateTaxReportSchema } from '../validators/taxReport.schema';
-import { and, eq, sql } from 'drizzle-orm';
-import { triggerEmailNotifications } from './emailNotification.service';
+import { and, eq, getTableColumns, inArray, sql } from 'drizzle-orm';
 import { getDownloadUrl } from '../Utils/s3UploadDuplicate';
 
 interface PaginatedResponse<T> {
@@ -18,6 +11,8 @@ interface PaginatedResponse<T> {
   limit: number;
   totalPages: number;
 }
+
+type Quarter = 'Quarter1' | 'Quarter2' | 'Quarter3' | 'Quarter4';
 
 export const create = async (data: {
   projectName: string;
@@ -45,21 +40,20 @@ export const create = async (data: {
       .returning();
 
     let investors: { id: string }[] = [];
-    if (data.investorIds === 'all') {
-      investors = await tx
-        .select({ id: UsersTable.id })
-        .from(UsersTable)
-        .where(eq(UsersTable.referral, data.createdBy));
-    } else if (Array.isArray(data.investorIds) && data.investorIds.length > 0) {
-      investors = await tx
-        .select({ id: UsersTable.id })
-        .from(UsersTable)
-        .where(
-          and(
-            eq(UsersTable.referral, data.createdBy),
-            sql`${UsersTable.id} IN (${data.investorIds.join(',')})`,
-          ),
-        );
+    if (data.investorIds) {
+      if (data.investorIds === 'all') {
+        investors = await tx
+          .select({ id: UsersTable.id })
+          .from(UsersTable)
+          .where(eq(UsersTable.referral, data.createdBy));
+      } else if (Array.isArray(data.investorIds) && data.investorIds.length > 0) {
+        investors = await tx
+          .select({ id: UsersTable.id })
+          .from(UsersTable)
+          .where(
+            and(eq(UsersTable.referral, data.createdBy), inArray(UsersTable.id, data.investorIds)),
+          );
+      }
     }
 
     if (investors.length > 0) {
@@ -71,52 +65,12 @@ export const create = async (data: {
       );
     }
 
-    // const [activityLog] = await tx
-    //   .insert(activityLogs)
-    //   .values({
-    //     entityType: 'tax_report',
-    //     entityId: taxReport.id,
-    //     action: 'created',
-    //     performedBy: data.createdBy,
-    //     description: `Created tax report for project ${data.projectName}`,
-    //     createdAt: new Date(),
-    //   })
-    //   .returning();
-
-    const [creator] = await tx
-      .select({ name: UsersTable.name })
-      .from(UsersTable)
-      .where(eq(UsersTable.id, data.createdBy));
-
-    // if (investors.length > 0) {
-    //   await tx.insert(userNotifications).values(
-    //     investors.map((investor) => ({
-    //       userId: investor.id,
-    //       activityLogId: activityLog.id,
-    //       isRead: false,
-    //       isDeleted: false,
-    //       createdAt: new Date(),
-    //       updatedAt: new Date(),
-    //     })),
-    //   );
-
-    //   triggerEmailNotifications({
-    //     userIds: investors.map((i) => i.id),
-    //     notificationData: {
-    //       entityType: 'tax_report',
-    //       action: 'created',
-    //       projectName: data.projectName,
-    //       performedByName: creator.name,
-    //     },
-    //     createdBy: data.createdBy,
-    //   });
-    // }
-
-    return taxReport;
+    return {
+      ...taxReport,
+      investors: investors.map((investor) => ({ id: investor.id })),
+    };
   });
 };
-
-type Quarter = 'Quarter1' | 'Quarter2' | 'Quarter3' | 'Quarter4';
 
 export const getTaxReports = async ({
   creatorId,
@@ -153,44 +107,43 @@ export const getTaxReports = async ({
 
   const whereClause = conditions.length > 1 ? and(...conditions) : conditions[0];
 
-  const [reports, totalCount] = await Promise.all([
-    db
-      .select({
-        ...taxReports,
-        investors: sql`
-          COALESCE(
-            (
-              SELECT JSON_AGG(
-                JSON_BUILD_OBJECT(
-                  'id', ${UsersTable.id},
-                  'name', ${UsersTable.name}
-                )
+  const reports = await db
+    .select({
+      ...getTableColumns(taxReports), // ✅ shorthand for all columns
+      investors: sql`
+        COALESCE(
+          (
+            SELECT JSON_AGG(
+              JSON_BUILD_OBJECT(
+                'id', ${UsersTable.id},
+                'name', ${UsersTable.name}
               )
-              FROM ${taxReportInvestors}
-              JOIN ${UsersTable} ON ${taxReportInvestors.investorId} = ${UsersTable.id}
-              WHERE ${taxReportInvestors.taxReportId} = ${taxReports.id}
-            ),
-            '[]'::json
-          )
-        `.as('investors'),
-      })
-      .from(taxReports)
-      .where(whereClause)
-      .orderBy(sql`${taxReports.createdAt} DESC`)
-      .limit(limit)
-      .offset(offset),
+            )
+            FROM ${taxReportInvestors}
+            JOIN ${UsersTable} 
+              ON ${taxReportInvestors.investorId} = ${UsersTable.id}
+            WHERE ${taxReportInvestors.taxReportId} = ${taxReports.id}
+          ),
+          '[]'::json
+        )
+      `.as('investors'),
+    })
+    .from(taxReports)
+    .where(whereClause)
+    .orderBy(sql`${taxReports.createdAt} DESC`)
+    .limit(limit)
+    .offset(offset);
 
-    db
-      .select({ count: sql<number>`count(*)` })
-      .from(taxReports)
-      .where(whereClause),
-  ]);
+  const [totalCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(taxReports)
+    .where(whereClause);
 
-  const total = Number(totalCount[0].count);
+  const total = Number(totalCount.count);
   const totalPages = Math.ceil(total / limit);
 
   return {
-    data: reports, // investors already comes as a JSON array
+    data: reports,
     total,
     page,
     limit,
@@ -231,7 +184,6 @@ export const update = async (data: {
     }
 
     if (data.investorIds !== undefined) {
-      // Delete existing assignments
       await tx.delete(taxReportInvestors).where(eq(taxReportInvestors.taxReportId, taxReport.id));
 
       let investors: { id: string }[] = [];
@@ -245,10 +197,7 @@ export const update = async (data: {
           .select({ id: UsersTable.id })
           .from(UsersTable)
           .where(
-            and(
-              eq(UsersTable.referral, data.createdBy),
-              sql`${UsersTable.id} IN (${data.investorIds.join(',')})`,
-            ),
+            and(eq(UsersTable.referral, data.createdBy), inArray(UsersTable.id, data.investorIds)),
           );
       }
 
@@ -260,18 +209,26 @@ export const update = async (data: {
           })),
         );
       }
+
+      return {
+        ...taxReport,
+        investors: investors.map((investor) => ({ id: investor.id })),
+      };
     }
 
-    // await tx.insert(activityLogs).values({
-    //   entityType: 'tax_report',
-    //   entityId: taxReport.id,
-    //   action: 'updated',
-    //   performedBy: data.createdBy,
-    //   description: `Updated tax report for project ${taxReport.projectName}`,
-    //   createdAt: new Date(),
-    // });
+    const assignedInvestors = await tx
+      .select({
+        id: UsersTable.id,
+        name: UsersTable.name,
+      })
+      .from(taxReportInvestors)
+      .innerJoin(UsersTable, eq(taxReportInvestors.investorId, UsersTable.id))
+      .where(eq(taxReportInvestors.taxReportId, taxReport.id));
 
-    return taxReport;
+    return {
+      ...taxReport,
+      investors: assignedInvestors,
+    };
   });
 };
 
@@ -285,14 +242,6 @@ export const remove = async (id: string, createdBy: string) => {
     if (!taxReport) {
       throw new Error('Tax report not found or unauthorized');
     }
-
-    // await tx.insert(activityLogs).values({
-    //   entityType: 'tax_report',
-    //   action: 'deleted',
-    //   performedBy: createdBy,
-    //   description: `Deleted tax report for project ${taxReport.projectName}`,
-    //   createdAt: new Date(),
-    // });
   });
 };
 
@@ -303,7 +252,7 @@ export const getReportDownloadUrl = async (id: string) => {
     throw new Error('Tax report not found');
   }
 
-  const key = new URL(report.reportURL).pathname.substring(1); // remove leading "/"
+  const key = new URL(report.reportURL).pathname.substring(1);
   const filename = `${report.projectName}-report.pdf`;
 
   return await getDownloadUrl(key, filename);

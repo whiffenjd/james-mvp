@@ -30,6 +30,7 @@ interface TaxReportRow {
     createdAt: string;
     createdBy: string;
     updatedAt: string;
+    investors: { id: string; name: string }[];
 }
 
 function TaxReportsPage() {
@@ -47,7 +48,7 @@ function TaxReportsPage() {
         year: "",
         quarter: "Quarter1" as "Quarter1" | "Quarter2" | "Quarter3" | "Quarter4",
         document: null as File | null,
-        investorIds: [],
+        investorIds: [] as string[] | "all", // ✅ explicitly allow both
     });
 
     // Get user role (replace with your actual implementation)
@@ -153,6 +154,7 @@ function TaxReportsPage() {
                             year: row.year,
                             quarter: row.quarter,
                             document: null,
+                            investorIds: [],
                         });
                         setShowUploadModal(true);
                     },
@@ -219,7 +221,10 @@ function TaxReportsPage() {
             toast.error('Please fill all required fields and select a document');
             return;
         }
-
+        if (!formData.investorIds || formData.investorIds.length === 0) {
+            toast.error('Please select at least one investor');
+            return;
+        }
         if (editingReport) {
             const payload: UpdateTaxReportPayload = {
                 projectName: formData.projectName,
@@ -280,7 +285,7 @@ function TaxReportsPage() {
                         <button
                             onClick={() => {
                                 setEditingReport(null);
-                                setFormData({ projectName: "", year: "", quarter: "Quarter1", document: null });
+                                setFormData({ projectName: "", year: "", quarter: "Quarter1", document: null, investorIds: [] });
                                 setShowUploadModal(true);
                             }}
                             className="px-4 py-1 rounded-md bg-theme-sidebar-accent text-white hover:bg-theme-sidebar-accent-dark"

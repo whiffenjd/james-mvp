@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
+
 import { X, FileText, Calendar, Upload, Eye, Edit2, Download } from 'lucide-react';
 import { useDownloadTaxReport } from '../../API/Endpoints/TaxReports/taxReports';
 import { EnhancedYearQuarterDropdowns } from '../../Components/Modal/EnhancedYearQuarterDropdowns';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { useInvestors } from '../hooks/useInvestors';
-import InvestorMultiSelect from './InvestorMultiSelect';
+import Select from 'react-select';
 
 // Types
 interface TaxReport {
@@ -38,7 +39,7 @@ interface UploadModalProps {
     onClose: () => void;
     editingReport: TaxReport | null;
     formData: FormData;
-    setFormData: (data: FormData) => void;
+    setFormData: Dispatch<SetStateAction<FormData>>; // ✅ fix here
     onSubmit: () => void;
     isSubmitting: boolean;
 }
@@ -75,7 +76,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                 investorIds: allInvestorsSelected ? 'all' : editingReport.investors.map(inv => inv.id),
             });
         }
-    }, [editingReport, investorOptions]);
+    }, [editingReport, investorOptions, formData, setFormData]);
 
     if (!isOpen) return null;
 
@@ -118,15 +119,22 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         });
     };
 
-    const handleInvestorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const value = e.target.value;
-        if (value === 'all') {
+    const handleInvestorChange = (selected: any) => {
+        if (selected.some((option: any) => option.value === 'all')) {
             setFormData({ ...formData, investorIds: 'all' });
         } else {
-            const selectedIds = Array.from(e.target.selectedOptions).map(option => option.value);
+            const selectedIds = selected.map((option: any) => option.value);
             setFormData({ ...formData, investorIds: selectedIds });
         }
     };
+
+    const selectOptions = [
+        { value: 'all', label: 'All Investors' },
+        ...investorOptions.map(investor => ({
+            value: investor.id,
+            label: investor.name,
+        })),
+    ];
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
@@ -179,34 +187,57 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                         }}
                         handleInputChange={handleInputChange}
                     />
-                    <InvestorMultiSelect
-                        investorOptions={investorOptions}
-                        formData={formData}
-                        setFormData={setFormData}
-                        isSubmitting={isSubmitting}
-                    />
-                    {/* <div>
-                        <label className="block text-sm font-medium text-theme-secondary-text mb-2">
-                            Assign to Investors
-                        </label>
-                        <select
-                            multiple
-                            value={Array.isArray(formData.investorIds) ? formData.investorIds : formData.investorIds === 'all' ? ['all'] : []}
-                            onChange={handleInvestorChange}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-theme-sidebar-accent focus:border-transparent transition-all text-theme-primary-text"
-                            disabled={isSubmitting}
-                        >
-                            <option value="all">All Investors</option>
-                            {investorOptions.map((investor) => (
-                                <option key={investor.id} value={investor.id}>
-                                    {investor.name}
-                                </option>
-                            ))}
-                        </select>
-                        <p className="text-sm text-theme-secondary-text mt-1">
-                            Hold Ctrl/Cmd or Shift to select multiple investors
-                        </p>
-                    </div> */}
+
+                    {!editingReport && (
+                        <div>
+                            <label className="block text-sm font-medium text-theme-secondary-text mb-2">
+                                Assign to Investors
+                            </label>
+                            <Select
+                                isMulti
+                                options={selectOptions}
+                                value={selectOptions.filter(option =>
+                                    Array.isArray(formData.investorIds)
+                                        ? formData.investorIds.includes(option.value)
+                                        : formData.investorIds === 'all' && option.value === 'all'
+                                )}
+                                onChange={handleInvestorChange}
+                                className="text-theme-primary-text"
+                                classNamePrefix="react-select"
+                                isDisabled={isSubmitting}
+                                placeholder="Select investors..."
+                                styles={{
+                                    control: (base) => ({
+                                        ...base,
+                                        borderRadius: '0.75rem',
+                                        borderColor: '#e5e7eb',
+                                        padding: '0.25rem',
+                                        '&:hover': {
+                                            borderColor: '#e5e7eb',
+                                        },
+                                        boxShadow: 'none',
+                                    }),
+                                    menu: (base) => ({
+                                        ...base,
+                                        borderRadius: '0.75rem',
+                                        marginTop: '0.25rem',
+                                    }),
+                                    option: (base, state) => ({
+                                        ...base,
+                                        backgroundColor: state.isSelected
+                                            ? 'rgba(59, 130, 246, 0.1)'
+                                            : state.isFocused
+                                                ? 'rgba(59, 130, 246, 0.05)'
+                                                : 'white',
+                                        color: '#1f2937',
+                                    }),
+                                }}
+                            />
+                            <p className="text-sm text-theme-secondary-text mt-1">
+                                Select multiple investors or choose 'All Investors'
+                            </p>
+                        </div>
+                    )}
 
                     <div>
                         <label className="block text-sm font-medium text-theme-secondary-text mb-2">
@@ -222,8 +253,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                                     })
                                 }
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-theme-sidebar-accent focus:border-transparent transition-all 
-                                file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold 
-                                file:bg-theme-sidebar-accent/10 file:text-theme-sidebar-accent hover:file:bg-theme-sidebar-accent/20"
+                file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold 
+                file:bg-theme-sidebar-accent/10 file:text-theme-sidebar-accent hover:file:bg-theme-sidebar-accent/20"
                                 required={!editingReport}
                                 disabled={isSubmitting}
                                 accept=".pdf"
@@ -272,12 +303,12 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         </div>
     );
 };
+
 // View Modal Component (Only for user.role)
 interface ViewModalProps {
     isOpen: boolean;
     onClose: () => void;
     report: TaxReport | null;
-
 }
 
 export const ViewModal: React.FC<ViewModalProps> = ({

@@ -39,7 +39,6 @@
 import { useEffect, useState } from "react";
 import Tabs, { tabIds, type TabType } from "../../../Components/Tabs/Tabs";
 import { useSearchParams } from "react-router-dom";
-import { useAuth } from "../../../Context/AuthContext";
 
 // Type guard to ensure URL tab is valid
 const isValidTab = (tab: string | null): tab is TabType => {
@@ -47,7 +46,6 @@ const isValidTab = (tab: string | null): tab is TabType => {
 };
 
 const InvestorsProject = () => {
-  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const defaultTab: TabType = "overview";
 

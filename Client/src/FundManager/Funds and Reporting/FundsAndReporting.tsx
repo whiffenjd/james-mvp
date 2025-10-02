@@ -70,7 +70,6 @@ const FundsAndReporting: React.FC = () => {
                 </div>
 
                 {/* Card */}
-                {/* Card */}
                 <div className="rounded-3xl border-2 border-theme-sidebar-accent p-6 pt-8 shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col">
                   {/* Card Title */}
                   <div className="text-center mb-6">
@@ -88,7 +87,7 @@ const FundsAndReporting: React.FC = () => {
                           alt="description icon"
                         />
                       </div>
-                      <span className="text-sm lg:text-base font-medium text-theme-secondary-text line-clamp-4">
+                      <span className="text-sm lg:text-base font-medium text-theme-secondary-text line-clamp-5">
                         {fund?.fundDescription || "No description provided."}
                       </span>
                     </div>

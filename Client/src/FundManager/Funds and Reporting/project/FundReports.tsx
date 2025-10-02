@@ -1,29 +1,36 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Upload, FileText, Download, Eye, X, ChevronDown } from 'lucide-react';
-import { Table, type PaginationInfo, type TableAction, type TableColumn } from '../../../Components/Table';
-import { useCreateFundReport, useGetFundReports, type CreateFundReportPayload, type FundReport } from '../../../API/Endpoints/Funds/fundReport';
-import { useParams } from 'react-router-dom';
-import { useAuth } from '../../../Context/AuthContext';
-import ReportDetailsModal from '../../../Components/Modal/ReportDetailsModal';
-import { EnhancedYearQuarterDropdowns } from '../../../Components/Modal/EnhancedYearQuarterDropdowns';
-import type { FundDetail } from '../../../Redux/features/Funds/fundsSlice';
-import { useAppSelector } from '../../../Redux/hooks';
-import { formatDateToDDMMYYYY } from '../../../utils/dateUtils';
+import React, { useState, useRef, useEffect } from "react";
+import { Upload, FileText, Download, Eye, X, ChevronDown } from "lucide-react";
+import {
+  Table,
+  type PaginationInfo,
+  type TableAction,
+  type TableColumn,
+} from "../../../Components/Table";
+import {
+  useCreateFundReport,
+  useGetFundReports,
+  type CreateFundReportPayload,
+  type FundReport,
+} from "../../../API/Endpoints/Funds/fundReport";
+import { useParams } from "react-router-dom";
+import { useAuth } from "../../../Context/AuthContext";
+import ReportDetailsModal from "../../../Components/Modal/ReportDetailsModal";
+import { EnhancedYearQuarterDropdowns } from "../../../Components/Modal/EnhancedYearQuarterDropdowns";
+import { formatDateToDDMMYYYY } from "../../../utils/dateUtils";
+import { useGetFundByIdQuery } from "../../../API/Endpoints/Funds/funds";
 
 interface FormData {
   projectName: string;
   description: string;
   year: string;
   quarter: string;
-  investorIds?: string[];      // Will be sent to backend
+  investorIds?: string[]; // Will be sent to backend
   selectedInvestors: string[]; // For UI selection
 }
 interface FetchFormData {
-
   year: string;
   quarter: string;
 }
-
 
 const FundReports = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,27 +39,25 @@ const FundReports = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [formData, setFormData] = useState<FormData>({
-    projectName: '',
-    description: '',
+    projectName: "",
+    description: "",
     year: new Date().getFullYear().toString(),
-    quarter: 'Q1',
+    quarter: "Q1",
     selectedInvestors: [] as string[], // New field
   });
-  const [fundData, setFundData] = useState<FundDetail | null>(null);
-  const fund = useAppSelector((state) => state.funds.currentFund);
-  useEffect(() => {
-    if (fund) {
-      setFundData(fund?.result);
-    }
-  }, [fund]);
-  const investors = fundData?.investors || [];
 
+  const { data: fund } = useGetFundByIdQuery(id || "");
+  // useEffect(() => {
+  //   if (fund) {
+  //     setFundData(fund?.result);
+  //   }
+  // }, [fund]);
+  const investors = fund?.result.investors || [];
+  // console.log("investors", investors);
   const [fetchFormData, setFetchFormData] = useState<FetchFormData>({
-    year: '',
-    quarter: '',
+    year: "",
+    quarter: "",
   });
-
-
 
   const itemsPerPage = 5;
   const [currentPage, setCurrentPage] = useState(1);
@@ -61,9 +66,9 @@ const FundReports = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { mutate: createFundReport } = useCreateFundReport(user?.id || '');
+  const { mutate: createFundReport } = useCreateFundReport(user?.id || "");
   const { data } = useGetFundReports({
-    fundId: id || '',
+    fundId: id || "",
     page: currentPage,
     limit: itemsPerPage,
     ...(fetchFormData.year ? { year: fetchFormData.year } : {}),
@@ -104,25 +109,35 @@ const FundReports = () => {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  const handleFetchInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleFetchInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFetchFormData(prev => ({
+    setFetchFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async () => {
     if (!selectedFile || !id) {
-      alert('Please select a document to upload and ensure fund ID is available');
+      alert(
+        "Please select a document to upload and ensure fund ID is available"
+      );
       return;
     }
 
@@ -135,16 +150,18 @@ const FundReports = () => {
       year: formData.year,
       quarter: formData.quarter,
       document: selectedFile,
-      investorIds: formData.selectedInvestors.length ? formData.selectedInvestors : undefined,
+      investorIds: formData.selectedInvestors.length
+        ? formData.selectedInvestors
+        : undefined,
     };
 
     createFundReport(payload, {
       onSuccess: () => {
         setFormData({
-          projectName: '',
-          description: '',
+          projectName: "",
+          description: "",
           year: new Date().getFullYear().toString(),
-          quarter: 'Q1',
+          quarter: "Q1",
           selectedInvestors: [], // Reset
         });
         setSelectedFile(null);
@@ -161,28 +178,28 @@ const FundReports = () => {
   };
   const handleDownload = async (report: FundReport) => {
     if (!report.documentUrl) {
-      console.error('No document URL available');
+      console.error("No document URL available");
       return;
     }
 
     try {
       const response = await fetch(report.documentUrl, {
-        method: 'GET',
+        method: "GET",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch the PDF');
+        throw new Error("Failed to fetch the PDF");
       }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
 
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
 
       // Optionally name the file
       const filename =
-        report.projectName?.replace(/\s+/g, '_') || `fund-report-${report.id}`;
+        report.projectName?.replace(/\s+/g, "_") || `fund-report-${report.id}`;
       link.download = `${filename}.pdf`;
 
       document.body.appendChild(link);
@@ -192,16 +209,16 @@ const FundReports = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error("Download failed:", error);
     }
   };
   const columns: TableColumn<FundReport>[] = [
     {
-      key: 'projectName',
-      header: 'Project Name',
+      key: "projectName",
+      header: "Project Name",
       sortable: false,
 
-      align: 'left',
+      align: "left",
       render: (value: string) => (
         <div className="truncate" title={value}>
           {value}
@@ -209,10 +226,10 @@ const FundReports = () => {
       ),
     },
     {
-      key: 'createdByName',
-      header: 'Created By',
+      key: "createdByName",
+      header: "Created By",
       sortable: false,
-      align: 'left',
+      align: "left",
       render: (value: string) => (
         <div className="truncate" title={value}>
           {value}
@@ -220,10 +237,10 @@ const FundReports = () => {
       ),
     },
     {
-      key: 'year',
-      header: 'Year',
+      key: "year",
+      header: "Year",
       sortable: false,
-      align: 'left',
+      align: "left",
       render: (value: number | string) => (
         <div className="truncate" title={value.toString()}>
           {value}
@@ -231,10 +248,10 @@ const FundReports = () => {
       ),
     },
     {
-      key: 'quarter',
-      header: 'Quarter',
+      key: "quarter",
+      header: "Quarter",
       sortable: false,
-      align: 'left',
+      align: "left",
       render: (value: string) => (
         <div className="truncate" title={value}>
           {value}
@@ -242,10 +259,10 @@ const FundReports = () => {
       ),
     },
     {
-      key: 'createdAt',
-      header: 'Created Date',
+      key: "createdAt",
+      header: "Created Date",
       sortable: false,
-      align: 'left',
+      align: "left",
       render: (value: string) => {
         const formattedDate = formatDateToDDMMYYYY(value);
         return (
@@ -258,22 +275,26 @@ const FundReports = () => {
   ];
   const actions: TableAction<FundReport>[] = [
     {
-      label: 'View',
+      label: "View",
       variant: "primary" as "primary" | "secondary" | "danger" | undefined,
       icon: <Eye className="w-4 h-4" />,
       onClick: (row: FundReport) => handleViewReport(row),
       show: () => true,
     },
-    ...(user?.role === 'investor'
+    ...(user?.role === "investor"
       ? [
-        {
-          label: '',
-          variant: "primary" as "primary" | "secondary" | "danger" | undefined,
-          icon: <Download className="w-5 h-5" />,
-          onClick: (row: FundReport) => handleDownload(row),
-          show: () => true,
-        },
-      ]
+          {
+            label: "",
+            variant: "primary" as
+              | "primary"
+              | "secondary"
+              | "danger"
+              | undefined,
+            icon: <Download className="w-5 h-5" />,
+            onClick: (row: FundReport) => handleDownload(row),
+            show: () => true,
+          },
+        ]
       : []),
 
     // // 👇 Optional: Only show for fund managers
@@ -297,13 +318,13 @@ const FundReports = () => {
     currentPage: data?.currentPage || 1,
     totalPages: data?.totalPages || 1,
     totalItems: data?.totalCount || 0,
-    itemsPerPage
+    itemsPerPage,
   };
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
   const setFetchField = (name: keyof FetchFormData, value: string) => {
-    setFetchFormData(prev => ({
+    setFetchFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -317,31 +338,38 @@ const FundReports = () => {
         setIsInvestorDropdownOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   return (
     <div className="w-full">
       <div className="">
         {/* Upload Section */}
-        {user?.role === 'fundManager' && (
+        {user?.role === "fundManager" && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Add New Fund Report</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Add New Fund Report
+            </h2>
 
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Left Side - Document Upload */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900">Fund Report Document</h3>
-                  <div className="text-sm text-gray-500 mb-4">File Size should be 5MB</div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Fund Report Document
+                  </h3>
+                  <div className="text-sm text-gray-500 mb-4">
+                    File Size should be 5MB
+                  </div>
 
                   <div
-                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDragging
-                      ? 'border-theme-sidebar-accent bg-teal-50'
-                      : selectedFile
-                        ? ' bg-teal-50'
-                        : 'border-gray-300 bg-gray-50'
-                      }`}
+                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                      isDragging
+                        ? "border-theme-sidebar-accent bg-teal-50"
+                        : selectedFile
+                          ? " bg-teal-50"
+                          : "border-gray-300 bg-gray-50"
+                    }`}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
@@ -351,7 +379,9 @@ const FundReports = () => {
                         <>
                           <FileText className="w-16 h-16 text-teal-600" />
                           <div className="text-center">
-                            <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
+                            <p className="text-sm font-medium text-gray-900">
+                              {selectedFile.name}
+                            </p>
                             <p className="text-xs text-gray-500">
                               {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                             </p>
@@ -362,7 +392,7 @@ const FundReports = () => {
                           <Upload className="w-16 h-16 text-gray-400" />
                           <div className="text-center">
                             <p className="text-sm font-medium text-gray-900">
-                              Drop your document here, or{' '}
+                              Drop your document here, or{" "}
                               <button
                                 type="button"
                                 className="text-theme-sidebar-accent underline"
@@ -371,7 +401,9 @@ const FundReports = () => {
                                 browse
                               </button>
                             </p>
-                            <p className="text-xs text-gray-500">Supports PDF files</p>
+                            <p className="text-xs text-gray-500">
+                              Supports PDF files
+                            </p>
                           </div>
                         </>
                       )}
@@ -403,7 +435,6 @@ const FundReports = () => {
                       <label className="block text-sm font-medium text-theme-sidebar-accent">
                         Project Name
                       </label>
-
                     </div>
                     <input
                       type="text"
@@ -446,7 +477,9 @@ const FundReports = () => {
                     <div className="relative" ref={investorDropdownRef}>
                       <button
                         type="button"
-                        onClick={() => setIsInvestorDropdownOpen(!isInvestorDropdownOpen)}
+                        onClick={() =>
+                          setIsInvestorDropdownOpen(!isInvestorDropdownOpen)
+                        }
                         className="w-full px-4 py-3.5 border border-gray-300 rounded-xl outline-none
         focus:ring-2 focus:ring-theme-sidebar-accent focus:border-theme-sidebar-accent
         bg-white text-gray-700 shadow-sm
@@ -455,21 +488,26 @@ const FundReports = () => {
                       >
                         <span
                           className={
-                            formData.selectedInvestors.length ? 'text-gray-900' : 'text-gray-500'
+                            formData.selectedInvestors.length
+                              ? "text-gray-900"
+                              : "text-gray-500"
                           }
                         >
                           {formData.selectedInvestors.length
                             ? investors
-                              .filter((inv) =>
-                                formData.selectedInvestors.includes(inv.investorId)
-                              )
-                              .map((inv) => inv.name)
-                              .join(', ') || 'Select Investors'
-                            : 'All Investors'}
+                                .filter((inv) =>
+                                  formData.selectedInvestors.includes(
+                                    inv.investorId
+                                  )
+                                )
+                                .map((inv) => inv.name)
+                                .join(", ") || "Select Investors"
+                            : "All Investors"}
                         </span>
                         <ChevronDown
-                          className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${isInvestorDropdownOpen ? 'rotate-180' : ''
-                            }`}
+                          className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
+                            isInvestorDropdownOpen ? "rotate-180" : ""
+                          }`}
                         />
                       </button>
                       {isInvestorDropdownOpen && (
@@ -478,31 +516,47 @@ const FundReports = () => {
                             <button
                               type="button"
                               onClick={() => {
-                                setFormData({ ...formData, selectedInvestors: [] });
+                                setFormData({
+                                  ...formData,
+                                  selectedInvestors: [],
+                                });
                                 setIsInvestorDropdownOpen(false);
                               }}
-                              className={`w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors duration-150 font-medium ${formData.selectedInvestors.length === 0
-                                ? 'text-theme-sidebar-accent bg-gray-200 border-r-2'
-                                : 'text-gray-700'
-                                }`}
+                              className={`w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors duration-150 font-medium ${
+                                formData.selectedInvestors.length === 0
+                                  ? "text-theme-sidebar-accent bg-gray-200 border-r-2"
+                                  : "text-gray-700"
+                              }`}
                             >
                               All Investors
                             </button>
                             {investors.map((investor) => (
-                              <div key={investor.investorId} className="flex items-center px-4 py-3">
+                              <div
+                                key={investor.investorId}
+                                className="flex items-center px-4 py-3"
+                              >
                                 <input
                                   type="checkbox"
-                                  checked={formData.selectedInvestors.includes(investor.investorId)}
-                                  onChange={() => handleInvestorSelect(investor.investorId)}
+                                  checked={formData.selectedInvestors.includes(
+                                    investor.investorId
+                                  )}
+                                  onChange={() =>
+                                    handleInvestorSelect(investor.investorId)
+                                  }
                                   className="mr-2 accent-theme-sidebar-accent"
                                 />
                                 <button
                                   type="button"
-                                  onClick={() => handleInvestorSelect(investor.investorId)}
-                                  className={`w-full text-left transition-colors duration-150 font-medium ${formData.selectedInvestors.includes(investor.investorId)
-                                    ? 'text-theme-sidebar-accent'
-                                    : 'text-gray-700'
-                                    }`}
+                                  onClick={() =>
+                                    handleInvestorSelect(investor.investorId)
+                                  }
+                                  className={`w-full text-left transition-colors duration-150 font-medium ${
+                                    formData.selectedInvestors.includes(
+                                      investor.investorId
+                                    )
+                                      ? "text-theme-sidebar-accent"
+                                      : "text-gray-700"
+                                  }`}
                                 >
                                   {investor.name}
                                 </button>
@@ -513,7 +567,6 @@ const FundReports = () => {
                       )}
                     </div>
                   </div>
-
                 </div>
               </div>
 
@@ -524,7 +577,7 @@ const FundReports = () => {
                   disabled={isLoading || !selectedFile}
                   className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? 'Submitting...' : 'Submit'}
+                  {isLoading ? "Submitting..." : "Submit"}
                 </button>
               </div>
             </div>
@@ -540,15 +593,14 @@ const FundReports = () => {
             <button
               type="button"
               onClick={() => {
-                setFetchField('year', '');
-                setFetchField('quarter', '');
+                setFetchField("year", "");
+                setFetchField("quarter", "");
               }}
               className="absolute top-11 -right-11 text-gray-500 hover:text-red-500 transition-colors"
               title="Clear Filters"
             >
               <X className="w-5 h-5" />
             </button>
-
           )}
         </div>
         <Table

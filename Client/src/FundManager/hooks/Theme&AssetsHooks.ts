@@ -5,8 +5,6 @@ import {
   themesApi,
   type CreateThemeData,
 } from "../../API/Endpoints/FundManager/Themes&Asset";
-import { useTheme } from "../../Context/ThemeContext";
-import React from "react";
 
 // Dashboard Assets Hooks
 export const dashboardAssetsQueryKey = ["dashboardAssets"];
@@ -118,6 +116,7 @@ export const useThemeByDomain = (domain: string, enabled: boolean = true) => {
     enabled: enabled && !!domain,
     refetchOnWindowFocus: false, // Don't refetch on window focus
     refetchOnMount: true, // Don't refetch on component mount if data exists
+    retry: false,
   });
 };
 

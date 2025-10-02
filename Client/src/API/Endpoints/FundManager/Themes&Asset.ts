@@ -1,5 +1,4 @@
 // Updated services/api.ts
-import type { get } from "http";
 import axiosPrivate from "../../AxiosInstances/PrivateAxiosInstance";
 import axiosPublic from "../../AxiosInstances/PublicAxiosInstance";
 

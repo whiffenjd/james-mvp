@@ -411,6 +411,7 @@ export function DocumentUploadStepEntity() {
           step={4}
           title="Document Upload"
           subtitle="Please upload required documents"
+          currentTheme={currentTheme}
         />
         <div className="space-y-6 max-w-8xl">
           {/* Show pending notice if status is pending */}

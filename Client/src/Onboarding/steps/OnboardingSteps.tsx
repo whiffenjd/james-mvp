@@ -329,11 +329,13 @@ export function OnboardingSteps() {
                   (step) => (
                     <div key={step} className="flex items-center">
                       <div
-                        className={`h-2 w-16 rounded-full ${
-                          step <= state.currentStep
-                            ? "bg-[#017776]"
-                            : "bg-gray-200"
-                        }`}
+                        className="h-2 w-16 rounded-full"
+                        style={{
+                          backgroundColor:
+                            step <= state.currentStep
+                              ? currentTheme?.dashboardBackground || "#017776"
+                              : currentTheme?.secondaryText || "#e5e7eb", // fallback: gray-200
+                        }}
                       />
                       {step < getTotalSteps() && <div className="w-2" />}
                     </div>

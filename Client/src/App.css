@@ -79,3 +79,11 @@ input[type="radio"] {
   padding: 5px;
   accent-color: var(--dashboard-bg) !important;
 }
+input[type="checkbox"] {
+  padding: 5px;
+  accent-color: var(--dashboard-bg) !important;
+}
+select option:hover {
+  background-color: var(--dashboard-bg) !important;
+  color: var(--primary-text) !important;
+}

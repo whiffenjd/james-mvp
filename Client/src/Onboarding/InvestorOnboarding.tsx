@@ -10,8 +10,8 @@ import React from "react";
 
 // Main Onboarding Container
 export default function InvestorOnboarding() {
-  const { isAuthenticated, user } = useAuth();
-  const { applyTheme } = useTheme();
+  const { user } = useAuth();
+  const { applyTheme, currentTheme } = useTheme();
 
   // get subdomain
   const hostname = window.location.hostname;
@@ -25,7 +25,7 @@ export default function InvestorOnboarding() {
     "/forgot-password",
     "/reset-password",
     "/verify-email",
-    "/onboarding",
+    "/investor/onboarding",
   ].some((path) => location.pathname.startsWith(path));
   const {
     data,
@@ -34,11 +34,13 @@ export default function InvestorOnboarding() {
   } = useThemeByDomain(subdomain || "", !!subdomain && isPublicPath);
 
   React.useEffect(() => {
-    console.log("isAuthenticated", user);
     if (data?.data && isPublicPath) {
-      applyTheme(data.data);
+      // Apply theme only if it is not already selected
+      if (data.data.id !== currentTheme?.id) {
+        applyTheme(data.data);
+      }
     }
-  }, [data, applyTheme, location.pathname]);
+  }, [data?.data?.id, isPublicPath]);
 
   console.log("themeQuery", data?.data);
 

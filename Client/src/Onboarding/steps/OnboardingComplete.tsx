@@ -30,12 +30,13 @@ export function OnboardingComplete() {
         step={5}
         title="Complete"
         subtitle="Review and proceed to platform"
+        currentTheme={currentTheme}
       />
 
       <div className="rounded-md border border-gray-300 p-6 shadow-sm max-w-5xl mx-auto text-center">
         <h2
           className="text-xl font-semibold text-gray-800 mb-3"
-          style={{ color: currentTheme.secondaryText }}
+          style={{ color: currentTheme.primaryText }}
         >
           On Boarding complete!
         </h2>

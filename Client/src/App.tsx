@@ -1,5 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./Context/AuthContext";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Login from "./Auth/Pages/Login";
 import Signup from "./Auth/Pages/Signup";
@@ -21,9 +20,7 @@ import InvestorOnboarding from "./Onboarding/InvestorOnboarding";
 import InvestorLayout from "./Investor/Layout";
 import DashboardSettings from "./FundManager/Themes/Pages/DashboardMain";
 import FundManagerLayout from "./FundManager/Layout/FundManagerLayout";
-import { ThemeLoader, ThemeProvider, useTheme } from "./Context/ThemeContext";
 import "./App.css";
-import ThemeContainer from "./FundManager/Themes/Components/ThemeContainer";
 import FundManagerDashboard from "./FundManager/Dashboard";
 import AdminLayout from "./Admin/AdminLayout";
 import {
@@ -43,9 +40,6 @@ import AdminUsersPage from "./Admin/Users/UsersPage";
 import LoginAsPage from "./Admin/Users/LoginAsPage";
 import TaxReportsPage from "./FundManager/Tax and Reports/TaxReports";
 import Documents from "./FundManager/Documents/kycDocument";
-import getSubdomain from "./FundManager/hooks/getSubDomain";
-import { useThemeByDomain } from "./FundManager/hooks/Theme&AssetsHooks";
-import React from "react";
 
 function RedirectBasedOnRole() {
   const { user } = useAuth();

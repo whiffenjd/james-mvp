@@ -55,7 +55,8 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
 
   // Force refetch assets when user role changes and user is fund manager
   useEffect(() => {
-    let timeout: number | null = null;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+
     if (userRole === "fundManager" && user?.id) {
       refetchAssets?.();
       timeout = setTimeout(() => {
@@ -119,8 +120,6 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
   const DefaultLogo = () => (
     <img src="/assets/logo.png" alt="" className="object-contain h-8" />
   );
-
-
 
   return (
     <div className="w-full max-w-[310px] h-[calc(100vh-96px)]">
@@ -212,10 +211,11 @@ const ManagerSidebar: React.FC<SidebarProps> = ({ menuItems, userRole }) => {
           {menuItems.map((item) => (
             <button
               key={item.id}
-              className={`flex items-center w-full px-4 py-4 rounded-[10px] transition-colors text-sm font-poppins font-normal ${activeItem === item.id
-                ? "bg-theme-sidebar-accent text-white"
-                : "text-theme-sidebar-accent hover:bg-theme-sidebar-accent hover:text-white"
-                }`}
+              className={`flex items-center w-full px-4 py-4 rounded-[10px] transition-colors text-sm font-poppins font-normal ${
+                activeItem === item.id
+                  ? "bg-theme-sidebar-accent text-white"
+                  : "text-theme-sidebar-accent hover:bg-theme-sidebar-accent hover:text-white"
+              }`}
               onClick={() => handleItemClick(item)}
             >
               <span className="mr-3 text-current">{item.icon}</span>

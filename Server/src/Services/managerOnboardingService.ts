@@ -14,11 +14,17 @@ export async function getInvestorsList(
   page: number,
   limit: number,
   status?: 'pending' | 'approved' | 'rejected',
+  fundManagerId?: string,
 ): Promise<PaginatedResponse<InvestorListItem>> {
   const offset = (page - 1) * limit;
 
-  // Build the where condition
+  // Build conditions
   const conditions = [eq(UsersTable.role, 'investor')];
+
+  if (fundManagerId) {
+    conditions.push(eq(UsersTable.referral, fundManagerId));
+  }
+
   if (status) {
     conditions.push(eq(InvestorOnboardingTable.status, status));
   }
@@ -42,6 +48,7 @@ export async function getInvestorsList(
       .orderBy(sql`${InvestorOnboardingTable.updatedAt} DESC`)
       .limit(limit)
       .offset(offset),
+
     db
       .select({ count: sql<number>`count(*)` })
       .from(UsersTable)

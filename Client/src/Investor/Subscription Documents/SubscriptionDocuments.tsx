@@ -405,8 +405,10 @@ const SubscriptionDocuments = () => {
     setSelectedDate(date);
     setDateText(date.toLocaleDateString("en-GB")); // dd/MM/yyyy (UK format)
   };
-  if (user?.onboardingStatus?.status === 'complete_later') {
-    return (<RestrictedAccessMessage />)
+
+
+  if (user?.onboardingStatus?.status === 'complete_later' || user?.onboardingStatus?.status === 'pending' || user?.onboardingStatus?.documentStatus == "reupload_requested" || user?.onboardingStatus?.documentStatus == "submitted") {
+    return <RestrictedAccessMessage />
   }
 
 

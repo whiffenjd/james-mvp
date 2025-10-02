@@ -167,16 +167,22 @@ export const loginUser = async (
       .select({
         status: InvestorOnboardingTable.status,
         rejectionNote: InvestorOnboardingTable.rejectionNote,
-        // documentStatus: InvestorOnboardingTable.formData.documentStatus,
+        formData: InvestorOnboardingTable.formData, // select full JSONB
       })
       .from(InvestorOnboardingTable)
       .where(eq(InvestorOnboardingTable.userId, user.id))
       .limit(1);
+
     if (onboarding) {
+      let documentStatus = 'pending_upload';
+      if (onboarding?.formData && typeof onboarding?.formData === 'object') {
+        documentStatus = onboarding?.formData?.documentStatus || 'pending_upload';
+      }
+
       onboardingStatus = {
         status: onboarding.status,
         rejectionNote: onboarding.rejectionNote,
-        // documentStatus: onboarding.documentStatus || 'pending_upload',
+        documentStatus,
       };
     }
   }
@@ -221,21 +227,28 @@ export const getUserProfileByRole = async (id: string, role: Role): Promise<User
   if (!user) return null;
 
   let onboardingStatus = null;
+
   if (role === 'investor') {
     const [onboarding] = await db
       .select({
         status: InvestorOnboardingTable.status,
         rejectionNote: InvestorOnboardingTable.rejectionNote,
-        // documentStatus: InvestorOnboardingTable.formData.documentStatus,
+        formData: InvestorOnboardingTable.formData, // select JSONB
       })
       .from(InvestorOnboardingTable)
       .where(eq(InvestorOnboardingTable.userId, id))
       .limit(1);
+
     if (onboarding) {
+      let documentStatus = 'pending_upload';
+      if (onboarding?.formData && typeof onboarding?.formData === 'object') {
+        documentStatus = onboarding?.formData?.documentStatus || 'pending_upload';
+      }
+
       onboardingStatus = {
         status: onboarding.status,
         rejectionNote: onboarding.rejectionNote,
-        // documentStatus: onboarding.documentStatus || 'pending_upload',
+        documentStatus,
       };
     }
   }

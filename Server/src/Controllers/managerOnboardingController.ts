@@ -185,8 +185,25 @@ import { PaginationQuerySchema, UpdateOnboardingStatusSchema } from '../dtos/man
 
 export async function getInvestorsList(req: Request, res: Response) {
   try {
+    const userRole = req.user?.role as string;
+    const fundManagerId = req.user?.id as string;
+
+    if (userRole !== 'fundManager') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only fund managers can access investors list',
+        data: null,
+      });
+    }
+
     const { page, limit, status } = PaginationQuerySchema.parse(req.query);
-    const investors = await managerOnboardingService.getInvestorsList(page, limit, status);
+
+    const investors = await managerOnboardingService.getInvestorsList(
+      page,
+      limit,
+      status,
+      fundManagerId,
+    );
 
     return res.status(200).json({
       success: true,

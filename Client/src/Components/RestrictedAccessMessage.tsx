@@ -6,7 +6,11 @@ const RestrictedAccessMessage: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    if (user?.onboardingStatus?.status !== "complete_later") {
+    const requiresRestriction =
+        user?.onboardingStatus?.status === "pending" ||
+        user?.onboardingStatus?.status === "complete_later" || user?.onboardingStatus?.documentStatus == "reupload_requested" || user?.onboardingStatus?.documentStatus == "submitted";
+
+    if (!requiresRestriction) {
         return null;
     }
 
@@ -18,9 +22,8 @@ const RestrictedAccessMessage: React.FC = () => {
                 </h2>
                 <p className="text-xl text-theme-secondary-text">
                     To access this page, please complete your onboarding by uploading your
-                    AML/KYC documents on the{" "}
-                    <span className="font-medium text-teal-600">AML/KYC Documents</span>{" "}
-                    page in your dashboard.
+                    AML/KYC documents and wait for{" "}
+                    <span className="font-medium text-teal-600">fund manager approval</span>.
                 </p>
 
                 <button

@@ -34,6 +34,7 @@ export interface User {
   onboardingStatus?: {
     status: "pending" | "approved" | "rejected" | "complete_later";
     rejectionNote?: string | null;
+    documentStatus?: string | null; // ✅ added
   } | null;
 }
 

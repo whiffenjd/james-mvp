@@ -171,9 +171,9 @@ export function DocumentUploadStep() {
                     setTimeout(resolve, 100);
                 });
             }
-            if (completeLater) {
-                navigate("/investor/dashboard");
-            }
+
+            navigate("/investor/dashboard");
+
 
         } catch (error) {
             if (uploadedFiles.length > 0) {

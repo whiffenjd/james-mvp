@@ -4,6 +4,7 @@ import { useDownloadTaxReport } from '../../API/Endpoints/TaxReports/taxReports'
 import { EnhancedYearQuarterDropdowns } from '../../Components/Modal/EnhancedYearQuarterDropdowns';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { useInvestors } from '../hooks/useInvestors';
+import InvestorMultiSelect from './InvestorMultiSelect';
 
 // Types
 interface TaxReport {
@@ -24,8 +25,7 @@ interface FormData {
     year: string;
     quarter: 'Quarter1' | 'Quarter2' | 'Quarter3' | 'Quarter4';
     document: File | null;
-    investorIds: string[] | 'all';
-
+    investorIds: string[] | "all";
 }
 interface InvestorOption {
     id: string;
@@ -179,8 +179,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                         }}
                         handleInputChange={handleInputChange}
                     />
-
-                    <div>
+                    <InvestorMultiSelect
+                        investorOptions={investorOptions}
+                        formData={formData}
+                        setFormData={setFormData}
+                        isSubmitting={isSubmitting}
+                    />
+                    {/* <div>
                         <label className="block text-sm font-medium text-theme-secondary-text mb-2">
                             Assign to Investors
                         </label>
@@ -201,7 +206,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                         <p className="text-sm text-theme-secondary-text mt-1">
                             Hold Ctrl/Cmd or Shift to select multiple investors
                         </p>
-                    </div>
+                    </div> */}
 
                     <div>
                         <label className="block text-sm font-medium text-theme-secondary-text mb-2">

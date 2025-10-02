@@ -11,9 +11,7 @@ import { useGetUnreadCount } from "../API/Endpoints/Notification/notification";
 
 const InvestorLayout = () => {
   const { user, logout } = useAuth();
-
   const { currentTheme, isLoadingCurrentTheme } = useThemeContext();
-
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);

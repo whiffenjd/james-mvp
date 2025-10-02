@@ -171,10 +171,7 @@ export function DocumentUploadStepEntity() {
                         setTimeout(resolve, 100);
                     });
                 }
-                if (completeLater) {
-                    navigate("/investor/dashboard");
-                }
-
+                navigate("/investor/dashboard");
             } catch (error) {
                 // Clean up uploaded files on failure
                 await Promise.all(

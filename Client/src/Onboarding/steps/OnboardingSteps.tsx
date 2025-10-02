@@ -26,13 +26,12 @@ const OnboardingStatus = ({
   <div className="my-6 px-4">
     <div
       className={`rounded-xl p-5 shadow-sm border
-            ${
-              status === "pending"
-                ? "bg-yellow-50 border-yellow-200"
-                : status === "rejected"
-                ? "bg-red-50 border-red-200"
-                : "bg-gray-50 border-gray-200"
-            }`}
+            ${status === "pending"
+          ? "bg-yellow-50 border-yellow-200"
+          : status === "rejected"
+            ? "bg-red-50 border-red-200"
+            : "bg-gray-50 border-gray-200"
+        }`}
     >
       <div className="flex items-center gap-2 mb-2">
         <span className="font-semibold text-lg">
@@ -50,8 +49,8 @@ const OnboardingStatus = ({
         {status === "pending"
           ? "Your submission is under review."
           : status === "rejected"
-          ? "Please review the reason and resubmit."
-          : "You have completed onboarding."}
+            ? "Please review the reason and resubmit."
+            : "You have completed onboarding."}
       </div>
     </div>
   </div>
@@ -100,11 +99,6 @@ export function OnboardingSteps() {
             user.onboardingStatus.status === "rejected"
           ) {
             toast.error("Your previous submission was rejected.");
-          } else if (
-            user.onboardingStatus &&
-            user.onboardingStatus.status === "pending"
-          ) {
-            toast.error("Your onboarding submission is pending approval");
           }
         } catch (error) {
           console.error("Error updating onboarding state:", error);
@@ -277,11 +271,10 @@ export function OnboardingSteps() {
                   (step) => (
                     <div key={step} className="flex items-center">
                       <div
-                        className={`h-2 w-16 rounded-full ${
-                          step <= state.currentStep
+                        className={`h-2 w-16 rounded-full ${step <= state.currentStep
                             ? "bg-[#017776]"
                             : "bg-gray-200"
-                        }`}
+                          }`}
                       />
                       {step < getTotalSteps() && <div className="w-2" />}
                     </div>

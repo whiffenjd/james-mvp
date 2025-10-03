@@ -1,13 +1,13 @@
 // FundManagerLayout.tsx (Updated)
 import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { BsBellFill } from "react-icons/bs";
-import { FaCaretDown } from "react-icons/fa";
+
 import { LayoutGrid, Users } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
 import { FiMenu, FiX } from "react-icons/fi";
 import { defaultTheme } from "../Context/ThemeContext";
 import Sidebar from "../PublicComponents/Components/Sidebar";
+import UserDropdown from "../Components/UserDropDown";
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -78,7 +78,7 @@ const AdminLayout = () => {
       {/* Sidebar - hidden on mobile unless toggled */}
       <div
         className={`fixed md:static z-40 h-full transition-all duration-300 
-      ${isSidebarOpen ? "left-0" : "-left-full"} md:left-0`}
+    ${isSidebarOpen ? "left-0" : "-left-full"} md:left-0`}
       >
         <Sidebar menuItems={menuItems} />
       </div>
@@ -96,48 +96,13 @@ const AdminLayout = () => {
             Admin
           </h3>
           <div className="flex items-center gap-3 md:gap-4">
-            <div className="cursor-pointer">
-              <BsBellFill
-                size={20}
-                style={{ color: defaultTheme.sidebarAccentText }}
-              />
-            </div>
-            <div className="relative flex items-center gap-2" ref={dropdownRef}>
-              <h3
-                className="font-nunito text-sm capitalize"
-                style={{ color: defaultTheme.primaryText }}
-              >
-                {user?.name || ""}
-              </h3>
-              <button
-                className="p-1 md:p-2"
-                style={{ color: defaultTheme.sidebarAccentText }}
-                onClick={() => setShowDropdown((prev) => !prev)}
-              >
-                <FaCaretDown />
-              </button>
-              {showDropdown && (
-                <div
-                  className="absolute top-8 right-0 shadow-md rounded-lg py-2 px-4 z-50 min-w-[120px]"
-                  style={{ backgroundColor: defaultTheme.cardBackground }}
-                >
-                  <button
-                    className="text-red-600 font-medium text-sm hover:underline"
-                    disabled={isLoggingOut}
-                    onClick={handleLogout}
-                  >
-                    {isLoggingOut ? (
-                      <>
-                        <span className="animate-spin inline-block h-4 w-4 border-t-2 border-b-2 border-white rounded-full mr-2"></span>
-                        Logging out...
-                      </>
-                    ) : (
-                      "Logout"
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
+
+            {/* Replace entire dropdown section with: */}
+            <UserDropdown
+              user={user}
+              onLogout={handleLogout}
+              currentTheme={defaultTheme}
+            />
           </div>
         </header>
         <div className="flex-1 overflow-auto px-4 py-4 md:px-6">

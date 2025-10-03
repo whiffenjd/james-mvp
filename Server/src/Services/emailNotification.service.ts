@@ -91,7 +91,13 @@ function createEmailTemplate(message: string, userName: string): string {
       <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; border-left: 4px solid ${brandColor};">
         <h2 style="color: #333; margin-top: 0;">Hello ${userName},</h2>
         <p style="font-size: 16px; margin: 15px 0;">${message}</p>
-        <a href="${loginUrl}" class="button">Log In to View Details</a>
+            <a href="${loginUrl}" 
+          class="button" 
+          style="display:inline-block; padding:12px 24px; background:${brandColor}; 
+                  color:#ffffff !important; text-decoration:none; border-radius:6px; 
+                  font-weight:bold; margin:15px 0;">
+          Log In to View Details
+        </a>
       </div>
       
       <div style="text-align: center; margin-top: 30px; padding: 20px; background: #fff; border-radius: 8px; border: 1px solid #e9ecef;">

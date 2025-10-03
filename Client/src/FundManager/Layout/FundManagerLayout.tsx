@@ -17,6 +17,7 @@ import { useAuth } from "../../Context/AuthContext";
 import { useTheme } from "../../Context/ThemeContext";
 import ManagerSidebar from "../Public/ManagerSidebar";
 import { useGetUnreadCount } from "../../API/Endpoints/Notification/notification";
+import UserDropdown from "../../Components/UserDropDown";
 
 const FundManagerLayout = () => {
   const { user, logout } = useAuth();
@@ -131,48 +132,14 @@ const FundManagerLayout = () => {
             Fund Manager
           </h3>
           <div className="flex items-center gap-4">
-            <div className="cursor-pointer">
-              <BsBellFill
-                size={22}
-                style={{ color: currentTheme.sidebarAccentText }}
-              />
-            </div>
-            <div className="relative flex items-center gap-2" ref={dropdownRef}>
-              <h3
-                className="font-nunito text-sm capitalize"
-                style={{ color: currentTheme.primaryText }}
-              >
-                {user?.name || ""}
-              </h3>
-              <button
-                className="p-2"
-                style={{ color: currentTheme.sidebarAccentText }}
-                onClick={() => setShowDropdown((prev) => !prev)}
-              >
-                <FaCaretDown />
-              </button>
-              {showDropdown && (
-                <div
-                  className="absolute top-6 right-2 shadow-md rounded-lg py-2 px-4 z-50 min-w-[120px]"
-                  style={{ backgroundColor: currentTheme.cardBackground }}
-                >
-                  <button
-                    className="text-red-600 font-medium text-sm hover:underline"
-                    disabled={isLoggingOut}
-                    onClick={handleLogout}
-                  >
-                    {isLoggingOut ? (
-                      <>
-                        <span className="animate-spin inline-block h-4 w-4 border-t-2 border-b-2 border-white rounded-full mr-2"></span>
-                        Logging out...
-                      </>
-                    ) : (
-                      "Logout"
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
+
+
+            {/* Replace the entire dropdown section with this: */}
+            <UserDropdown
+              user={user}
+              onLogout={handleLogout}
+              currentTheme={currentTheme}
+            />
           </div>
         </header>
 

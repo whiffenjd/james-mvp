@@ -112,20 +112,20 @@ const Signup = () => {
 
       <div
         className="w-[590px] bg-white rounded-[20px] flex items-center justify-center flex-col py-[60px] px-[53px] z-10"
-        // style={{
-        //   background:
-        //     "linear-gradient(135deg, #F4F4F5 10%, #B1DEDF 60%, #2FB5B4 120%)",
-        // }}
+      // style={{
+      //   background:
+      //     "linear-gradient(135deg, #F4F4F5 10%, #B1DEDF 60%, #2FB5B4 120%)",
+      // }}
       >
         <p
           className="font-markazi font-semibold text-5xl"
-          style={{ color: currentTheme.sidebarAccentText }}
+          style={{ color: currentTheme.primaryText }}
         >
           Welcome
         </p>
         <h3
           className="font-semibold text-2xl mt-6"
-          style={{ color: currentTheme.sidebarAccentText }}
+          style={{ color: currentTheme.primaryText }}
         >
           Sign up Your Account
         </h3>

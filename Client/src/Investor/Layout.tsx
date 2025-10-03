@@ -8,6 +8,7 @@ import { useAuth } from "../Context/AuthContext";
 import ManagerSidebar from "../FundManager/Public/ManagerSidebar";
 import { useThemeContext } from "../Context/InvestorThemeContext";
 import { useGetUnreadCount } from "../API/Endpoints/Notification/notification";
+import UserDropdown from "../Components/UserDropDown";
 
 const InvestorLayout = () => {
   const { user, logout } = useAuth();
@@ -110,7 +111,6 @@ const InvestorLayout = () => {
       }}
     >
       <div className="flex-shrink-0">
-
         <ManagerSidebar menuItems={menuItems} userRole="investor" />
       </div>
       <div
@@ -126,54 +126,18 @@ const InvestorLayout = () => {
           </h3>
 
           <div className="flex items-center gap-4">
-            <div className="cursor-pointer transition-colors duration-300">
-              <BsBellFill
-                size={22}
-                style={{ color: themeStyles.sidebarAccent }}
-              />
-            </div>
 
-            <div className="relative flex items-center gap-2" ref={dropdownRef}>
-              <h3
-                className="font-nunito text-sm capitalize transition-colors duration-300"
-                style={{ color: themeStyles.primaryText }}
-              >
-                {user?.name || "User"}
-              </h3>
-
-              <button
-                className="p-2 transition-colors duration-300"
-                style={{ color: themeStyles.sidebarAccent }}
-                onClick={() => setShowDropdown((prev) => !prev)}
-              >
-                <FaCaretDown />
-              </button>
-
-              {showDropdown && (
-                <div
-                  className="absolute top-6 right-2 shadow-lg rounded-lg py-2 px-4 z-50 min-w-[120px] border transition-colors duration-300"
-                  style={{
-                    backgroundColor: themeStyles.cardBg,
-                    borderColor: themeStyles.secondaryText + "40", // Add opacity
-                  }}
-                >
-                  <button
-                    className="text-red-600 font-medium text-sm hover:underline disabled:opacity-50"
-                    disabled={isLoggingOut}
-                    onClick={handleLogout}
-                  >
-                    {isLoggingOut ? (
-                      <>
-                        <span className="animate-spin inline-block h-4 w-4 border-t-2 border-b-2 border-red-600 rounded-full mr-2"></span>
-                        Logging out...
-                      </>
-                    ) : (
-                      "Logout"
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
+            {/* Replace entire dropdown section with: */}
+            <UserDropdown
+              user={user}
+              onLogout={handleLogout}
+              currentTheme={{
+                primaryText: themeStyles.primaryText,
+                secondaryText: themeStyles.secondaryText,
+                sidebarAccentText: themeStyles.sidebarAccent,
+                cardBackground: themeStyles.cardBg,
+              }}
+            />
           </div>
         </header>
 
